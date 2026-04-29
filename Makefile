@@ -35,7 +35,7 @@ clean: 				## Clean the temporary files.
 
 .PHONY: install-dev
 install-dev: 			## Install the development dependencies.
-	poetry install
+	poetry install --with dev
 
 ## 
 
