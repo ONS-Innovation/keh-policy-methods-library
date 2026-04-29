@@ -1,7 +1,7 @@
-def hello_world():
+def hello_world() -> str:
     """
     A simple function that returns a greeting message.
-    
+
     Returns:
         str: A greeting message.
     """
