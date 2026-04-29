@@ -43,7 +43,7 @@ make help
 
 The package can be deployed to GitHub Releases using the GitHub Actions workflow defined in `.github/workflows/publish-release.yml`.
 
-This workflow is triggered on pushes to tags matching the pattern "v*". It can also be manually triggered via the "workflow_dispatch" event, which requires a version tag input in the format "v0.0.0".
+This workflow is triggered on pushes to tags matching the pattern "v*". The tag must follow the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.) for the workflow to run successfully.
 
 To create a new release, you can use the following command to create a new tag and push it to the repository:
 
@@ -53,7 +53,8 @@ git push origin v0.1.0
 ```
 
 This will tag the current commit with the version "v0.1.0" and push the tag to the remote repository, which will trigger the GitHub Actions workflow to build and publish the package to GitHub Releases.
-Otherwise, you can manually trigger the workflow from the GitHub Actions tab in the repository, and provide the version tag as input when prompted (**preferred**).
+
+**Note:** Is is important that GitHub Releases are _only_ created via the GitHub Actions workflow, and not manually via the GitHub UI. This is because the workflow ensures that the package is built and published correctly.
 
 ## Documentation
 
