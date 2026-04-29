@@ -29,3 +29,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 repository = "http://github.com/ONS-Innovation/keh-policy-methods-library"
+
+packages = [
+    {include = "policy_methods_library", from = "src"},
+]
