@@ -28,6 +28,8 @@ help:				## This help message.
 clean: 				## Clean the temporary files.
 	rm -rf megalinter-reports
 	rm -rf site
+	rm -rf dist
+	rm -rf build
 
 ## 
 
