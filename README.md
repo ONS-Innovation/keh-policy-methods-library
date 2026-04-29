@@ -43,7 +43,7 @@ make help
 
 The package can be deployed to GitHub Releases using the GitHub Actions workflow defined in `.github/workflows/publish-release.yml`.
 
-This workflow is triggered on pushes to tags matching the pattern "v*". The tag must follow the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.) for the workflow to run successfully.
+This workflow is triggered on pushes to tags matching the pattern "v\*". The tag must follow the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.) for the workflow to run successfully.
 
 To create a new release, you can use the following command to create a new tag and push it to the repository:
 
