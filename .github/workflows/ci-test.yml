@@ -26,7 +26,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: .python-version
+          python-version-file: ".python-version"
           cache: poetry
       - name: Install dependencies
         run: |
