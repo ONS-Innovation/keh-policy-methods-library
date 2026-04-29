@@ -11,10 +11,16 @@ requires-python = ">=3.12"
 dependencies = [
 ]
 
+[tool.poetry.group.docs]
+optional = true
+
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.15"
 mkdocstrings-python = "^1.16.12"
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
