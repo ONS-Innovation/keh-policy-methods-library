@@ -30,6 +30,10 @@ clean: 				## Clean the temporary files.
 	rm -rf site
 	rm -rf dist
 	rm -rf build
+	rm -rf .ruff_cache
+	rm -rf .mypy_cache
+	rm -rf .pytest_cache
+	rm -rf .coverage
 
 ## 
 
