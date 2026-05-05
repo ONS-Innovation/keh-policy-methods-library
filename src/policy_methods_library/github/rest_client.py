@@ -4,6 +4,7 @@ It structures the API calls, handles authentication using the `get_access_token`
 """
 
 import requests
+from typing import Optional
 from .auth import get_access_token
 
 
@@ -12,10 +13,10 @@ class GitHubRestClient:
 
     def __init__(
         self,
-        app_id: str = None,
-        private_key: str = None,
-        organisation: str = None,
-        access_token: str = None,
+        app_id: Optional[str] = None,
+        private_key: Optional[str] = None,
+        organisation: Optional[str] = None,
+        access_token: Optional[str] = None,
     ):
         """Initialises the GitHubRestClient with credentials or a direct access token.
 
