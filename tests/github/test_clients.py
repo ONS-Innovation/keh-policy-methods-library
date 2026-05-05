@@ -33,7 +33,7 @@ class TestGitHubRestClientInit:
     def test_initialises_with_app_credentials(self, rsa_private_key):
         """Providing app_id, private_key, and organisation should fetch and store an access token."""
         installations_response = MagicMock()
-        installations_response.json.return_value = {"installations": [{"id": 1}]}
+        installations_response.json.return_value = {"id": 1}
         installations_response.raise_for_status.return_value = None
 
         token_response = MagicMock()
@@ -160,6 +160,26 @@ class TestMakeRequest:
 
         _, kwargs = mock_req.call_args
         assert kwargs["json"] == payload
+
+    def test_merges_custom_headers(self, client):
+        """Caller-provided headers should be merged with default auth and accept headers."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status.return_value = None
+
+        with patch(
+            "policy_methods_library.github.clients.requests.request",
+            return_value=mock_response,
+        ) as mock_req:
+            client.make_request(
+                "GET",
+                "/user",
+                headers={"X-GitHub-Api-Version": "2022-11-28"},
+            )
+
+        _, kwargs = mock_req.call_args
+        assert kwargs["headers"]["Authorization"] == "Bearer ghs_test_token"
+        assert kwargs["headers"]["Accept"] == "application/vnd.github.v3+json"
+        assert kwargs["headers"]["X-GitHub-Api-Version"] == "2022-11-28"
 
     def test_returns_response(self, client):
         """make_request should return the response object from the underlying HTTP call."""

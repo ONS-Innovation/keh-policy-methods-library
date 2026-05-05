@@ -70,7 +70,7 @@ class TestGetInstallationId:
     def test_raises_when_no_installations_found(self):
         """An empty installations list in the API response should raise a ValueError."""
         mock_response = MagicMock()
-        mock_response.json.return_value = {"installations": []}
+        mock_response.json.return_value = {}
         mock_response.raise_for_status.return_value = None
 
         with patch(
@@ -82,10 +82,10 @@ class TestGetInstallationId:
             ):
                 _get_installation_id("my-org", "some-jwt")
 
-    def test_returns_first_installation_id(self):
-        """When multiple installations are returned, the ID of the first one should be returned."""
+    def test_returns_installation_id(self):
+        """When an installation is returned, its ID should be returned."""
         mock_response = MagicMock()
-        mock_response.json.return_value = {"installations": [{"id": 42}, {"id": 99}]}
+        mock_response.json.return_value = {"id": 42}
         mock_response.raise_for_status.return_value = None
 
         with patch(
@@ -99,7 +99,7 @@ class TestGetInstallationId:
     def test_sends_correct_headers(self):
         """The request to retrieve installations should include a Bearer token Authorization header."""
         mock_response = MagicMock()
-        mock_response.json.return_value = {"installations": [{"id": 1}]}
+        mock_response.json.return_value = {"id": 1}
         mock_response.raise_for_status.return_value = None
 
         with patch(
@@ -151,7 +151,7 @@ class TestGetAccessToken:
         """Valid credentials should return the token string from the GitHub API response."""
         """Valid credentials should return the token string from the GitHub API response."""
         installations_response = MagicMock()
-        installations_response.json.return_value = {"installations": [{"id": 7}]}
+        installations_response.json.return_value = {"id": 7}
         installations_response.raise_for_status.return_value = None
 
         token_response = MagicMock()
@@ -175,7 +175,7 @@ class TestGetAccessToken:
     def test_calls_correct_token_endpoint(self, rsa_private_key):
         """The access token POST request should target the installation-specific endpoint."""
         installations_response = MagicMock()
-        installations_response.json.return_value = {"installations": [{"id": 55}]}
+        installations_response.json.return_value = {"id": 55}
         installations_response.raise_for_status.return_value = None
 
         token_response = MagicMock()
@@ -202,7 +202,7 @@ class TestGetAccessToken:
         import requests
 
         installations_response = MagicMock()
-        installations_response.json.return_value = {"installations": [{"id": 7}]}
+        installations_response.json.return_value = {"id": 7}
         installations_response.raise_for_status.return_value = None
 
         token_response = MagicMock()
