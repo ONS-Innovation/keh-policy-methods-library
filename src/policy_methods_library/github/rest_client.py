@@ -10,18 +10,32 @@ from .auth import get_access_token
 class GitHubRestClient:
     """A client for making REST API calls to GitHub, authenticated as a GitHub App."""
 
-    def __init__(self, app_id: str, private_key: str, organisation: str):
-        """Initialises the GitHubRestClient with the necessary credentials and retrieves an access token.
+    def __init__(
+        self,
+        app_id: str = None,
+        private_key: str = None,
+        organisation: str = None,
+        access_token: str = None,
+    ):
+        """Initialises the GitHubRestClient with credentials or a direct access token.
 
         Args:
-            app_id (str): The GitHub App's identifier.
-            private_key (str): The GitHub App's private key in PEM format.
-            organisation (str): The name of the GitHub organisation.
+            app_id (str, optional): The GitHub App's identifier.
+            private_key (str, optional): The GitHub App's private key in PEM format.
+            organisation (str, optional): The name of the GitHub organization.
+            access_token (str, optional): A pre-generated GitHub access token.
 
         Raises:
-            ValueError: If any of the required parameters are missing or invalid.
+            ValueError: If neither access_token nor all of app_id, private_key, and organisation are provided.
         """
-        self.access_token = get_access_token(app_id, private_key, organisation)
+        if access_token:
+            self.access_token = access_token
+        elif app_id and private_key and organisation:
+            self.access_token = get_access_token(app_id, private_key, organisation)
+        else:
+            raise ValueError(
+                "You must provide either an access_token or all of app_id, private_key, and organisation."
+            )
 
     def make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
         """Makes an authenticated request to the GitHub API.
