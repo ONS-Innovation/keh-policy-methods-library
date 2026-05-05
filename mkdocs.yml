@@ -5,7 +5,16 @@ repo_url: https://github.com/ONS-Innovation/keh-template-repo
 repo_name: KEH Template Repository
 nav:
   - Home: index.md
+  - Implementation Examples: implementation_examples.md
   - Documentation: documentation.md
+  - GitHub:
+      - Overview: github/overview.md
+      - Auth: github/auth.md
+      - Clients: github/clients.md
+  - Checks:
+      - Overview: checks/overview.md
+  - Dev Guides:
+      - Adding Checks: dev_guides/adding_checks.md
 theme:
   name: material
   language: en
