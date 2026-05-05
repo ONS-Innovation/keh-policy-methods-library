@@ -59,6 +59,7 @@ class GitHubRestClient:
         }
 
         request_headers = kwargs.pop("headers", None)
+
         if request_headers:
             headers.update(request_headers)
 

@@ -76,7 +76,9 @@ def _get_installation_id(organisation: str, jwt: str) -> int:
 
     # Make API request to get the installation for the organisation
     response = requests.get(
-        f"https://api.github.com/orgs/{organisation}/installation", headers=headers
+        f"https://api.github.com/orgs/{organisation}/installation",
+        headers=headers,
+        timeout=10,
     )
     response.raise_for_status()
     installation = response.json()
@@ -125,6 +127,7 @@ def get_access_token(app_id: str, private_key: str, organisation: str) -> str:
     response = requests.post(
         f"https://api.github.com/app/installations/{installation_id}/access_tokens",
         headers=headers,
+        timeout=10,
     )
     response.raise_for_status()
     return response.json().get("token")
