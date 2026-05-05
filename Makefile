@@ -76,11 +76,13 @@ docs-fix: 			## Install and run the documentation linter with auto-fix (Markdown
 .PHONY: lint
 lint:				## Run all linters.
 	poetry run ruff check src tests
+	poetry run ruff format src tests --check
 	poetry run mypy src tests
 
 .PHONY: fmt
 fmt:				## Run all formatters.
 	poetry run ruff check src tests --fix
+	poetry run ruff format src tests
 
 ##
 
