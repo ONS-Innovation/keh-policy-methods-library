@@ -62,6 +62,7 @@ class GitHubRestClient:
         if request_headers:
             headers.update(request_headers)
 
+        kwargs.setdefault("timeout", 30)
         response = requests.request(method, url, headers=headers, **kwargs)
         response.raise_for_status()  # Raise an error for bad responses
         return response
