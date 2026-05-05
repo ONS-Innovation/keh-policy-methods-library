@@ -74,17 +74,18 @@ def _get_installation_id(organisation: str, jwt: str) -> int:
         "Accept": "application/vnd.github.v3+json",
     }
 
-    # Make API request to get installations for the organisation
+    # Make API request to get the installation for the organisation
     response = requests.get(
-        f"https://api.github.com/orgs/{organisation}/installations", headers=headers
+        f"https://api.github.com/orgs/{organisation}/installation", headers=headers
     )
     response.raise_for_status()
-    installations = response.json().get("installations", [])
+    installation = response.json()
 
-    # Check if any installations were found and return the first installation ID
-    if not installations:
+    # Check that an installation was found and return its ID
+    installation_id = installation.get("id")
+    if installation_id is None:
         raise ValueError(f"No installations found for organisation '{organisation}'")
-    return installations[0]["id"]
+    return installation_id
 
 
 def get_access_token(app_id: str, private_key: str, organisation: str) -> str:
