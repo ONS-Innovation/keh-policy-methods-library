@@ -29,7 +29,7 @@ headers = {
 }
 
 response = requests.get("https://api.github.com/orgs/your_github_organisation/repos", headers=headers)
-requests.raise_for_status(response)
+response.raise_for_status()
 
 repos = response.json()
 print(repos)
