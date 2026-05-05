@@ -8,7 +8,8 @@ The Policy Methods Library is a collection of functions to encapsulate the busin
   - [Table of Contents](#table-of-contents)
   - [Prerequisites](#prerequisites)
   - [Makefile](#makefile)
-  - [Running the Project](#running-the-project)
+  - [Using the Package](#using-the-package)
+  - [Package Structure](#package-structure)
   - [Deployment](#deployment)
   - [Documentation](#documentation)
     - [GitHub Actions for Documentation](#github-actions-for-documentation)
@@ -35,9 +36,28 @@ To see the available commands, run:
 make help
 ```
 
-## Running the Project
+## Using the Package
 
-<!-- Instructions for running the project go here. This can include commands to start the project, as well as any necessary configuration steps. -->
+TODO: Add instructions for how to use the package in other repositories, including how to install it as a dependency and import the functions.
+
+## Package Structure
+
+```bash
+src/
+└── policy_methods_library/
+   ├── checks/                # Core business logic for checking policy adherence.
+   │   ├── __init__.py
+   │   └── ...                # files for each specific check
+   │
+   ├── github/                # GitHub API integrations.
+   │   ├── __init__.py
+   │   ├── auth.py            # Functions to handle authentication with the GitHub API.
+   │   └── rest_client.py     # Client for making REST API calls to GitHub.
+   │
+   └── __init__.py            # Init file for the package.
+```
+
+Further documentation can be found within the `docs` directory.
 
 ## Deployment
 
