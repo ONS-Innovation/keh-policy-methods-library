@@ -1,8 +1,8 @@
 ---
-site_name: KEH Template Repository
-site_description: A template repository for all KEH repositories.
-repo_url: https://github.com/ONS-Innovation/keh-template-repo
-repo_name: KEH Template Repository
+site_name: KEH Policy Methods Library
+site_description: A library of methods to check GitHub Usage Policy compliance of GitHub repositories, to be used by the KEH team at ONS.
+repo_url: https://github.com/ONS-Innovation/keh-policy-methods-library
+repo_name: KEH Policy Methods Library
 nav:
   - Home: index.md
   - Implementation Examples: implementation_examples.md
