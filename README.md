@@ -52,7 +52,7 @@ src/
    ├── github/                # GitHub API integrations.
    │   ├── __init__.py
    │   ├── auth.py            # Functions to handle authentication with the GitHub API.
-   │   └── rest_client.py     # Client for making REST API calls to GitHub.
+   │   └── clients.py         # Client for making REST API calls to GitHub.
    │
    └── __init__.py            # Init file for the package.
 ```
