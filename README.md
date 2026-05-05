@@ -45,6 +45,8 @@ The package can be deployed to GitHub Releases using the GitHub Actions workflow
 
 This workflow is triggered on pushes to tags matching the pattern "v\*". The tag must follow the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.) for the workflow to run successfully.
 
+A production release will be created when a tag is pushed that follows the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.). A pre-release will be created when a tag is pushed that follows the format "v0.0.0-rc" (e.g. "v0.1.0-rc", "v1.0.0-rc", etc.). This allows for both stable releases and pre-releases to be created and published to GitHub Releases.
+
 To create a new release, you can use the following command to create a new tag and push it to the repository:
 
 ```bash
