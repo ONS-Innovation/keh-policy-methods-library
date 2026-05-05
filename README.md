@@ -38,7 +38,25 @@ make help
 
 ## Using the Package
 
-TODO: Add instructions for how to use the package in other repositories, including how to install it as a dependency and import the functions.
+To use the package, you can install it using your preferred method (e.g. pip, Poetry, etc.) and then import the relevant modules and functions in your code.
+
+```bash
+# Using pip
+pip install git+https://github.com/ONS-Innovation/keh-policy-methods-library@<version>
+
+# or using Poetry
+poetry add git+https://github.com/ONS-Innovation/keh-policy-methods-library@<version>
+```
+
+Then, in your Python code, you can import the relevant modules and functions:
+
+```python
+from policy_methods_library.github.clients import GitHubRestClient
+
+client = GitHubRestClient(app_id, private_key, github_organisation)
+```
+
+Detailed examples of the functionality provided by the package can be found in the documentation, which is available in the `docs` directory and deployed to GitHub Pages.
 
 ## Package Structure
 

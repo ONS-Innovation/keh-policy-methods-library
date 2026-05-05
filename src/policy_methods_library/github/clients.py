@@ -57,9 +57,11 @@ class GitHubRestClient:
             "Authorization": f"Bearer {self.access_token}",
             "Accept": "application/vnd.github.v3+json",
         }
+
         request_headers = kwargs.pop("headers", None)
         if request_headers:
             headers.update(request_headers)
+
         response = requests.request(method, url, headers=headers, **kwargs)
         response.raise_for_status()  # Raise an error for bad responses
         return response
