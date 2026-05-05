@@ -50,6 +50,6 @@ This highlights the amount of boilerplate code that can be removed by using the 
 
 ## Client Module Contents
 
-### `GitHubRestApiClient`
+### `GitHubRestClient`
 
 ::: src.policy_methods_library.github.clients.GitHubRestClient
