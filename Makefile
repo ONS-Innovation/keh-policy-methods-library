@@ -34,6 +34,7 @@ clean: 				## Clean the temporary files.
 	rm -rf .mypy_cache
 	rm -rf .pytest_cache
 	rm -rf .coverage
+	find . -type d -name '__pycache__' -exec rm -rf {} +
 
 ## 
 
