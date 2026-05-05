@@ -3,8 +3,14 @@ name: Linting and Formatting
 on:
   push:
     branches: [main]
+    paths:
+      - src/**
+      - tests/**
   pull_request:
     branches: [main]
+    paths:
+      - src/**
+      - tests/**
 permissions:
   contents: read
 jobs:
@@ -13,6 +19,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Implement linting and formatting checks (TODO)
-        run: |-
-          echo "TODO: Implement linting and formatting checks"
+      - uses: actions/checkout@v4
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+          cache: poetry
+      - name: Install dependencies
+        run: |
+          make install-dev
+      - name: Run linters
+        run: |
+          make lint

@@ -3,8 +3,14 @@ name: Testing
 on:
   push:
     branches: [main]
+    paths:
+      - src/**
+      - tests/**
   pull_request:
     branches: [main]
+    paths:
+      - src/**
+      - tests/**
 permissions:
   contents: read
 jobs:
@@ -13,16 +19,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Implement unit tests (TODO)
+      - uses: actions/checkout@v4
+      - name: Install Poetry
         run: |
-          echo "TODO: Implement unit tests"
-  ui-tests:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Implement UI tests (TODO)
+          pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+          cache: poetry
+      - name: Install dependencies
         run: |
-          echo "TODO: Implement UI tests"
-
-    # Add more test jobs as needed, such as integration tests, end-to-end tests, etc.
+          make install-dev
+      - name: Run linters
+        run: |
+          make test

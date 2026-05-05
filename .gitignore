@@ -54,3 +54,7 @@ megalinter-reports/
 .idea
 .DS_Store
 *.log
+
+# Poetry Build Artifacts
+dist/
+build/

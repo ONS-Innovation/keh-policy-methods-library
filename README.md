@@ -1,61 +1,30 @@
-# KEH Template Repository
+# KEH Policy Methods Library
 
-This repository is a template for all new Knowledge Exchange Hub (KEH) repositories. It contains the basic structure and files that are common to all KEH repositories, such as CODEOWNERS, sample GitHub Actions workflows, and a README template.
-
-## Usage
-
-### Creating a New Repository
-
-To use this template when creating a new repository, simply select "Use this template" on GitHub and follow the prompts to create your new repository based on this template. This will ensure that your new repository has the necessary structure and files to maintain consistency across all KEH repositories.
-
-### Further Setup
-
-Since this repository is intended for all KEH repositories, it needs some additional setup once you have created your new repository. The steps below outline the necessary customisation and setup:
-
-1. **Update the README**: Replace the content of the README with information relevant to your project. This should use the template below as a starting point.
-2. **Update CODEOWNERS**: Modify the CODEOWNERS file to chose the appropriate team. The 2 options for KEH are within the file itself.
-3. **Set up GitHub Actions**: This repository has already setup some sample GitHub Actions workflows (i.e. MkDocs related actions and Megalinter). In addition to this, the repository should also have its primary language linter and test workflow set up. Placeholders for these workflows are already in place, so you just need to fill in the details ([ci-fmt](./.github/workflows/ci-fmt.yml), [ci-test](./.github/workflows/ci-test.yml)).
-4. **Setup Repository Settings**: The repository should have the following settings configured:
-   1. **Contributors**:
-      1. Add `keh-dev` to the repository with **Write** access.
-      2. Add `keh-dev-admin` to the repository with **Admin** access.
-   2. **Branch Protection Rules**:
-      1. Within `Rules > Rulesets`, create a new _branch ruleset_ for the `main` branch.
-      2. Add the following rules to the ruleset:
-         1. Add `keh-dev-admin` to the Bypass List. This is for emergency situations where you need to bypass branch protection rules.
-         2. Target the Default Branch (`main`).
-         3. Restrict deletions.
-         4. Require a pull request before merging. This should require **at least 2 approving reviews**.
-         5. Block force pushes.
-      3. Save the ruleset.
-5. **Setup Repository for Project Use**: Now that the housekeeping is done, you can set up the repository for project use.
-
-#### Python Specific Setup
-
-When using Python, Poetry has already been setup for dependency management since it is used for documentation.
-
-Ensure that you update the `pyproject.toml` file to match the needs of your project.
-
-## README Template
-
-The below is a template for the README file that should be used for all KEH repositories. This template provides a basic structure and can be customised to fit the specific needs of your project.
-
-Everything above this line should be removed when customising the README for your project.
-
----
-
-# Project Name <!-- markdownlint-disable-line MD025 -->
-
-<!-- A brief description of the project goes here. -->
+The Policy Methods Library is a collection of functions to encapsulate the business logic when it comes checking policy adherence to the GitHub Usage Policy within ONS.
 
 ## Table of Contents
 
-<!-- A table of contents for the README goes here. -->
-<!-- This can be automatically generated using a tool like the Markdown All in One extension for Visual Studio Code. -->
+- [KEH Policy Methods Library](#keh-policy-methods-library)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Makefile](#makefile)
+  - [Running the Project](#running-the-project)
+  - [Deployment](#deployment)
+  - [Documentation](#documentation)
+    - [GitHub Actions for Documentation](#github-actions-for-documentation)
+    - [Local Development of Documentation](#local-development-of-documentation)
+  - [Linting and Testing](#linting-and-testing)
+    - [GitHub Actions](#github-actions)
+    - [Running Tests and Linters Locally](#running-tests-and-linters-locally)
+      - [Primary Language](#primary-language)
+      - [MegaLinter](#megalinter)
+      - [Documentation linting and building](#documentation-linting-and-building)
 
 ## Prerequisites
 
-<!-- A list of prerequisites for the project goes here. -->
+- Python 3.12 or higher
+- Poetry for dependency management
+- Node.js and npm for documentation linting (Markdownlint)
 
 ## Makefile
 
@@ -63,7 +32,7 @@ This project uses a Makefile to simplify common tasks.
 To see the available commands, run:
 
 ```bash
-make all
+make help
 ```
 
 ## Running the Project
@@ -72,17 +41,22 @@ make all
 
 ## Deployment
 
-### Deployments with Concourse
+The package can be deployed to GitHub Releases using the GitHub Actions workflow defined in `.github/workflows/publish-release.yml`.
 
-<!-- Instructions for deploying the project using Concourse go here. This can be copied from other KEH repositories. -->
+This workflow is triggered on pushes to tags matching the pattern "v\*". The tag must follow the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.) for the workflow to run successfully.
 
-### Manual Deployment
+To create a new release, you can use the following command to create a new tag and push it to the repository:
 
-<!-- Instructions for manually deploying the project go here. This can be copied from other KEH repositories. -->
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+This will tag the current commit with the version "v0.1.0" and push the tag to the remote repository, which will trigger the GitHub Actions workflow to build and publish the package to GitHub Releases.
+
+**Note:** Is is important that GitHub Releases are _only_ created via the GitHub Actions workflow, and not manually via the GitHub UI. This is because the workflow ensures that the package is built and published correctly.
 
 ## Documentation
-
-<!-- Add any additional information if needed -->
 
 This repository uses [MkDocs](https://www.mkdocs.org/) for documentation. The documentation source files are located in the `docs` directory.
 
@@ -96,16 +70,23 @@ This workflow is located at `.github/workflows/ci-docs.yml`.
 
 To run the documentation locally:
 
-1. Install the dependencies for MkDocs.
+1. Create a Python virtual environment and activate it.
 
    ```bash
-   poetry install --only docs
+   python -m venv venv
+   source venv/bin/activate
    ```
 
-2. Run the MkDocs development server.
+2. Install the dependencies for MkDocs.
 
    ```bash
-   poetry run mkdocs serve
+   make docs-install
+   ```
+
+3. Run the MkDocs development server.
+
+   ```bash
+   make docs-serve
    ```
 
 ## Linting and Testing
@@ -124,7 +105,23 @@ This repository has GitHub Actions workflows set up for linting and testing. The
 
 #### Primary Language
 
-<!-- Instructions for running the primary language linter and tests locally go here. This will depend on the primary language of the project. -->
+To run the linters and formatters for the primary language (Python) locally, you can use the following command:
+
+```bash
+make lint
+```
+
+To apply automatic fixes for any linting or formatting issues found, you can use:
+
+```bash
+make fmt
+```
+
+To run the tests locally, you can use:
+
+```bash
+make test-unit
+```
 
 #### MegaLinter
 
@@ -134,38 +131,29 @@ We use this so that all additional assets in the repository (e.g. YAML files, Ma
 To run MegaLinter locally, you can use the following command:
 
 ```bash
-docker run --platform linux/amd64 --rm \
-    -v /var/run/docker.sock:/var/run/docker.sock:rw \
-    -v $(shell pwd):/tmp/lint:rw \
-    oxsecurity/megalinter:v8
+make megalinter
 ```
 
 #### Documentation linting and building
 
 This repository uses Markdownlint for linting the documentation. To run Markdownlint locally, you can use the following:
 
-1. Install the dependencies for Markdownlint.
+```bash
+make docs-lint
+```
 
-   ```bash
-   npm install -g markdownlint-cli
-   ```
+**Note:** This will install `markdownlint-cli` globally via npm if it is not already installed.
 
-2. Run Markdownlint.
+To apply automatic fixes for any linting issues found by Markdownlint, you can use:
 
-   ```bash
-   markdownlint .
-   ```
-
-   _(Optional) Add the `--fix` flag to automatically fix any linting issues that can be fixed._
-
-   ```bash
-   markdownlint . --fix
-   ```
+```bash
+make docs-fix
+```
 
 To test that the documentation builds correctly, you can use the following command:
 
 ```bash
-poetry run mkdocs build
+make docs-build
 ```
 
 **Note:** This depends on MkDocs being set up for the repository. Instructions for setting up MkDocs can be found in the [Documentation](#documentation) section of this README.
