@@ -16,7 +16,7 @@ from policy_methods_library.github.clients import GitHubRestClient
 @pytest.fixture
 def client():
     """Return a GitHubRestClient initialised with a pre-generated access token."""
-    return GitHubRestClient(access_token="ghs_test_token")
+    return GitHubRestClient(owner="my-org", access_token="ghs_test_token")
 
 
 # ---------------------------------------------------------------------------
@@ -27,8 +27,9 @@ def client():
 class TestGitHubRestClientInit:
     def test_initialises_with_access_token(self):
         """Providing a pre-generated access_token should store it directly without any API calls."""
-        client = GitHubRestClient(access_token="ghs_direct")
+        client = GitHubRestClient(owner="my-org", access_token="ghs_direct")
         assert client.access_token == "ghs_direct"
+        assert client.owner == "my-org"
 
     def test_initialises_with_app_credentials(self, rsa_private_key):
         """Providing app_id, private_key, and organisation should fetch and store an access token."""
@@ -51,37 +52,39 @@ class TestGitHubRestClientInit:
             ),
         ):
             client = GitHubRestClient(
+                owner="my-org",
                 app_id="123",
                 private_key=rsa_private_key,
-                organisation="my-org",
             )
 
         assert client.access_token == "ghs_from_app"
+        assert client.owner == "my-org"
 
     def test_raises_when_no_credentials_provided(self):
-        """Constructing a client with no arguments should raise a ValueError."""
+        """Constructing a client with owner but no credentials should raise a ValueError."""
         with pytest.raises(ValueError, match="You must provide either an access_token"):
-            GitHubRestClient()
+            GitHubRestClient(owner="my-org")
 
     def test_raises_when_only_app_id_provided(self):
-        """Providing only app_id without private_key or organisation should raise a ValueError."""
+        """Providing only app_id without private_key should raise a ValueError."""
         with pytest.raises(ValueError, match="You must provide either an access_token"):
-            GitHubRestClient(app_id="123")
+            GitHubRestClient(owner="my-org", app_id="123")
 
-    def test_raises_when_app_id_and_key_but_no_org(self):
-        """Providing app_id and private_key without organisation should raise a ValueError."""
+    def test_raises_when_app_id_and_key_but_empty_owner(self):
+        """Providing app_id and private_key with an empty owner should raise a ValueError."""
         with pytest.raises(ValueError, match="You must provide either an access_token"):
-            GitHubRestClient(app_id="123", private_key="key")
+            GitHubRestClient(owner="", app_id="123", private_key="key")
 
     def test_access_token_takes_precedence_over_app_credentials(self):
         """If access_token is provided, app credentials should be ignored."""
         client = GitHubRestClient(
+            owner="my-org",
             access_token="ghs_direct",
             app_id="123",
             private_key="key",
-            organisation="org",
         )
         assert client.access_token == "ghs_direct"
+        assert client.owner == "my-org"
 
 
 # ---------------------------------------------------------------------------

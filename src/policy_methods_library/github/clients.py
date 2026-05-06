@@ -13,17 +13,17 @@ class GitHubRestClient:
 
     def __init__(
         self,
+        owner: str,
         app_id: Optional[str] = None,
         private_key: Optional[str] = None,
-        organisation: Optional[str] = None,
         access_token: Optional[str] = None,
     ):
         """Initialises the GitHubRestClient with credentials or a direct access token.
 
         Args:
+            owner (str): The account to authenticate for (i.e. the organisation a GitHub App is installed in, or the account the access_token is for).
             app_id (str, optional): The GitHub App's identifier.
             private_key (str, optional): The GitHub App's private key in PEM format.
-            organisation (str, optional): The name of the GitHub organization.
             access_token (str, optional): A pre-generated GitHub access token.
 
         Raises:
@@ -31,11 +31,13 @@ class GitHubRestClient:
         """
         if access_token:
             self.access_token = access_token
-        elif app_id and private_key and organisation:
-            self.access_token = get_access_token(app_id, private_key, organisation)
+            self.owner = owner
+        elif app_id and private_key and owner:
+            self.access_token = get_access_token(app_id, private_key, owner)
+            self.owner = owner
         else:
             raise ValueError(
-                "You must provide either an access_token or all of app_id, private_key, and organisation."
+                "You must provide either an access_token and the owner or an app_id, private_key, and the owner."
             )
 
     def make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
