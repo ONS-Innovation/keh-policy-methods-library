@@ -29,8 +29,8 @@ All checks within the checks module follow a consistent structure. This includes
 
 - A primary, public function that serves as the entry point for the check. This function will always be named `check_<check_name>`, where `<check_name>` is a descriptive name for the check being performed.
 - Each check will allow either:
-    - A GitHub Client instance to be passed in alongside any necessary parameters for the check. This allows the check to make API calls as needed to perform its function.
-    - Or, a data object containing all necessary information for the check to be performed without making any API calls. This allows tools using the package to save performance if the data needed for the check has already been retrieved via previous API calls.
+  - A GitHub Client instance to be passed in alongside any necessary parameters for the check. This allows the check to make API calls as needed to perform its function.
+  - Or, a data object containing all necessary information for the check to be performed without making any API calls. This allows tools using the package to save performance if the data needed for the check has already been retrieved via previous API calls.
 - Checks will return a standardised result object containing the outcome of the check:
 
     ```json
