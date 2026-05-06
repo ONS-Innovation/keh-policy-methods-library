@@ -13,8 +13,11 @@ nav:
       - Clients: github/clients.md
   - Checks:
       - Overview: checks/overview.md
+<<<<<<< KEH-2232-naming-convention
       - Naming Convention: checks/naming_convention.md
       - Inactivity: checks/inactivity.md
+=======
+>>>>>>> main
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
 theme:
