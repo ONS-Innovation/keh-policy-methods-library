@@ -4,12 +4,11 @@ The naming convention check ensures that GitHub repositories adhere to ONS' nami
 
 ## GitHub Usage Policy Origin
 
-Inspired by the GitHub Usage Policy, clause 5.3.2, which recommends:
+Inspired by the GitHub Usage Policy, clause 5.3.2, in summary:
 
-> Repository names should adhere to naming conventions.
-> - Avoid Special Characters
-> - Avoid Spaces (use hyphens or underscores instead)
-> - Use Lowercase Letters
+- Avoid Special Characters
+- Avoid Spaces (use hyphens or underscores instead)
+- Use Lowercase Letters
 
 ## Check Criteria
 
