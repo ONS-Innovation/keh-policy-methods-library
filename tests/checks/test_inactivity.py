@@ -23,6 +23,16 @@ class TestCheckInactivityWithData:
             "details": {"data": {"name": "my-repo"}},
         }
 
+    def test_error_when_updated_at_is_not_a_string(self):
+        """A non-string 'updated_at' value should return a type error result."""
+        result = check_inactivity(data={"updated_at": 123})
+
+        assert result == {
+            "result": "error",
+            "message": "Invalid type for 'updated_at'. Expected ISO 8601 string.",
+            "details": {"updated_at": 123},
+        }
+
     def test_error_when_updated_at_has_invalid_format(self):
         """An 'updated_at' value that is not ISO 8601 should return an error result."""
         result = check_inactivity(data={"updated_at": "not-a-date"})
@@ -135,6 +145,23 @@ class TestCheckInactivityWithClient:
 
         assert result["result"] == "error"
         assert "updated_at" in result["message"]
+
+    def test_error_when_response_updated_at_is_not_a_string(self):
+        """A non-string 'updated_at' in the API response should return a type error result."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        response = MagicMock()
+        response.json.return_value = {"updated_at": 123}
+        client.make_request.return_value = response
+
+        result = check_inactivity(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "error",
+            "message": "Invalid type for 'updated_at'. Expected ISO 8601 string.",
+            "details": {"updated_at": 123},
+        }
 
     def test_passes_for_recently_updated_repo_via_client(self):
         """A valid API response with a recent updated_at date should pass."""

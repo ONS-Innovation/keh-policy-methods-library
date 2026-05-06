@@ -66,6 +66,13 @@ def check_inactivity(
                 "details": {},
             }
 
+    if not isinstance(last_updated, str):
+        return {
+            "result": "error",
+            "message": "Invalid type for 'updated_at'. Expected ISO 8601 string.",
+            "details": {"updated_at": last_updated},
+        }
+
     try:
         last_updated_date = datetime.strptime(last_updated, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError:
@@ -75,7 +82,7 @@ def check_inactivity(
             "details": {"updated_at": last_updated},
         }
 
-    one_year_ago = datetime.utcnow() - timedelta(days=365)
+    one_year_ago = datetime.now() - timedelta(days=365)
 
     if last_updated_date < one_year_ago:
         return {
