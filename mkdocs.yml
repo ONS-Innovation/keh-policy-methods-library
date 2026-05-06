@@ -13,6 +13,7 @@ nav:
       - Clients: github/clients.md
   - Checks:
       - Overview: checks/overview.md
+      - Naming Convention: checks/naming_convention.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
 theme:
