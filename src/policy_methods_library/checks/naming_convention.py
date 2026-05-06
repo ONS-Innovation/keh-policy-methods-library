@@ -1,8 +1,5 @@
 """This module contains a check for repository naming conventions."""
 
-from policy_methods_library.github.clients import GitHubRestClient
-from typing import Optional
-
 
 def check_naming_convention(
     repository_name: str,
