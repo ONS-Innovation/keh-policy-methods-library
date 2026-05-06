@@ -67,7 +67,11 @@ app_id = "your_app_id"
 private_key = "your_private_key"
 github_organisation = "your_github_organisation"
 
-client = GitHubRestClient(app_id, private_key, github_organisation)
+client = GitHubRestClient(
+    owner=github_organisation,
+    app_id=app_id,
+    private_key=private_key,
+)
 
 # Run Check with Data Retrieval
 
