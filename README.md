@@ -53,15 +53,11 @@ Then, in your Python code, you can import the relevant modules and functions:
 ```python
 from policy_methods_library.github.clients import GitHubRestClient
 
-<<<<<<< KEH-2232-naming-convention
 client = GitHubRestClient(
     owner=github_organisation,
     app_id=app_id,
     private_key=private_key,
 )
-=======
-client = GitHubRestClient(app_id, private_key, github_organisation)
->>>>>>> main
 ```
 
 Detailed examples of the functionality provided by the package can be found in the documentation, which is available in the `docs` directory and deployed to GitHub Pages.
