@@ -28,7 +28,9 @@ def check_inactivity(
                 "message": "Data must include 'updated_at' field.",
                 "details": {"data": data},
             }
-        last_updated = data["updated_at"]
+
+        last_updated = data.get("updated_at")
+
     else:
         if client is None:
             return {
@@ -47,12 +49,15 @@ def check_inactivity(
             response = client.make_request(
                 "GET", f"/repos/{client.owner}/{repository_name}"
             )
-            last_updated = response.get("updated_at")
+
+            repository_info = response.json()
+            last_updated = repository_info.get("updated_at")
+
             if last_updated is None:
                 return {
                     "result": "error",
                     "message": "API response does not contain 'updated_at' field.",
-                    "details": {"response": response.json()},
+                    "details": {"response": repository_info},
                 }
         except Exception as e:
             return {

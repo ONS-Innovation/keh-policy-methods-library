@@ -128,7 +128,7 @@ class TestCheckInactivityWithClient:
         client.owner = "my-org"
 
         response = MagicMock()
-        response.get.return_value = None
+        response.json.return_value = {"name": "my-repo"}
         client.make_request.return_value = response
 
         result = check_inactivity(client=client, repository_name="my-repo")
@@ -146,7 +146,7 @@ class TestCheckInactivityWithClient:
         )
 
         response = MagicMock()
-        response.get.return_value = recent_date
+        response.json.return_value = {"updated_at": recent_date}
         client.make_request.return_value = response
 
         result = check_inactivity(client=client, repository_name="my-repo")
@@ -164,7 +164,7 @@ class TestCheckInactivityWithClient:
         )
 
         response = MagicMock()
-        response.get.return_value = old_date
+        response.json.return_value = {"updated_at": old_date}
         client.make_request.return_value = response
 
         result = check_inactivity(client=client, repository_name="my-repo")
