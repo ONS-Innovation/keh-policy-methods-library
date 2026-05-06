@@ -24,9 +24,26 @@ Inspired by the GitHub Usage Policy, clause 5.3.2, which recommends:
 ## Usage Example
 
 ```python
+from policy_methods_library.checks.naming_convention import check_naming_convention
 
+repository_name = "example-repository"
+
+result = check_naming_convention(repository_name)
+
+status = result.get("status")
+message = result.get("message")
+
+match status:
+    case "pass":
+        print(f"Check Passed: {message}")
+    case "fail":
+        print(f"Check Failed: {message}")
+    case "error":
+        print(f"Check Error: {message}")
+    case _:
+        print("Unexpected status returned.")
 ```
 
 ## GitHub Integration Used
 
-
+This check does not directly integrate with GitHub APIs.
