@@ -8,7 +8,8 @@ The Policy Methods Library is a collection of functions to encapsulate the busin
   - [Table of Contents](#table-of-contents)
   - [Prerequisites](#prerequisites)
   - [Makefile](#makefile)
-  - [Running the Project](#running-the-project)
+  - [Using the Package](#using-the-package)
+  - [Package Structure](#package-structure)
   - [Deployment](#deployment)
   - [Documentation](#documentation)
     - [GitHub Actions for Documentation](#github-actions-for-documentation)
@@ -35,9 +36,46 @@ To see the available commands, run:
 make help
 ```
 
-## Running the Project
+## Using the Package
 
-<!-- Instructions for running the project go here. This can include commands to start the project, as well as any necessary configuration steps. -->
+To use the package, you can install it using your preferred method (e.g. pip, Poetry, etc.) and then import the relevant modules and functions in your code.
+
+```bash
+# Using pip
+pip install git+https://github.com/ONS-Innovation/keh-policy-methods-library@<version>
+
+# or using Poetry
+poetry add git+https://github.com/ONS-Innovation/keh-policy-methods-library@<version>
+```
+
+Then, in your Python code, you can import the relevant modules and functions:
+
+```python
+from policy_methods_library.github.clients import GitHubRestClient
+
+client = GitHubRestClient(app_id, private_key, github_organisation)
+```
+
+Detailed examples of the functionality provided by the package can be found in the documentation, which is available in the `docs` directory and deployed to GitHub Pages.
+
+## Package Structure
+
+```bash
+src/
+└── policy_methods_library/
+   ├── checks/                # Core business logic for checking policy adherence.
+   │   ├── __init__.py
+   │   └── ...                # files for each specific check
+   │
+   ├── github/                # GitHub API integrations.
+   │   ├── __init__.py
+   │   ├── auth.py            # Functions to handle authentication with the GitHub API.
+   │   └── clients.py         # Client for making REST API calls to GitHub.
+   │
+   └── __init__.py            # Init file for the package.
+```
+
+Further documentation can be found within the `docs` directory.
 
 ## Deployment
 
