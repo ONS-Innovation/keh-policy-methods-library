@@ -37,7 +37,8 @@ The function must meet the following criteria:
   - `message`: A string providing additional information about the result of the check, such as details on why the check passed or failed, or any error messages if applicable.
   - `details`: A dictionary containing any additional data. This should be left as an empty dictionary if there are no additional details to provide.
 
-        > **Note:** It is very important that the contents of `details` is documented clearly so users of the check understand what data they can expect to receive in this field.
+    > **Note:** It is very important that the contents of `details` is documented clearly so users of the check understand what data they can expect to receive in this field.
+
 - Any helper functions or classes that are necessary for the implementation of the check should be defined within the same file, to keep all relevant code for the check in one place.
     Prefix these helper functions with an underscore to indicate that they are intended for internal use within the check implementation.
 
