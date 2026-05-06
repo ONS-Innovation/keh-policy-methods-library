@@ -14,6 +14,7 @@ nav:
   - Checks:
       - Overview: checks/overview.md
       - Naming Convention: checks/naming_convention.md
+      - Inactivity: checks/inactivity.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
 theme:
