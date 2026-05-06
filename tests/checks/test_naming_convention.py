@@ -40,7 +40,10 @@ class TestCheckNamingConvention:
         result = check_naming_convention(client=client, repository_name="my-repo")
 
         assert result["result"] == "error"
-        assert result["message"] == "An error occurred while fetching repository data: network issue"
+        assert (
+            result["message"]
+            == "An error occurred while fetching repository data: network issue"
+        )
         assert result["data"] is None
 
     def test_returns_error_for_non_200_response(self):
