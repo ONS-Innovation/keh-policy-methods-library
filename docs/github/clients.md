@@ -38,7 +38,11 @@ print(repos)
 
 from policy_methods_library.github.clients import GitHubRestClient
 
-client = GitHubRestClient(app_id, private_key, github_organisation) # Auth logic encapsulated within the client
+client = GitHubRestClient(
+    owner=github_organisation,
+    app_id=app_id,
+    private_key=private_key,
+) # Auth logic encapsulated within the client
 
 response = client.make_request("GET", "/orgs/your_github_organisation/repos")
 
