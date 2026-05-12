@@ -31,3 +31,5 @@ client = GitHubRestClient(
 
 # response = client.make_request("GET", f"/orgs/{client.owner}/repos")
 # pprint(response.json())
+
+## Reminder: Do not commit any changes to this file, as it is for manual testing purposes only.
