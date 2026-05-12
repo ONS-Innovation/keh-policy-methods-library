@@ -25,7 +25,7 @@ def check_repository_access(
             "message": "GitHubRestClient instance is required.",
             "details": {},
         }
-    if repository_name is None:
+    if not repository_name:
         return {
             "result": "error",
             "message": "Repository name is required.",
@@ -40,6 +40,14 @@ def check_repository_access(
 
         collaborators = response.json()
 
+        # Verify that the API response contains a list of collaborators
+        if not isinstance(collaborators, list):
+            return {
+                "result": "error",
+                "message": "API response does not contain a list of collaborators.",
+                "details": {"response": collaborators},
+            }
+
         individual_collaborators = [
             {
                 "login": collaborator.get("login"),
@@ -53,13 +61,19 @@ def check_repository_access(
             return {
                 "result": "fail",
                 "message": f"Repository '{repository_name}' has individual users with access. It is recommended to use teams for access management.",
-                "details": {"individual_collaborators": individual_collaborators},
+                "details": {
+                    "repository_name": repository_name,
+                    "individual_collaborators": individual_collaborators,
+                },
             }
         else:
             return {
                 "result": "pass",
                 "message": f"Repository '{repository_name}' does not have any individual users with access.",
-                "details": {},
+                "details": {
+                    "repository_name": repository_name,
+                    "individual_collaborators": individual_collaborators,
+                },
             }
 
     except Exception as e:
