@@ -19,7 +19,7 @@ from pprint import pprint  # noqa: F401 - Unused import, but useful to keep for 
 
 client_id = getenv("GITHUB_CLIENT_ID")
 private_key = getenv("GITHUB_PRIVATE_KEY")
-organisation = getenv("GITHUB_ORGANISATION")
+organisation = str(getenv("GITHUB_ORGANISATION"))
 
 client = GitHubRestClient(
     owner=organisation,
