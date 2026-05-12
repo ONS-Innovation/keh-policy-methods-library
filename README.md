@@ -80,6 +80,8 @@ pip install .
 
 Whenever you make changes to the package, you will need to reinstall it for the changes to be reflected in the `manual_testing.py` file.
 
+Further instructions for developers, including how to add new checks, can be found in the documentation under the "Dev Guides" section.
+
 ## Package Structure
 
 ```bash
