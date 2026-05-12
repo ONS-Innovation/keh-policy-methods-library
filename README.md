@@ -9,6 +9,8 @@ The Policy Methods Library is a collection of functions to encapsulate the busin
   - [Prerequisites](#prerequisites)
   - [Makefile](#makefile)
   - [Using the Package](#using-the-package)
+    - [End User Instructions](#end-user-instructions)
+    - [Developer Instructions](#developer-instructions)
   - [Package Structure](#package-structure)
   - [Deployment](#deployment)
   - [Documentation](#documentation)
@@ -38,6 +40,8 @@ make help
 
 ## Using the Package
 
+### End User Instructions
+
 To use the package, you can install it using your preferred method (e.g. pip, Poetry, etc.) and then import the relevant modules and functions in your code.
 
 ```bash
@@ -61,6 +65,20 @@ client = GitHubRestClient(
 ```
 
 Detailed examples of the functionality provided by the package can be found in the documentation, which is available in the `docs` directory and deployed to GitHub Pages.
+
+### Developer Instructions
+
+When developing the package, you can use the `tests/manual_testing.py` file for manual testing of the package during development. This file has a GitHub Client instance already setup which can be used to test the checks in the `policy_methods_library`.
+
+To use the latest version of the package in the `manual_testing.py` file, you can install the package into your virtual environment:
+
+```bash
+pip install .
+```
+
+**Note:** This should be done from the root directory of the repository, and you should have your virtual environment activated.
+
+Whenever you make changes to the package, you will need to reinstall it for the changes to be reflected in the `manual_testing.py` file.
 
 ## Package Structure
 
