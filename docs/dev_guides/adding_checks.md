@@ -33,7 +33,7 @@ The function must meet the following criteria:
     It can help if the check name is the same as the file name (without the `.py` extension) to maintain consistency and clarity.
 - The check should allow for both direct data input and data retrieval from an API, to provide flexibility in how the check can be used.
 - The function should return a dictionary containing the following keys:
-  - `status`: A string indicating the result of the check, which can be "pass", "fail", or "error".
+  - `result`: A string indicating the result of the check, which can be "pass", "fail", or "error".
   - `message`: A string providing additional information about the result of the check, such as details on why the check passed or failed, or any error messages if applicable.
   - `details`: A dictionary containing any additional data. This should be left as an empty dictionary if there are no additional details to provide.
 

@@ -45,7 +45,7 @@ class TestCheckNamingConvention:
 
         assert result == {
             "result": "fail",
-            "message": "Repository name should not contain special characters.",
+            "message": "Repository name should only contain letters, numbers, hyphens, and underscores.",
             "details": {"repository_name": "my_repo!"},
         }
 

@@ -2,7 +2,7 @@
 
 from policy_methods_library.github.clients import GitHubRestClient
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def check_inactivity(
@@ -18,7 +18,7 @@ def check_inactivity(
         data: A dictionary containing data about the repository. This must contain the 'updated_at' field with the last update timestamp. If provided, client and repository_name are ignored. Defaults to None.
 
     Returns:
-        A dictionary with the result of the check, including 'result' (pass/fail), 'message', and 'details'.
+        A dictionary with the result of the check, including 'result' (pass/fail/error), 'message', and 'details'.
     """
 
     if data is not None:
@@ -74,7 +74,9 @@ def check_inactivity(
         }
 
     try:
-        last_updated_date = datetime.strptime(last_updated, "%Y-%m-%dT%H:%M:%SZ")
+        last_updated_date = datetime.strptime(
+            last_updated, "%Y-%m-%dT%H:%M:%SZ"
+        ).replace(tzinfo=timezone.utc)
     except ValueError:
         return {
             "result": "error",
@@ -82,7 +84,7 @@ def check_inactivity(
             "details": {"updated_at": last_updated},
         }
 
-    one_year_ago = datetime.now() - timedelta(days=365)
+    one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
 
     if last_updated_date < one_year_ago:
         return {

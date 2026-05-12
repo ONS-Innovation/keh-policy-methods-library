@@ -27,8 +27,11 @@ class GitHubRestClient:
             access_token (str, optional): A pre-generated GitHub access token.
 
         Raises:
-            ValueError: If neither access_token nor all of app_id, private_key, and organisation are provided.
+            ValueError: If neither a valid access token nor app credentials are provided.
         """
+        if not owner:
+            raise ValueError("Owner is required to authenticate with GitHub.")
+
         if access_token:
             self.access_token = access_token
             self.owner = owner

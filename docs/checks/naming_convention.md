@@ -18,7 +18,7 @@ Inspired by the GitHub Usage Policy, clause 5.3.2, in summary:
 
 ## Reference
 
-:::src.policy_methods_library.checks.naming_convention.check_naming_convention
+::: src.policy_methods_library.checks.naming_convention.check_naming_convention
 
 ## Usage Example
 
@@ -27,12 +27,12 @@ from policy_methods_library.checks.naming_convention import check_naming_convent
 
 repository_name = "example-repository"
 
-result = check_naming_convention(repository_name)
+response = check_naming_convention(repository_name)
 
-status = result.get("status")
-message = result.get("message")
+result = response.get("result")
+message = response.get("message")
 
-match status:
+match result:
     case "pass":
         print(f"Check Passed: {message}")
     case "fail":
@@ -40,7 +40,7 @@ match status:
     case "error":
         print(f"Check Error: {message}")
     case _:
-        print("Unexpected status returned.")
+        print("Unexpected result returned.")
 ```
 
 ## GitHub Integration Used

@@ -18,7 +18,7 @@ Inspired by the GitHub Usage Policy, clause 5.3.9, in summary:
 
 ## Reference
 
-:::src.policy_methods_library.checks.inactivity.check_inactivity
+::: src.policy_methods_library.checks.inactivity.check_inactivity
 
 ## Usage Example
 
@@ -35,14 +35,14 @@ data = {
 
 # Run Check with Data Passed Directly
 
-result = check_inactivity(data)
+response = check_inactivity(data=data)
 
-# Process Result
+# Process response
 
-status = result.get("status")
-message = result.get("message")
+result = response.get("result")
+message = response.get("message")
 
-match status:
+match result:
     case "pass":
         print(f"Check Passed: {message}")
     case "fail":
@@ -50,7 +50,7 @@ match status:
     case "error":
         print(f"Check Error: {message}")
     case _:
-        print("Unexpected status returned.")
+        print("Unexpected result returned.")
 ```
 
 ### With Data Retrieval
@@ -75,14 +75,14 @@ client = GitHubRestClient(
 
 # Run Check with Data Retrieval
 
-result = check_inactivity(client=client, repository_name="your_repository_name")
+response = check_inactivity(client=client, repository_name="your_repository_name")
 
-# Process Result
+# Process response
 
-status = result.get("status")
-message = result.get("message")
+result = response.get("result")
+message = response.get("message")
 
-match status:
+match result:
     case "pass":
         print(f"Check Passed: {message}")
     case "fail":
@@ -90,7 +90,7 @@ match status:
     case "error":
         print(f"Check Error: {message}")
     case _:
-        print("Unexpected status returned.")
+        print("Unexpected result returned.")
 ```
 
 ## GitHub Integration Used

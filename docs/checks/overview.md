@@ -8,6 +8,7 @@ Documentation on each component within the checks module can be found in the rel
 ## Checks Module Contents
 
 - `naming_convention.py`: Contains methods for checking that repository names adhere to ONS' naming conventions.
+- `inactivity.py`: Contains methods for checking the inactivity of repositories (i.e. not updated in the last year).
 
 ## Importing the Checks Module
 
@@ -20,7 +21,7 @@ from policy_methods_library.checks.<submodule> import <component>
 For example, to import the method for checking repository naming conventions:
 
 ```python
-from policy_methods_library.checks.naming_convention import check_repository_naming_convention
+from policy_methods_library.checks.naming_convention import check_naming_convention
 ```
 
 ## Check Structure
