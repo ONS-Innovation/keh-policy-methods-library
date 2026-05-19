@@ -9,6 +9,7 @@ Documentation on each component within the checks module can be found in the rel
 
 - `naming_convention.py`: Contains methods for checking that repository names adhere to ONS' naming conventions.
 - `inactivity.py`: Contains methods for checking the inactivity of repositories (i.e. not updated in the last year).
+- `read_me.py`: Contains methods for checking whether a repository includes a `readme.md` file.
 
 ## Importing the Checks Module
 
@@ -34,17 +35,17 @@ All checks within the checks module follow a consistent structure. This includes
   - Or, a data object containing all necessary information for the check to be performed without making any API calls. This allows tools using the package to save performance if the data needed for the check has already been retrieved via previous API calls.
 - Checks will return a standardised result object containing the outcome of the check:
 
-    ```json
-    {
-        "result": "pass" | "fail" | "error",
-        "message": "A descriptive message providing details about the check result.",
-        "details": {
-            // Any additional details relevant to the check result, such as specific findings or data points.
-        }
-    }
-    ```
+  ```json
+  {
+      "result": "pass" | "fail" | "error",
+      "message": "A descriptive message providing details about the check result.",
+      "details": {
+          // Any additional details relevant to the check result, such as specific findings or data points.
+      }
+  }
+  ```
 
-    It is then up to the calling code to determine how to handle the result of the check, for example by logging the result, raising an exception, or taking some other action based on the outcome.
+  It is then up to the calling code to determine how to handle the result of the check, for example by logging the result, raising an exception, or taking some other action based on the outcome.
 
 For further details on checks, including specific checks implemented and how to use them, please refer to the individual documentation files for each check within the `docs/checks` directory.
 
