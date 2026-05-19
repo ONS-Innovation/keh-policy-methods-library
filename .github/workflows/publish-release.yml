@@ -67,6 +67,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.tag.outputs.tag }}
+          IS_PRERELEASE: ${{ steps.tag.outputs.is_prerelease }}
         shell: bash
         run: |
           set -euo pipefail
@@ -85,7 +86,7 @@ jobs:
             fi
           fi
 
-          if [[ "${{ steps.tag.outputs.is_prerelease }}" == "true" ]]; then
+          if [[ "${IS_PRERELEASE}" == "true" ]]; then
             echo "Creating pre-release $TAG"
             gh release create "$TAG" dist/*.whl dist/*.tar.gz \
               --generate-notes \
