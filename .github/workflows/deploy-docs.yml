@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # V4.3.1
         with:
-          persist-credentials: false
+          persist-credentials: true # Persist credentials since git operations are used.
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
