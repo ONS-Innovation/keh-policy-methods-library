@@ -9,6 +9,7 @@ Documentation on each component within the checks module can be found in the rel
 
 - `naming_convention.py`: Contains methods for checking that repository names adhere to ONS' naming conventions.
 - `inactivity.py`: Contains methods for checking the inactivity of repositories (i.e. not updated in the last year).
+- `repository_access.py`: Contains methods for checking that repository access is managed through teams rather than individual users.
 
 ## Importing the Checks Module
 

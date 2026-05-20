@@ -55,10 +55,11 @@ jobs:
       statuses: read
     steps:
       # Git Checkout
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # V4.3.1
         with:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
           # If you use VALIDATE_ALL_CODEBASE = true, you can remove this line to
           # improve performance
@@ -75,7 +76,7 @@ jobs:
 
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/latest/flavors/
-        uses: oxsecurity/megalinter@v9
+        uses: oxsecurity/megalinter@0e3ce9b9c8c10effb9b269509cc47ca17cae31c7 # V9.5.0
         id: ml
 
         # All available variables are described in documentation
@@ -101,7 +102,7 @@ jobs:
 
       # Upload MegaLinter artifacts
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # V4.6.2
         if: success() || failure()
         with:
           name: MegaLinter reports
