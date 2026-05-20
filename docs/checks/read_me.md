@@ -18,12 +18,12 @@ Inspired by the GitHub Usage Policy, clause 5.3.5, in summary:
 
 ## Reference
 
-::: src.policy_methods_library.checks.readme.check_readme
+::: src.policy_methods_library.checks.read_me.check_readme
 
 ## Usage Example
 
 ```python
-from policy_methods_library.checks.readme import check_readme
+from policy_methods_library.checks.read_me import check_readme
 from policy_methods_library.github.clients import GitHubRestClient
 
 # Setup GitHub Client

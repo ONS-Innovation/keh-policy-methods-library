@@ -38,11 +38,7 @@ def check_readme(
         contents = response.json()
 
         readme = next(
-            (
-                item
-                for item in contents
-                if item.get("name", "").lower() == "readme.md"
-            ),
+            (item for item in contents if item.get("name", "").lower() == "readme.md"),
             None,
         )
 
