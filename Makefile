@@ -102,6 +102,6 @@ megalinter: 			## Run the Megalinter.
 	docker run --platform linux/amd64 --rm \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v $(shell pwd):/tmp/lint:rw \
-    oxsecurity/megalinter:v9
+    ghcr.io/oxsecurity/megalinter:v9
 
 ## 
