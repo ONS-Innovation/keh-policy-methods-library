@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from policy_methods_library.checks.read_me import check_readme
+from policy_methods_library.checks.readme import check_readme
 
 
 # ---------------------------------------------------------------------------
