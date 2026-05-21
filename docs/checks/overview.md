@@ -9,7 +9,7 @@ Documentation on each component within the checks module can be found in the rel
 
 - `naming_convention.py`: Contains methods for checking that repository names adhere to ONS' naming conventions.
 - `inactivity.py`: Contains methods for checking the inactivity of repositories (i.e. not updated in the last year).
-- `read_me.py`: Contains methods for checking whether a repository includes a `readme.md` file.
+- `readme.py`: Contains methods for checking whether a repository includes a `readme.md` file.
 
 ## Importing the Checks Module
 
