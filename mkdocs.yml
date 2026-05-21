@@ -7,17 +7,18 @@ nav:
   - Home: index.md
   - Implementation Examples: implementation_examples.md
   - Documentation: documentation.md
-  - GitHub:
+  - GitHub Modules:
       - Overview: github/overview.md
       - Auth: github/auth.md
       - Clients: github/clients.md
-  - Checks:
+  - Policy Checks:
       - Overview: checks/overview.md
       - Naming Convention: checks/naming_convention.md
       - Inactivity: checks/inactivity.md
-      - Readme: checks/readme.md
+      - README: checks/readme.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
+      - Testing New Functionality: dev_guides/testing_new_functionality.md
 theme:
   name: material
   language: en
