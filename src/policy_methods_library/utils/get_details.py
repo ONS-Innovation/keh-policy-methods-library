@@ -1,4 +1,5 @@
 from policy_methods_library.github.clients import GitHubRestClient
+import json
 
 
 def get_repo_details(repository_name: str, github_client: GitHubRestClient) -> dict:
@@ -29,4 +30,9 @@ def get_repo_details(repository_name: str, github_client: GitHubRestClient) -> d
             "details": {"repository_name": repository_name},
         }
 
-    return response
+    elif hasattr(response, "json"):
+        contents = response.json()
+    else:
+        contents = json.loads(str(response))
+
+    return contents

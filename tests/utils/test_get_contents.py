@@ -50,15 +50,7 @@ class TestCheckGetContents:
         """Test get_repo_contents returns correct contents on success."""
         # Mock the GitHub client and its make_request method
         mock_github_client = MagicMock()
-        mock_github_client.make_request.return_value = {
-            "name": "test-repo",
-            "entries": [
-                {"name": "src", "type": "dir"},
-                {"name": "README.md", "type": "file"},
-                {"name": "LICENSE", "type": "file"},
-                {"name": ".pirr.md", "type": "file"},
-            ],
-        }
+        mock_github_client.make_request.return_value = '{"name": "test-repo", "entries": [{"name": "src"}, {"name": "README.md"}, {"name": "LICENSE"}, {"name": "setup.py"}]}'
 
         # Call the get_repo_contents function with the mocked client
 
@@ -72,3 +64,29 @@ class TestCheckGetContents:
         assert contents["name"] == "test-repo"
         assert len(contents["entries"]) == 4
         assert contents["entries"][0]["name"] == "src"
+
+    def test_get_repo_contents_success_with_json_method(self):
+        """Test get_repo_contents uses response.json() when available."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "name": "test-repo",
+            "entries": [
+                {"name": "src"},
+                {"name": "README.md"},
+                {"name": "LICENSE"},
+                {"name": "setup.py"},
+            ],
+        }
+
+        mock_github_client = MagicMock()
+        mock_github_client.make_request.return_value = mock_response
+
+        contents = get_contents.get_repo_contents(
+            github_client=mock_github_client,
+            repository_name="test-repo",
+        )
+
+        assert contents == mock_response.json.return_value
+        assert contents["name"] == "test-repo"
+        assert len(contents["entries"]) == 4
+        assert contents["entries"][1]["name"] == "README.md"

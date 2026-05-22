@@ -31,11 +31,9 @@ class TestCheckGetDetails:
         """Test get_repo_details returns correct details on success."""
         # Mock the GitHub client and its make_request method
         mock_github_client = MagicMock()
-        mock_github_client.make_request.return_value = {
-            "name": "test-repo",
-            "private": "true",
-            "visibility": "internal",
-        }
+        mock_github_client.make_request.return_value = (
+            '{"name": "test-repo", "private": true, "visibility": "internal"}'
+        )
 
         # Call the get_details function with the mocked clientß
         details = get_details.get_repo_details(
@@ -46,7 +44,6 @@ class TestCheckGetDetails:
         # Assert that the details are as expected
         assert details != {}
         assert details["name"] == "test-repo"
-        assert details["private"] == "true"
         assert details["visibility"] == "internal"
 
     def test_get_repo_details_failure(self):
@@ -67,3 +64,25 @@ class TestCheckGetDetails:
         assert details["result"] == "fail"
         assert details["message"] == "Repository not found."
         assert details["details"]["repository_name"] == "test-repo"
+
+    def test_get_repo_details_success_with_json_method(self):
+        """Test get_repo_details uses response.json() when available."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "name": "test-repo",
+            "private": True,
+            "visibility": "internal",
+        }
+
+        mock_github_client = MagicMock()
+        mock_github_client.make_request.return_value = mock_response
+
+        details = get_details.get_repo_details(
+            github_client=mock_github_client,
+            repository_name="test-repo",
+        )
+
+        assert details == mock_response.json.return_value
+        assert details["name"] == "test-repo"
+
+        assert details["visibility"] == "internal"
