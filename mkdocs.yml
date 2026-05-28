@@ -15,6 +15,7 @@ nav:
       - Overview: checks/overview.md
       - Naming Convention: checks/naming_convention.md
       - Inactivity: checks/inactivity.md
+      - Repository Access: checks/repository_access.md
       - Readme: checks/readme.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
