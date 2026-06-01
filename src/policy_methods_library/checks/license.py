@@ -32,7 +32,11 @@ def check_license(
         }
 
     try:
-        is_repo_private = client.make_request("GET", f"/repos/{client.owner}/{repository_name}").json().get("private") 
+        is_repo_private = (
+            client.make_request("GET", f"/repos/{client.owner}/{repository_name}")
+            .json()
+            .get("private")
+        )
         if is_repo_private:
             return {
                 "result": "pass",
@@ -50,10 +54,13 @@ def check_license(
         contents = response.json()
 
         license_file = next(
-            (item for item in contents 
-             if item.get("name", "").lower() == "license" 
-                or item.get("name", "").lower() == "license.md" 
-                or item.get("name", "").lower() == "license.txt"),
+            (
+                item
+                for item in contents
+                if item.get("name", "").lower() == "license"
+                or item.get("name", "").lower() == "license.md"
+                or item.get("name", "").lower() == "license.txt"
+            ),
             None,
         )
 
