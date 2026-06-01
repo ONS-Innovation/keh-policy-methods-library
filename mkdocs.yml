@@ -17,6 +17,7 @@ nav:
       - Inactivity: checks/inactivity.md
       - Repository Access: checks/repository_access.md
       - Readme: checks/readme.md
+      - Gitignore: checks/gitignore.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
       - Testing New Functionality: dev_guides/testing_new_functionality.md
