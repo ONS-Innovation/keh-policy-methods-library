@@ -64,12 +64,12 @@ def check_dependabot(
     if enabled:
         return {
             "result": "pass",
-            "message": "Dependabot automated security fixes are enabled for this repository.",
+            "message": f"Dependabot automated security fixes are enabled for {repository_name} repository.",
             "details": {"enabled": enabled},
         }
     else:
         return {
             "result": "fail",
-            "message": "Dependabot automated security fixes are not enabled for this repository.",
+            "message": f"Dependabot automated security fixes are not enabled for {repository_name} repository.",
             "details": {"enabled": enabled},
         }

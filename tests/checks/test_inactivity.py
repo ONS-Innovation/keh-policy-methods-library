@@ -63,11 +63,9 @@ class TestCheckInactivityWithData:
 
         result = check_inactivity(data={"updated_at": recent_date})
 
-        assert result == {
-            "result": "pass",
-            "message": "Repository has been updated within the last year.",
-            "details": {"last_updated": recent_date},
-        }
+        assert result["result"] == "pass"
+        assert "has been updated within the last year" in result["message"]
+        assert result["details"] == {"last_updated": recent_date}
 
     def test_passes_when_repo_updated_exactly_under_a_year(self):
         """A repository updated exactly 364 days ago should pass."""
@@ -179,6 +177,10 @@ class TestCheckInactivityWithClient:
         result = check_inactivity(client=client, repository_name="my-repo")
 
         assert result["result"] == "pass"
+        assert (
+            "Repository my-repo has been updated within the last year."
+            in result["message"]
+        )
         assert result["details"]["last_updated"] == recent_date
 
     def test_fails_for_inactive_repo_via_client(self):
@@ -197,4 +199,4 @@ class TestCheckInactivityWithClient:
         result = check_inactivity(client=client, repository_name="my-repo")
 
         assert result["result"] == "fail"
-        assert "inactive since" in result["message"]
+        assert "Repository my-repo has been inactive since" in result["message"]

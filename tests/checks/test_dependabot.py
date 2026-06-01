@@ -90,7 +90,7 @@ class TestCheckDependabot:
 
         assert result == {
             "result": "pass",
-            "message": "Dependabot automated security fixes are enabled for this repository.",
+            "message": "Dependabot automated security fixes are enabled for my-repo repository.",
             "details": {"enabled": True},
         }
 
@@ -107,7 +107,7 @@ class TestCheckDependabot:
 
         assert result == {
             "result": "fail",
-            "message": "Dependabot automated security fixes are not enabled for this repository.",
+            "message": "Dependabot automated security fixes are not enabled for my-repo repository.",
             "details": {"enabled": False},
         }
 
