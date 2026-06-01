@@ -73,7 +73,9 @@ def check_security_scanning(
         }
 
     # Extract the status of Push Protection and Secret Scanning
-    push_protection_status = security_analysis.get("secret_scanning_push_protection", {})
+    push_protection_status = security_analysis.get(
+        "secret_scanning_push_protection", {}
+    )
     secret_scanning_status = security_analysis.get("secret_scanning", {})
 
     # Check if both are enabled
