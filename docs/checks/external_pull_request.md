@@ -19,6 +19,9 @@ Inspired by the GitHub Usage Policy, clause 5.5.6, in summary:
 - If one or more pull request authors are not organisation members, the check will fail.
 - If the API requests fail or the response is malformed, the check will return an error status.
 
+> Note: This check does not currently differentiate between internal and external contributors. Any pull request authored by a non-organisation member will be considered an external pull request.
+> Additionally, pull requests raised by bots that are not organisation members will also be flagged as external pull requests, with Dependabot Pull Requests being the only exception.
+
 ## Reference
 
 ::: src.policy_methods_library.checks.external_pull_request.check_external_pull_request
@@ -81,7 +84,7 @@ The check uses these GitHub API endpoints:
 - `GET /orgs/{org}/members/{username}` to verify whether each pull request author is an organisation member.
 
     [GitHub Documentation :link:](https://docs.github.com/en/rest/orgs/members?apiVersion=2026-03-10#check-organization-membership-for-a-user)
-    
+
 ## Details Object
 
 The `details` object returned by this check contains:
