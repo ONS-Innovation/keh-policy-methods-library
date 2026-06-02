@@ -212,8 +212,9 @@ class TestCheckExternalPullRequest:
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         membership_response = MagicMock()
+        membership_response.status_code = 204
 
-        def make_request_side_effect(method: str, endpoint: str):
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
             if endpoint == "/repos/my-org/my-repo/pulls?state=open":
@@ -222,6 +223,7 @@ class TestCheckExternalPullRequest:
                 "/orgs/my-org/members/alice",
                 "/orgs/my-org/members/bob",
             ]:
+                assert kwargs.get("allow_redirects") is False
                 return membership_response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -257,17 +259,20 @@ class TestCheckExternalPullRequest:
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         membership_response = MagicMock()
+        membership_response.status_code = 204
 
-        def make_request_side_effect(method: str, endpoint: str):
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
             if endpoint == "/repos/my-org/my-repo/pulls?state=open":
                 return pulls_response
 
             if endpoint == "/orgs/my-org/members/alice":
+                assert kwargs.get("allow_redirects") is False
                 return membership_response
 
             if endpoint == "/orgs/my-org/members/external-contributor":
+                assert kwargs.get("allow_redirects") is False
                 not_member_response = MagicMock()
                 not_member_response.status_code = 404
                 raise HTTPError("Not Found", response=not_member_response)
@@ -310,13 +315,14 @@ class TestCheckExternalPullRequest:
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        def make_request_side_effect(method: str, endpoint: str):
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
             if endpoint == "/repos/my-org/my-repo/pulls?state=open":
                 return pulls_response
 
             if endpoint == "/orgs/my-org/members/alice":
+                assert kwargs.get("allow_redirects") is False
                 forbidden_response = MagicMock()
                 forbidden_response.status_code = 403
                 raise HTTPError("Forbidden", response=forbidden_response)
@@ -330,6 +336,48 @@ class TestCheckExternalPullRequest:
         assert result == {
             "result": "error",
             "message": "An error occurred while checking pull request authors: Forbidden",
+            "details": {},
+        }
+
+    def test_error_when_membership_check_returns_302(self):
+        """A 302 from membership check should return an error result."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        pulls_response = MagicMock()
+        pulls_response.json.return_value = [
+            {
+                "number": 11,
+                "title": "Refactor check logic",
+                "user": {"login": "alice"},
+            }
+        ]
+
+        org_response = MagicMock()
+        org_response.json.return_value = {"type": "Organization", "login": "my-org"}
+
+        membership_response = MagicMock()
+        membership_response.status_code = 302
+
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
+            if endpoint == "/orgs/my-org":
+                return org_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+                return pulls_response
+
+            if endpoint == "/orgs/my-org/members/alice":
+                assert kwargs.get("allow_redirects") is False
+                return membership_response
+
+            raise AssertionError(f"Unexpected endpoint called: {endpoint}")
+
+        client.make_request.side_effect = make_request_side_effect
+
+        result = check_external_pull_request(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "error",
+            "message": "An error occurred while checking pull request authors: Unexpected membership response status code: 302",
             "details": {},
         }
 

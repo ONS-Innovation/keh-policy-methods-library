@@ -16,16 +16,29 @@ def _is_organisation_member(client: GitHubRestClient, username: str) -> bool:
         True if the user is a member of the organisation; otherwise False.
 
     Raises:
-        HTTPError: Re-raised for non-404 HTTP errors from the membership endpoint.
+        HTTPError: Raised for unexpected status codes from the membership endpoint.
     """
     try:
-        client.make_request("GET", f"/orgs/{client.owner}/members/{username}")
-        return True
+        response = client.make_request(
+            "GET",
+            f"/orgs/{client.owner}/members/{username}",
+            allow_redirects=False,
+        )
     except HTTPError as e:
-        # GitHub returns 404 when the user is not a member.
         if e.response is not None and e.response.status_code == 404:
             return False
         raise
+
+    if response.status_code == 204:
+        return True
+
+    # Any other status means the membership check did not complete in the
+    # expected authenticated context (for example 302 if requester is not an
+    # organisation member).
+    raise HTTPError(
+        f"Unexpected membership response status code: {response.status_code}",
+        response=response,
+    )
 
 
 def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
