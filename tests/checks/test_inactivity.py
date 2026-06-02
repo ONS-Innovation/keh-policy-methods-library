@@ -1,6 +1,6 @@
 """Tests for the inactivity check module."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 
@@ -45,7 +45,7 @@ class TestCheckInactivityWithData:
 
     def test_fails_when_repo_inactive_for_over_a_year(self):
         """A repository last updated more than 365 days ago should fail."""
-        old_date = (datetime.utcnow() - timedelta(days=400)).strftime(
+        old_date = (datetime.now(timezone.utc) - timedelta(days=400)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
@@ -57,7 +57,7 @@ class TestCheckInactivityWithData:
 
     def test_passes_when_repo_updated_within_a_year(self):
         """A repository updated within the last 365 days should pass."""
-        recent_date = (datetime.utcnow() - timedelta(days=30)).strftime(
+        recent_date = (datetime.now(timezone.utc) - timedelta(days=30)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
@@ -71,7 +71,7 @@ class TestCheckInactivityWithData:
 
     def test_passes_when_repo_updated_exactly_under_a_year(self):
         """A repository updated exactly 364 days ago should pass."""
-        near_boundary = (datetime.utcnow() - timedelta(days=364)).strftime(
+        near_boundary = (datetime.now(timezone.utc) - timedelta(days=364)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
@@ -81,7 +81,7 @@ class TestCheckInactivityWithData:
 
     def test_fails_when_repo_updated_exactly_over_a_year(self):
         """A repository updated exactly 366 days ago should fail."""
-        past_boundary = (datetime.utcnow() - timedelta(days=366)).strftime(
+        past_boundary = (datetime.now(timezone.utc) - timedelta(days=366)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
@@ -168,7 +168,7 @@ class TestCheckInactivityWithClient:
         client = MagicMock()
         client.owner = "my-org"
 
-        recent_date = (datetime.utcnow() - timedelta(days=10)).strftime(
+        recent_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
@@ -186,7 +186,7 @@ class TestCheckInactivityWithClient:
         client = MagicMock()
         client.owner = "my-org"
 
-        old_date = (datetime.utcnow() - timedelta(days=500)).strftime(
+        old_date = (datetime.now(timezone.utc) - timedelta(days=500)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
