@@ -12,6 +12,7 @@ Documentation on each component within the checks module can be found in the rel
 - `readme.py`: Contains methods for checking whether a repository includes a `readme.md` file.
 - `gitignore.py`: Contains methods for checking whether a repository includes a `.gitignore` file.
 - `repository_access.py`: Contains methods for checking that repository access is managed through teams rather than individual users.
+- `security_scanning.py`: Contains methods for checking that Push Protection and Secret Scanning are enabled for public repositories.
 - `dependabot.py`: Contains methods for checking that Dependabot automated security fixes are enabled for repositories.
 - `license.py`: Contains method for checking whether a repository includes a `LICENSE` file.
 
