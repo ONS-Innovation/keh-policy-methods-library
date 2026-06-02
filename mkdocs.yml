@@ -17,6 +17,7 @@ nav:
       - Inactivity: checks/inactivity.md
       - Repository Access: checks/repository_access.md
       - Readme: checks/readme.md
+      - Dependabot: checks/dependabot.md
       - Gitignore: checks/gitignore.md
       - License: checks/license.md
   - Dev Guides:
