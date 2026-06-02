@@ -57,8 +57,11 @@ class TestCheckDependabot:
 
         result = check_dependabot(client=client, repository_name="my-repo")
 
-        assert result["result"] == "error"
-        assert "enabled" in result["message"]
+        assert result == {
+            "result": "error",
+            "message": "API response does not contain 'enabled' field.",
+            "details": {"response": response.json.return_value},
+        }
 
     def test_error_when_response_enabled_is_not_a_boolean(self):
         """A non-boolean 'enabled' in the API response should return a type error result."""
