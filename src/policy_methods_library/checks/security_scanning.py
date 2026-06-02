@@ -68,7 +68,7 @@ def check_security_scanning(
                     "message": "API response does not contain 'security_and_analysis' field.",
                     "details": {"response": repository_info},
                 }
-            
+
             if visibility is None:
                 return {
                     "result": "error",
@@ -81,7 +81,7 @@ def check_security_scanning(
                 "message": f"Error fetching repository data: {str(e)}",
                 "details": {},
             }
-        
+
     if visibility in ["private", "internal"]:
         return {
             "result": "pass",

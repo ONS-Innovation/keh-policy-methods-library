@@ -23,7 +23,9 @@ class TestCheckSecurityScanningWithData:
 
     def test_error_when_security_and_analysis_missing_from_data(self):
         """data that does not contain 'security_and_analysis' should return an error result."""
-        result = check_security_scanning(data={"name": "my-repo", "visibility": "public"})
+        result = check_security_scanning(
+            data={"name": "my-repo", "visibility": "public"}
+        )
 
         assert result == {
             "result": "error",
@@ -61,7 +63,7 @@ class TestCheckSecurityScanningWithData:
                 "security_and_analysis": {
                     "secret_scanning_push_protection": {"status": "disabled"},
                     "secret_scanning": {"status": "disabled"},
-                }
+                },
             }
         )
 
@@ -79,7 +81,7 @@ class TestCheckSecurityScanningWithData:
                 "security_and_analysis": {
                     "secret_scanning_push_protection": {"status": "disabled"},
                     "secret_scanning": {"status": "enabled"},
-                }
+                },
             }
         )
 
@@ -97,7 +99,7 @@ class TestCheckSecurityScanningWithData:
                 "security_and_analysis": {
                     "secret_scanning_push_protection": {"status": "enabled"},
                     "secret_scanning": {"status": "disabled"},
-                }
+                },
             }
         )
 
@@ -269,7 +271,7 @@ class TestCheckSecurityScanningWithClient:
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "enabled"},
                 "secret_scanning": {"status": "enabled"},
-            }
+            },
         }
         client.make_request.return_value = response
 
@@ -290,7 +292,7 @@ class TestCheckSecurityScanningWithClient:
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "disabled"},
                 "secret_scanning": {"status": "disabled"},
-            }
+            },
         }
         client.make_request.return_value = response
 
@@ -311,7 +313,7 @@ class TestCheckSecurityScanningWithClient:
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "enabled"},
                 "secret_scanning": {"status": "disabled"},
-            }
+            },
         }
         client.make_request.return_value = response
 
@@ -357,7 +359,7 @@ class TestCheckSecurityScanningWithClient:
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "enabled"},
                 "secret_scanning": {"status": "enabled"},
-            }
+            },
         }
         client.make_request.return_value = response
 
