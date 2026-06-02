@@ -10,6 +10,7 @@ def check_security_scanning(
     data: Optional[dict] = None,
 ) -> dict:
     """Check if Push Protection and Secret Scanning are enabled for a repository.
+    The repository must be public for this check to be applicable. If the repository is private or internal, the check will return a pass result since these features are not applicable.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required if data is not provided. Defaults to None.
@@ -21,6 +22,13 @@ def check_security_scanning(
     """
 
     if data is not None:
+        if "visibility" not in data:
+            return {
+                "result": "error",
+                "message": "Data must include 'visibility' field to verify the repository is public.",
+                "details": {"data": data},
+            }
+
         if "security_and_analysis" not in data:
             return {
                 "result": "error",
@@ -29,6 +37,7 @@ def check_security_scanning(
             }
 
         security_analysis = data.get("security_and_analysis")
+        visibility = data.get("visibility")
 
     else:
         if client is None:
@@ -51,11 +60,19 @@ def check_security_scanning(
 
             repository_info = response.json()
             security_analysis = repository_info.get("security_and_analysis")
+            visibility = repository_info.get("visibility")
 
             if security_analysis is None:
                 return {
                     "result": "error",
                     "message": "API response does not contain 'security_and_analysis' field.",
+                    "details": {"response": repository_info},
+                }
+            
+            if visibility is None:
+                return {
+                    "result": "error",
+                    "message": "API response does not contain 'visibility' field.",
                     "details": {"response": repository_info},
                 }
         except Exception as e:
@@ -64,6 +81,13 @@ def check_security_scanning(
                 "message": f"Error fetching repository data: {str(e)}",
                 "details": {},
             }
+        
+    if visibility in ["private", "internal"]:
+        return {
+            "result": "pass",
+            "message": f"Repository is {visibility}, so Push Protection and Secret Scanning are not applicable.",
+            "details": {"visibility": visibility},
+        }
 
     if not isinstance(security_analysis, dict):
         return {

@@ -14,10 +14,12 @@ Inspired by the GitHub Usage Policy, clauses 5.5.2.2 and 5.5.2.3, in summary:
 
 ## Check Criteria
 
+- The repository visibility must be available (`visibility` field).
 - The check will analyse the `security_and_analysis` block of the repository settings.
+- If the repository visibility is `private` or `internal`, the check will return `pass` because this policy is not applicable.
 - If both `secret_scanning_push_protection` and `secret_scanning` have their status set to `enabled`, the check will pass.
 - If either feature is disabled or missing, the check will fail.
-- Should the `security_and_analysis` field be unavailable or malformed, the check will return an error status.
+- Should the `visibility` or `security_and_analysis` fields be unavailable, or if `security_and_analysis` is malformed, the check will return an error status.
 
 ## Reference
 
@@ -33,6 +35,7 @@ from policy_methods_library.checks.security_scanning import check_security_scann
 # Collect Data (In a real implementation, this data would likely come from another API call).
 
 data = {
+    "visibility": "public",
     "security_and_analysis": {
         "secret_scanning_push_protection": {"status": "enabled"},
         "secret_scanning": {"status": "enabled"},
@@ -113,8 +116,12 @@ If the data is not passed directly, the check will use the `GET /repos/{owner}/{
 
 ## Details Object
 
-The `details` object returned by this check contains the following fields:
+For applicable public repositories, the `details` object returned by this check contains the following fields:
 
 - `push_protection_enabled`: Boolean indicating whether Push Protection is currently enabled for the repository.
 - `secret_scanning_enabled`: Boolean indicating whether Secret Scanning is currently enabled for the repository.
 - `security_and_analysis`: The full `security_and_analysis` block retrieved from the GitHub API, which may contain additional security features beyond Push Protection and Secret Scanning.
+
+For non-applicable repositories (`private` and `internal`), the `details` object contains:
+
+- `visibility`: The repository visibility used to determine that the check is not applicable.

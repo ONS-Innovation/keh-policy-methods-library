@@ -11,19 +11,31 @@ from policy_methods_library.checks.security_scanning import check_security_scann
 
 
 class TestCheckSecurityScanningWithData:
+    def test_error_when_visibility_missing_from_data(self):
+        """data that does not contain 'visibility' should return an error result."""
+        result = check_security_scanning(data={"security_and_analysis": {}})
+
+        assert result == {
+            "result": "error",
+            "message": "Data must include 'visibility' field to verify the repository is public.",
+            "details": {"data": {"security_and_analysis": {}}},
+        }
+
     def test_error_when_security_and_analysis_missing_from_data(self):
         """data that does not contain 'security_and_analysis' should return an error result."""
-        result = check_security_scanning(data={"name": "my-repo"})
+        result = check_security_scanning(data={"name": "my-repo", "visibility": "public"})
 
         assert result == {
             "result": "error",
             "message": "Data must include 'security_and_analysis' field.",
-            "details": {"data": {"name": "my-repo"}},
+            "details": {"data": {"name": "my-repo", "visibility": "public"}},
         }
 
     def test_error_when_security_and_analysis_is_not_a_dict(self):
         """A non-dict 'security_and_analysis' value should return a type error result."""
-        result = check_security_scanning(data={"security_and_analysis": "invalid"})
+        result = check_security_scanning(
+            data={"visibility": "public", "security_and_analysis": "invalid"}
+        )
 
         assert result == {
             "result": "error",
@@ -33,7 +45,9 @@ class TestCheckSecurityScanningWithData:
 
     def test_error_when_security_and_analysis_is_empty(self):
         """An empty 'security_and_analysis' dict should return an error when features are missing."""
-        result = check_security_scanning(data={"security_and_analysis": {}})
+        result = check_security_scanning(
+            data={"visibility": "public", "security_and_analysis": {}}
+        )
 
         assert result["result"] == "fail"
         assert "Push Protection" in result["message"]
@@ -43,6 +57,7 @@ class TestCheckSecurityScanningWithData:
         """A repository with both features disabled should fail."""
         result = check_security_scanning(
             data={
+                "visibility": "public",
                 "security_and_analysis": {
                     "secret_scanning_push_protection": {"status": "disabled"},
                     "secret_scanning": {"status": "disabled"},
@@ -60,6 +75,7 @@ class TestCheckSecurityScanningWithData:
         """A repository with only Push Protection disabled should fail."""
         result = check_security_scanning(
             data={
+                "visibility": "public",
                 "security_and_analysis": {
                     "secret_scanning_push_protection": {"status": "disabled"},
                     "secret_scanning": {"status": "enabled"},
@@ -77,6 +93,7 @@ class TestCheckSecurityScanningWithData:
         """A repository with only Secret Scanning disabled should fail."""
         result = check_security_scanning(
             data={
+                "visibility": "public",
                 "security_and_analysis": {
                     "secret_scanning_push_protection": {"status": "enabled"},
                     "secret_scanning": {"status": "disabled"},
@@ -97,7 +114,9 @@ class TestCheckSecurityScanningWithData:
             "secret_scanning": {"status": "enabled"},
         }
 
-        result = check_security_scanning(data={"security_and_analysis": security_data})
+        result = check_security_scanning(
+            data={"visibility": "public", "security_and_analysis": security_data}
+        )
 
         assert result == {
             "result": "pass",
@@ -118,11 +137,49 @@ class TestCheckSecurityScanningWithData:
             "other_field": {"some": "value"},
         }
 
-        result = check_security_scanning(data={"security_and_analysis": security_data})
+        result = check_security_scanning(
+            data={"visibility": "public", "security_and_analysis": security_data}
+        )
 
         assert result["result"] == "pass"
         assert result["details"]["push_protection_enabled"] is True
         assert result["details"]["secret_scanning_enabled"] is True
+
+    def test_passes_when_repository_is_private(self):
+        """Private repositories should pass because this check is not applicable."""
+        result = check_security_scanning(
+            data={
+                "visibility": "private",
+                "security_and_analysis": {
+                    "secret_scanning_push_protection": {"status": "disabled"},
+                    "secret_scanning": {"status": "disabled"},
+                },
+            }
+        )
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository is private, so Push Protection and Secret Scanning are not applicable.",
+            "details": {"visibility": "private"},
+        }
+
+    def test_passes_when_repository_is_internal(self):
+        """Internal repositories should pass because this check is not applicable."""
+        result = check_security_scanning(
+            data={
+                "visibility": "internal",
+                "security_and_analysis": {
+                    "secret_scanning_push_protection": {"status": "disabled"},
+                    "secret_scanning": {"status": "disabled"},
+                },
+            }
+        )
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository is internal, so Push Protection and Secret Scanning are not applicable.",
+            "details": {"visibility": "internal"},
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -173,13 +230,33 @@ class TestCheckSecurityScanningWithClient:
         client.owner = "my-org"
 
         response = MagicMock()
-        response.json.return_value = {"name": "my-repo"}
+        response.json.return_value = {"name": "my-repo", "visibility": "public"}
         client.make_request.return_value = response
 
         result = check_security_scanning(client=client, repository_name="my-repo")
 
         assert result["result"] == "error"
         assert "security_and_analysis" in result["message"]
+
+    def test_error_when_response_missing_visibility(self):
+        """An API response without 'visibility' should return an error result."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        response = MagicMock()
+        response.json.return_value = {
+            "name": "my-repo",
+            "security_and_analysis": {
+                "secret_scanning_push_protection": {"status": "enabled"},
+                "secret_scanning": {"status": "enabled"},
+            },
+        }
+        client.make_request.return_value = response
+
+        result = check_security_scanning(client=client, repository_name="my-repo")
+
+        assert result["result"] == "error"
+        assert "visibility" in result["message"]
 
     def test_passes_for_enabled_features_via_client(self):
         """A valid API response with both features enabled should pass."""
@@ -188,6 +265,7 @@ class TestCheckSecurityScanningWithClient:
 
         response = MagicMock()
         response.json.return_value = {
+            "visibility": "public",
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "enabled"},
                 "secret_scanning": {"status": "enabled"},
@@ -208,6 +286,7 @@ class TestCheckSecurityScanningWithClient:
 
         response = MagicMock()
         response.json.return_value = {
+            "visibility": "public",
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "disabled"},
                 "secret_scanning": {"status": "disabled"},
@@ -228,6 +307,7 @@ class TestCheckSecurityScanningWithClient:
 
         response = MagicMock()
         response.json.return_value = {
+            "visibility": "public",
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "enabled"},
                 "secret_scanning": {"status": "disabled"},
@@ -243,6 +323,29 @@ class TestCheckSecurityScanningWithClient:
         assert result["details"]["push_protection_enabled"] is True
         assert result["details"]["secret_scanning_enabled"] is False
 
+    def test_passes_for_private_repository_via_client(self):
+        """Private repositories should pass because this check is not applicable."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        response = MagicMock()
+        response.json.return_value = {
+            "visibility": "private",
+            "security_and_analysis": {
+                "secret_scanning_push_protection": {"status": "disabled"},
+                "secret_scanning": {"status": "disabled"},
+            },
+        }
+        client.make_request.return_value = response
+
+        result = check_security_scanning(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository is private, so Push Protection and Secret Scanning are not applicable.",
+            "details": {"visibility": "private"},
+        }
+
     def test_makes_correct_api_call(self):
         """The check should make the correct API call to retrieve repository data."""
         client = MagicMock()
@@ -250,6 +353,7 @@ class TestCheckSecurityScanningWithClient:
 
         response = MagicMock()
         response.json.return_value = {
+            "visibility": "public",
             "security_and_analysis": {
                 "secret_scanning_push_protection": {"status": "enabled"},
                 "secret_scanning": {"status": "enabled"},
