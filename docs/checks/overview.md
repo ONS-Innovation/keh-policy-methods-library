@@ -11,6 +11,7 @@ Documentation on each component within the checks module can be found in the rel
 - `inactivity.py`: Contains methods for checking the inactivity of repositories (i.e. not updated in the last year).
 - `readme.py`: Contains methods for checking whether a repository includes a `readme.md` file.
 - `repository_access.py`: Contains methods for checking that repository access is managed through teams rather than individual users.
+- `license.py`: Contains method for checking whether a repository includes a `LICENSE` file.
 
 ## Importing the Checks Module
 
