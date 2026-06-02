@@ -16,6 +16,7 @@ nav:
       - Naming Convention: checks/naming_convention.md
       - Inactivity: checks/inactivity.md
       - Repository Access: checks/repository_access.md
+      - External Pull Request: checks/external_pull_request.md
       - Security Scanning: checks/security_scanning.md
       - Readme: checks/readme.md
       - Dependabot: checks/dependabot.md
