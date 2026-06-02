@@ -240,6 +240,100 @@ class TestCheckExternalPullRequest:
             },
         }
 
+    def test_passes_when_only_open_pull_request_is_dependabot(self):
+        """A dependabot PR should be ignored as an allowed exception."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        pulls_response = MagicMock()
+        pulls_response.json.return_value = [
+            {
+                "number": 77,
+                "title": "Bump urllib3 from 2.2.1 to 2.2.2",
+                "user": {"login": "dependabot[bot]"},
+            }
+        ]
+
+        org_response = MagicMock()
+        org_response.json.return_value = {"type": "Organization", "login": "my-org"}
+
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
+            if endpoint == "/orgs/my-org":
+                return org_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+                return pulls_response
+            if endpoint == "/orgs/my-org/members/dependabot[bot]":
+                raise AssertionError("dependabot[bot] membership should not be checked")
+            raise AssertionError(f"Unexpected endpoint called: {endpoint}")
+
+        client.make_request.side_effect = make_request_side_effect
+
+        result = check_external_pull_request(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository 'my-repo' has no external pull requests.",
+            "details": {
+                "repository_name": "my-repo",
+                "external_pull_requests": [],
+            },
+        }
+
+    def test_ignores_dependabot_and_still_fails_for_other_external_authors(self):
+        """Dependabot should be ignored while non-members still cause a failure."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        pulls_response = MagicMock()
+        pulls_response.json.return_value = [
+            {
+                "number": 77,
+                "title": "Bump urllib3 from 2.2.1 to 2.2.2",
+                "user": {"login": "dependabot[bot]"},
+            },
+            {
+                "number": 88,
+                "title": "Community patch",
+                "user": {"login": "external-contributor"},
+            },
+        ]
+
+        org_response = MagicMock()
+        org_response.json.return_value = {"type": "Organization", "login": "my-org"}
+
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
+            if endpoint == "/orgs/my-org":
+                return org_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+                return pulls_response
+            if endpoint == "/orgs/my-org/members/dependabot[bot]":
+                raise AssertionError("dependabot[bot] membership should not be checked")
+            if endpoint == "/orgs/my-org/members/external-contributor":
+                assert kwargs.get("allow_redirects") is False
+                not_member_response = MagicMock()
+                not_member_response.status_code = 404
+                raise HTTPError("Not Found", response=not_member_response)
+            raise AssertionError(f"Unexpected endpoint called: {endpoint}")
+
+        client.make_request.side_effect = make_request_side_effect
+
+        result = check_external_pull_request(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "fail",
+            "message": "Repository 'my-repo' has external pull requests authored by non-organisation members.",
+            "details": {
+                "repository_name": "my-repo",
+                "external_pull_requests": [
+                    {
+                        "number": 88,
+                        "title": "Community patch",
+                        "author": "external-contributor",
+                    }
+                ],
+            },
+        }
+
     def test_fails_when_external_pull_request_exists(self):
         """A repository with at least one non-member PR author should fail."""
         client = MagicMock()

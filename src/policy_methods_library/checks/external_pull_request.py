@@ -144,6 +144,10 @@ def check_external_pull_request(
                     "details": {"pull_request": pull_request},
                 }
 
+            # Allow dependabot[bot] as an exception since it is commonly used for automated dependency updates.
+            if username == "dependabot[bot]":
+                continue
+
             if not _is_organisation_member(client=client, username=username):
                 external_pull_requests.append(
                     {
