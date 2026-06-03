@@ -16,11 +16,12 @@ nav:
       - Naming Convention: checks/naming_convention.md
       - Inactivity: checks/inactivity.md
       - Repository Access: checks/repository_access.md
+      - External Pull Request: checks/external_pull_request.md
       - Security Scanning: checks/security_scanning.md
-      - Readme: checks/readme.md
+      - Readme: checks/readme_check.md
       - Dependabot: checks/dependabot.md
       - Gitignore: checks/gitignore.md
-      - License: checks/license.md
+      - License: checks/license_check.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
       - Testing New Functionality: dev_guides/testing_new_functionality.md
