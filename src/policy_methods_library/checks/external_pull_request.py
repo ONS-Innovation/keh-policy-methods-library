@@ -147,13 +147,6 @@ def check_external_pull_request(
             "details": {},
         }
 
-    if not isinstance(pull_requests, list):
-        return {
-            "result": "error",
-            "message": "API response does not contain a list of pull requests.",
-            "details": {"response": pull_requests},
-        }
-
     external_pull_requests = []
 
     try:
