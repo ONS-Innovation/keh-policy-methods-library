@@ -90,7 +90,7 @@ see utils/get_contents
 
 ## References
 
-[GitHub Usage Policy :]{Software Engineering Principles_Policies_Guidelines_Templates_Plans and more/Software Engineering Policies/GitHub Usage Policy.pdf}
+[GitHub Usage Policy :](https://github.com/ONSdigital/software-engineer-community/blob/master/Software%20Engineering%20Principles_Policies_Guidelines_Templates_Plans%20and%20more/Software%20Engineering%20Policies/GitHub%20Usage%20Policy.pdf)
 
 [GitHub Documentation for repository details:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)
 
