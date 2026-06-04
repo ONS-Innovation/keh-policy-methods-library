@@ -14,11 +14,11 @@ Inspired by the GitHub Usage Policy, clause 5.3.3, in summary:
 
 ### repository details  / repository contents
 
-| visability | private | pirr file |
-| :----------- | :------- | :----- |
-| public | False | not required |
-| private | True | required |
-| internal | True | required |
+| visability | private | pirr file    |
+|:-----------|:--------|:-------------|
+| public     | False   | not required |
+| private    | True    | required     |
+| internal   | True    | required     |
 
 - The check will obtain the details for the repository.
 - If the visibity is public then return pass PIRR is not required
