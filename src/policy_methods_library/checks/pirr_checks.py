@@ -1,64 +1,90 @@
 "This module contains the checks for PIRR"
 
+from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.get_contents import get_repo_contents
+from policy_methods_library.utils.get_details import get_repo_details
 
-def check_repo_visibility(repo_details: dict, repo_contents: dict) -> dict:
+
+def check_repo_visibility(client: GitHubRestClient, repository_name: str) -> dict:
     """
     Args:
-            repo_details (dict): The details of the repository to check.
-            repo_contents (dict): The contents of the repository to check.
+        client (GitHubRestClient): The GitHub REST client.
+        repository_name (str): The name of the repository to check.
 
     Returns:
             dict: A dictionary containing the result of the check (pass/fail), a message, and any relevant details.
     """
 
-    if not repo_details:
+    if not isinstance(repository_name, str) or repository_name.strip() == "":
         return {
-            "result": "fail",
-            "message": "Repository details cannot be empty.",
-            "details": {"repo_details": repo_details},
+            "result": "error",
+            "message": "Repository name is required.",
+            "details": {},
         }
 
-    if "private" not in repo_details or "visibility" not in repo_details:
+    if not isinstance(client, GitHubRestClient):
         return {
-            "result": "fail",
-            "message": "Repository details must include 'private' and 'visibility' keys.",
-            "details": {"repo_details": repo_details},
+            "result": "error",
+            "message": "GitHubRestClient instance is required.",
+            "details": {},
         }
 
-    if not repo_contents:
+    try:
+        repo_details = get_repo_details(client, repository_name)
+
+    except Exception as e:
         return {
-            "result": "fail",
-            "message": "Repository contents cannot be empty.",
-            "details": {"repo_contents": repo_contents},
+            "result": e["result"] if isinstance(e, dict) and "result" in e else "error",
+            "message": e["message"]
+            if isinstance(e, dict) and "message" in e
+            else f"An error occurred while fetching repository details: {str(e)}",
+            "details": {},
         }
 
-    if "entries" not in repo_contents:
-        return {
-            "result": "fail",
-            "message": "Repository contents must include 'entries' key.",
-            "details": {"repo_contents": repo_contents},
-        }
-
-    if repo_details.get("private") is False:
+    if (
+        not repo_details.get("details", {}).get("private")
+        and repo_details.get("details", {}).get("visibility") == "public"
+    ):
         return {
             "result": "pass",
             "message": "Repository is public.",
-            "details": {"repo_details": repo_details},
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repo_details.get("details", {}),
+            },
         }
 
-    entries = repo_contents.get("entries", [])
-    pirr_files = [
-        entry for entry in entries if entry.get("name", "").lower() == "pirr.md"
-    ]
-    if pirr_files:
+    try:
+        repo_contents = get_repo_contents(client, repository_name)
+
+    except Exception as e:
+        return {
+            "result": e["result"] if isinstance(e, dict) and "result" in e else "error",
+            "message": e["message"]
+            if isinstance(e, dict) and "message" in e
+            else f"An error occurred while fetching repository contents: {str(e)}",
+            "details": {},
+        }
+
+    # Check the repository contents have pirr mkdocumentation
+
+    if any(content.get("name").lower() == "pirr.md" for content in repo_contents):
         return {
             "result": "pass",
-            "message": "Repository is private but contains a PIRR.md file.",
-            "details": {"repo_details": repo_details, "repo_contents": repo_contents},
+            "message": "Repositor contains PIRR documentation.",
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repo_details,
+                "repository_contents": repo_contents,
+            },
         }
     else:
         return {
             "result": "fail",
-            "message": "Repository is private and does not contain a PIRR.md file.",
-            "details": {"repo_details": repo_details, "repo_contents": repo_contents},
+            "message": "Repository does not contain PIRR documentation.",
+            "details": {
+                "repo_name": repository_name,
+                "repo_details": repo_details,
+                "repo_contents": repo_contents,
+            },
         }

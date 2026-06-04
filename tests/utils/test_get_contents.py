@@ -8,85 +8,116 @@ from unittest.mock import MagicMock
 # ---------------------------------------------------------------------------
 
 
-class TestCheckGetContents:
-    """Tests for get_contents function in pirr_checks module."""
+class Test_Utils_Get_Contents:
+    """Tests for get_contents function in utils module."""
 
-    mock_github_client = MagicMock()
+    def test_error_when_github_client_is_none(self):
+        """Test get_repo_contents returns error when repository name is empty."""
 
-    def test_get_repo_contents_no_repository_name(self):
-        """Test get_repo_contents returns fail when repository name is empty."""
-        # Mock the GitHub client
-
-        # Call the get_repo_contents function with an empty repository name
-        contents = get_contents.get_repo_contents(
-            github_client=self.mock_github_client,
-            repository_name="",
+        result = get_contents.get_repo_contents(
+            github_client=None, repository_name="my-repo"
         )
 
-        # Assert that the contents indicate failure due to empty repository name
-        assert contents["result"] == "fail"
-        assert contents["message"] == "Repository name cannot be empty."
-        assert contents["details"]["repository_name"] == ""
-
-    def test_get_repo_contents_failure(self):
-        """Test get_repo_contents returns fail when repository contents cannot be retrieved."""
-        # Mock the GitHub client to return None
-        mock_github_client = MagicMock()
-        mock_github_client.make_request.return_value = None
-
-        # Call the get_repo_contents function with the mocked client
-        contents = get_contents.get_repo_contents(
-            github_client=mock_github_client,
-            repository_name="test-repo",
-        )
-
-        # Assert that the contents indicate failure due to inability to retrieve contents
-        assert contents != {}
-        assert contents["result"] == "fail"
-        assert contents["message"] == "Unable to retrieve repository contents."
-        assert contents["details"]["repository_name"] == "test-repo"
-
-    def test_get_repo_contents_success(self):
-        """Test get_repo_contents returns correct contents on success."""
-        # Mock the GitHub client and its make_request method
-        mock_github_client = MagicMock()
-        mock_github_client.make_request.return_value = '{"name": "test-repo", "entries": [{"name": "src"}, {"name": "README.md"}, {"name": "LICENSE"}, {"name": "setup.py"}]}'
-
-        # Call the get_repo_contents function with the mocked client
-
-        contents = get_contents.get_repo_contents(
-            github_client=mock_github_client,
-            repository_name="test-repo",
-        )
-
-        # Assert that the contents are as expected
-        assert contents != {}
-        assert contents["name"] == "test-repo"
-        assert len(contents["entries"]) == 4
-        assert contents["entries"][0]["name"] == "src"
-
-    def test_get_repo_contents_success_with_json_method(self):
-        """Test get_repo_contents uses response.json() when available."""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "name": "test-repo",
-            "entries": [
-                {"name": "src"},
-                {"name": "README.md"},
-                {"name": "LICENSE"},
-                {"name": "setup.py"},
-            ],
+        assert result == {
+            "result": "error",
+            "message": "GitHubRestClient instance is required.",
+            "details": {},
         }
 
-        mock_github_client = MagicMock()
-        mock_github_client.make_request.return_value = mock_response
+    def test_error_when_github_client_is_not_instance_of_githubrestclient(self):
+        """Test get_repo_contents returns error when github_client is not an instance of GitHubRestClient."""
 
-        contents = get_contents.get_repo_contents(
-            github_client=mock_github_client,
-            repository_name="test-repo",
+        result = get_contents.get_repo_contents(
+            github_client={}, repository_name="my-repo"
         )
 
-        assert contents == mock_response.json.return_value
-        assert contents["name"] == "test-repo"
-        assert len(contents["entries"]) == 4
-        assert contents["entries"][1]["name"] == "README.md"
+        assert result == {
+            "result": "error",
+            "message": "GitHubRestClient instance is required.",
+            "details": {},
+        }
+
+    def test_error_when_repository_name_is_empty(self):
+        """An empty repository name should return an error result."""
+        client = MagicMock()
+
+        result = get_contents.get_repo_contents(
+            github_client=client, repository_name=""
+        )
+
+        assert result == {
+            "result": "error",
+            "message": "Repository name is required.",
+            "details": {},
+        }
+
+    def test_error_when_repository_name_is_empty_string(self):
+        """An empty repository name should return an error result."""
+        client = MagicMock()
+
+        result = get_contents.get_repo_contents(
+            github_client=client, repository_name=""
+        )
+
+        assert result == {
+            "result": "error",
+            "message": "Repository name is required.",
+            "details": {},
+        }
+
+
+def test_error_when_response_is_not_valid_json_array():
+    """Test get_repo_contents returns error when API response is not a valid JSON array."""
+    client = MagicMock()
+    client.owner = "my-org"
+    client.make_request.return_value.json.return_value = {"invalid": "response"}
+
+    result = get_contents.get_repo_contents(
+        github_client=client, repository_name="my-repo"
+    )
+
+    assert result == {
+        "result": "error",
+        "message": "API response is not a valid JSON array.",
+        "details": {"response": {"invalid": "response"}},
+    }
+
+
+def test_successful_response():
+    """Test get_repo_contents returns success when API response is a valid JSON array."""
+    client = MagicMock()
+    client.owner = "my-org"
+    client.make_request.return_value.json.return_value = [
+        {"name": "file1.txt", "type": "file"},
+        {"name": "dir1", "type": "dir"},
+    ]
+
+    result = get_contents.get_repo_contents(
+        github_client=client, repository_name="my-repo"
+    )
+
+    assert result == {
+        "result": "pass",
+        "message": "Successfully retrieved contents for repository 'my-repo'.",
+        "details": [
+            {"name": "file1.txt", "type": "file"},
+            {"name": "dir1", "type": "dir"},
+        ],
+    }
+
+
+def test_exception_handling():
+    """Test get_repo_contents returns error when an exception occurs during API request."""
+    client = MagicMock()
+    client.owner = "my-org"
+    client.make_request.side_effect = Exception("API request failed")
+
+    result = get_contents.get_repo_contents(
+        github_client=client, repository_name="my-repo"
+    )
+
+    assert result == {
+        "result": "error",
+        "message": "An error occurred while fetching repository contents: API request failed",
+        "details": {},
+    }

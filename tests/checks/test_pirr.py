@@ -1,87 +1,218 @@
-"""Tests for PIRR check module."""
-
-from policy_methods_library.checks import pirr_checks
-
-
 # ---------------------------------------------------------------------------
 # pirr_checks
 # ---------------------------------------------------------------------------
 
+from unittest.mock import create_autospec, patch
+from policy_methods_library.github.clients import GitHubRestClient
+
+from policy_methods_library.checks import pirr_checks
+
 
 class TestCheckPIRR:
-    def test_check_repo_details_is_empty(self):
-        """Test that the check fails when the repository details are empty."""
-        result = pirr_checks.check_repo_visibility({}, {})
-        assert result["result"] == "fail"
-        assert result["message"] == "Repository details cannot be empty."
-        assert result["details"] == {"repo_details": {}}
+    """Tests for check_repo_visibility function in pirr_checks module."""
 
-    def test_check_repo_contents_is_empty(self):
-        """Test that the check fails when the repository contents are empty."""
-        result = pirr_checks.check_repo_visibility(
-            {"private": True, "visibility": "internal"}, {}
-        )
-        assert result["result"] == "fail"
-        assert result["message"] == "Repository contents cannot be empty."
-        assert result["details"] == {"repo_contents": {}}
+    def test_repository_name_error_when_empty(self):
+        """Test that the check fails when the repository name is empty."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
 
-    def test_check_repo_details_missing_keys(self):
-        """Test that the check fails when the repository details are missing required keys."""
-        repo_details = {"private": True}
-        repo_contents = {"entires": []}
-        result = pirr_checks.check_repo_visibility(repo_details, repo_contents)
-        assert result["result"] == "fail"
-        assert (
-            result["message"]
-            == "Repository details must include 'private' and 'visibility' keys."
-        )
-        assert result["details"] == {"repo_details": repo_details}
+        result = pirr_checks.check_repo_visibility(client, "")
+        assert result["result"] == "error"
+        assert result["message"] == "Repository name is required."
+        assert result["details"] == {}
 
-    def test_check_repo_contents_missing_entries_key(self):
-        """Test that the check fails when the repository contents are missing the 'entries' key."""
-        result = pirr_checks.check_repo_visibility(
-            {"private": False, "visibility": "public"}, {"non_entries": []}
-        )
-        assert result["result"] == "fail"
-        assert result["message"] == "Repository contents must include 'entries' key."
-        assert result["details"] == {"repo_contents": {"non_entries": []}}
+    def test_repository_name_error_when_none(self):
+        """Test that the check fails when the repository name is None."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        result = pirr_checks.check_repo_visibility(client, None)
+        assert result["result"] == "error"
+        assert result["message"] == "Repository name is required."
+        assert result["details"] == {}
 
-    def test_check_repo_is_public(self):
+    def test_client_error_when_not_required_format(self):
+        """Test that the check fails when the client is not a GitHubRestClient instance."""
+        client = "not_a_githubrestclient"
+        result = pirr_checks.check_repo_visibility(client, "TestRepo")
+        assert result["result"] == "error"
+        assert result["message"] == "GitHubRestClient instance is required."
+        assert result["details"] == {}
+
+    def test_client_error_when_none(self):
+        """Test that the check fails when the client is None."""
+        client = None
+        result = pirr_checks.check_repo_visibility(client, "TestRepo")
+        assert result["result"] == "error"
+        assert result["message"] == "GitHubRestClient instance is required."
+        assert result["details"] == {}
+
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_details")
+    def test_repository_visibility_public_success(self, mock_get_details):
         """Test that the check passes when the repository is public."""
-        result = pirr_checks.check_repo_visibility(
-            {"private": False, "visibility": "public"}, {"entries": []}
-        )
-        assert result["result"] == "pass"
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        # Mock the return value for get_repo_details
+        mock_get_details.return_value = {
+            "result": "pass",
+            "message": f"Successfully retrieved details for repository '{repository_name}'.",
+            "details": {"private": False, "visibility": "public"},
+        }
+
+        result = pirr_checks.check_repo_visibility(client, repository_name)
         assert result["message"] == "Repository is public."
-        assert result["details"] == {
-            "repo_details": {"private": False, "visibility": "public"}
+        assert result["details"]["repository_name"] == "TestRepo"
+        assert result["details"]["repository_details"] == {
+            "private": False,
+            "visibility": "public",
         }
-
-    def test_check_repo_is_private_with_pirr_file(self):
-        """Test that the check passes when the repository is private but contains a PIRR.md file."""
-        result = pirr_checks.check_repo_visibility(
-            {"private": True, "visibility": "private"},
-            {"entries": [{"name": "PIRR.md"}]},
-        )
         assert result["result"] == "pass"
-        assert result["message"] == "Repository is private but contains a PIRR.md file."
-        assert result["details"] == {
-            "repo_details": {"private": True, "visibility": "private"},
-            "repo_contents": {"entries": [{"name": "PIRR.md"}]},
+
+        # Verify the mock was called with correct arguments
+        mock_get_details.assert_called_once_with(client, repository_name)
+
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_details")
+    def test_repository_public_error(self, mock_get_details):
+        """Test that the check fails when get_repo_details raises an error."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        # Mock the return value for get_repo_details
+        mock_get_details.side_effect = Exception("")
+
+        result = pirr_checks.check_repo_visibility(client, repository_name)
+
+        assert result["result"] == "error"
+        assert result["details"] == {}
+        assert (
+            result["message"] == "An error occurred while fetching repository details: "
+        )
+
+        # Verify the mock was called with correct arguments
+        mock_get_details.assert_called_once_with(client, repository_name)
+
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_details")
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_contents")
+    def test_repository_private_success(self, mock_get_contents, mock_get_details):
+        """Test that the check fails when the repository is private."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        # Mock the return value for get_repo_details
+        mock_get_details.return_value = {"private": True, "visibility": "private"}
+
+        # Mock the return value for get_contents to simulate .github directory exists
+        mock_get_contents.return_value = [
+            {"name": "README.md", "type": "file"},
+            {"name": "PIRR.md", "type": "file"},
+        ]
+
+        result = pirr_checks.check_repo_visibility(client, repository_name)
+        assert result["message"] == "Repositor contains PIRR documentation."
+        assert result["details"]["repository_name"] == "TestRepo"
+        assert result["details"]["repository_details"] == {
+            "private": True,
+            "visibility": "private",
         }
 
-    def test_check_repo_is_private_without_pirr_file(self):
-        """Test that the check fails when the repository is private and does not contain a PIRR.md file."""
-        result = pirr_checks.check_repo_visibility(
-            {"private": True, "visibility": "private"},
-            {"entries": [{"name": "README.md"}]},
-        )
-        assert result["result"] == "fail"
+        assert result["details"]["repository_contents"][1]["name"] == "PIRR.md"
+        assert result["result"] == "pass"
+
+        # Verify the mocks were called with correct arguments
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
+
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_details")
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_contents")
+    def test_repository_internal_success(self, mock_get_contents, mock_get_details):
+        """Test that the check fails when the repository is internal."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        # Mock the return value for get_repo_details
+        mock_get_details.return_value = {"private": True, "visibility": "internal"}
+
+        # Mock the return value for get_contents to simulate .github directory exists
+        mock_get_contents.return_value = [
+            {"name": "README.md", "type": "file"},
+            {"name": "PIRR.md", "type": "file"},
+        ]
+
+        result = pirr_checks.check_repo_visibility(client, repository_name)
+        assert result["message"] == "Repositor contains PIRR documentation."
+        assert result["details"]["repository_name"] == "TestRepo"
+        assert result["details"]["repository_details"] == {
+            "private": True,
+            "visibility": "internal",
+        }
+
+        assert result["details"]["repository_contents"][1]["name"] == "PIRR.md"
+        assert result["result"] == "pass"
+
+        # Verify the mocks were called with correct arguments
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
+
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_details")
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_contents")
+    def test_repository_get_contents_error(self, mock_get_contents, mock_get_details):
+        """Test that the check fails when get_repo_contents raises an error."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        # Mock the return value for get_repo_details
+        mock_get_details.return_value = {"private": True, "visibility": "internal"}
+
+        # Mock the return value for get_repo_contents
+        mock_get_contents.side_effect = Exception("")
+
+        result = pirr_checks.check_repo_visibility(client, repository_name)
+
+        assert result["result"] == "error"
+        assert result["details"] == {}
         assert (
             result["message"]
-            == "Repository is private and does not contain a PIRR.md file."
+            == "An error occurred while fetching repository contents: "
         )
-        assert result["details"] == {
-            "repo_details": {"private": True, "visibility": "private"},
-            "repo_contents": {"entries": [{"name": "README.md"}]},
+
+        # Verify the mock was called with correct arguments
+        mock_get_details.assert_called_once_with(client, repository_name)
+
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_details")
+    @patch("policy_methods_library.checks.pirr_checks.get_repo_contents")
+    def test_repository_details_private_no_pirr_file_error(
+        self, mock_get_contents, mock_get_details
+    ):
+        """Test that the check fails when the repository is private."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        # Mock the return value for get_repo_details
+        mock_get_details.return_value = {"private": True, "visibility": "private"}
+
+        # Mock the return value for get_contents to simulate .github directory exists
+        mock_get_contents.return_value = [
+            {"name": "README.md", "type": "file"},
+            {"name": "CODE_OF_CONDUCT.md", "type": "file"},
+        ]
+
+        result = pirr_checks.check_repo_visibility(client, repository_name)
+        assert result["message"] == "Repositor contains PIRR documentation."
+        assert result["details"]["repository_name"] == "TestRepo"
+        assert result["details"]["repository_details"] == {
+            "private": True,
+            "visibility": "private",
         }
+
+        assert result["details"]["repository_contents"][1]["name"] == "PIRR.md"
+        assert result["result"] == "pass"
+
+        # Verify the mocks were called with correct arguments
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
