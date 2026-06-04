@@ -12,54 +12,23 @@ Inspired by the GitHub Usage Policy, clause 5.3.3, in summary:
 
 ## Check Criteria
 
-### repository details  
+### repository details  / repository contents
 
-| visability | private |
-| :-------- | :------: |
-| public | False |
-| private | True |
-| internal | True |
+| visability | private | pirr file |
+| :----------- | :------- | :----- |
+| public | False | not required |
+| private | True | required |
+| internal | True | required |
 
-- The check will retrieve the repository details using the GitHub API function in utils get_details
-- if the repository details for visibilty are public and the repository details for private are False
-then the check will return
-
-| Key | Contents |
-| :-------- | :------: |
-| result | pass |
-| message | Repository is public. |
-| details | repository_name |
-| | repository_details |
-
-- if the repository details private are True, details and visability is either "private" or "internal"
-  - The check will retrieve the repository contents
-  - if the contents has a pirr.md file
-then the check will return
-
-| Key | Contents |
-| :-------- | :------: |
-| result | pass |
-| message | PIRR file is pres. |
-| details | repository_name |
-| | repository_details |
-| | repository contents |
-
-- if the repository details private =True or repository details.visability is either "Private" or "internal", the contents does not have a pirr.md file
-then the check will return
-
-| Key | Contents |
-| :-------- | :------: |
-| result | fail |
-| message | Repository is public. |
-| details | repository_name |
-| | repository_details |
-| | repository contents |
-
+- The check will obtain the details for the repository.
+- If the visibity is public then return pass PIRR is not required
+If the visibility is either private or internal then the check will obtain the content of the repository and check for a pirr.md file
+if found will return a success else return a fail
 - any other combiniation will cause the check to error
 
 ## Reference
 
-::: src/policy_methods_library.checks.pirr_checks.check_repo_visibility
+::: src.policy_methods_library.checks.pirr_checks.check_repo_visibility
 
 ## Usage Examples
 
@@ -83,7 +52,8 @@ client = GitHubRestClient(
 
 # Run Check with Data Retrieval
 
-response = check_repository_access(client=client, repository_name="your_repository_name")
+repository_details = get_repo_details(client=client, repository_name="your_repository_name")
+repository_conents = 
 
 # Process response
 
