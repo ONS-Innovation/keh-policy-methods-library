@@ -1,48 +1,88 @@
 # PIRR Checks
 
+Private/Internal Repository Information (PIRR)
 The PIRR check ensures that GitHub repositories adhere to ONS' PIRR conventiion, defined within the GitHub Usage Policy.
 
 ## GitHub Usage Policy Origin
 
-Inspired by the GitHub Usage Policy, clause 5.3.2, in summary:
+Inspired by the GitHub Usage Policy, clause 5.3.3, in summary:
 
-- Avoid Special Characters
-- Avoid Spaces (use hyphens or underscores instead)
-- Use Lowercase Letters
+- Repositories are by default  public
+- Repositories can be made private or intenal if there is a specific need/requirement then there should be a PIRR.md which includes this need/requirement
 
 ## Check Criteria
 
-- The repository name must be in lowercase.
-- The repository name must not contain spaces (hyphens or underscores are acceptable).
-- The repository name must not contain special characters (only letters, numbers, hyphens, and underscores are allowed).
+### repository details  
 
-## Reference
+| visability | private |
+| :-------- | :------: |
+| public | False |
+| private | True |
+| internal | True |
 
-::: src.policy_methods_library.checks.naming_convention.check_naming_convention
+- The check will retrieve the repository details using the GitHub API function in utils get_details
+- if the repository details for visibilty are public and the repository details for private are False
+then the check will return
 
-## Usage Example
+| Key | Contents |
+| :-------- | :------: |
+| result | pass |
+| message | Repository is public. |
+| details | repository_name |
+| | repository_details |
+
+- if the repository details private are True, details and visability is either "private" or "internal"
+  - The check will retrieve the repository contents
+  - if the contents has a pirr.md file
+then the check will return
+
+| Key | Contents |
+| :-------- | :------: |
+| result | pass |
+| message | PIRR file is pres. |
+| details | repository_name |
+| | repository_details |
+| | repository contents |
+
+- if the repository details private =True or repository details.visability is either "Private" or "internal", the contents does not have a pirr.md file
+then the check will return
+
+| Key | Contents |
+| :-------- | :------: |
+| result | fail |
+| message | Repository is public. |
+| details | repository_name |
+| | repository_details |
+| | repository contents |
+
+- any other combiniation will cause the check to error
+
+## Usage Examples
 
 ```python
-from policy_methods_library.checks.naming_convention import check_naming_convention
 
-repository_name = "example-repository"
-
-response = check_naming_convention(repository_name)
-
-result = response.get("result")
-message = response.get("message")
-
-match result:
-    case "pass":
-        print(f"Check Passed: {message}")
-    case "fail":
-        print(f"Check Failed: {message}")
-    case "error":
-        print(f"Check Error: {message}")
-    case _:
-        print("Unexpected result returned.")
 ```
 
 ## GitHub Integration Used
 
-This check does not directly integrate with GitHub APIs.
+The check uses the fillowing :-
+
+- `GET /repos/{owner}/{repo}/'
+see utils get_details
+  - Input the githubRestAPI Client and the repository name
+  - Returns the repository details as json/dictionary
+
+- 'GET /repos/{owner}/{repo}/contents/'
+see utils/get_contents
+  - Input the githubRestAPI Client and the repository name
+  - Return  a list of files for the repository
+
+
+## References
+
+[GitHub Usage Policy :]{Software Engineering Principles_Policies_Guidelines_Templates_Plans and more/Software Engineering Policies/GitHub Usage Policy.pdf}
+
+[GitHub Documentation for repository details:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)
+
+[GitHub Documentation for repository conents:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)
+

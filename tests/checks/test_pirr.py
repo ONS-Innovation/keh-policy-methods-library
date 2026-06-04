@@ -143,14 +143,20 @@ class TestCheckPIRR:
         ]
 
         result = pirr_checks.check_repo_visibility(client, repository_name)
+
         assert result["message"] == "Repositor contains PIRR documentation."
         assert result["details"]["repository_name"] == "TestRepo"
         assert result["details"]["repository_details"] == {
             "private": True,
             "visibility": "internal",
         }
+        assert result["details"]["repository_contents"] is not None
+        fileNames = [
+            content.get("name").lower()
+            for content in result["details"]["repository_contents"]
+        ]
 
-        assert result["details"]["repository_contents"][1]["name"] == "PIRR.md"
+        assert "pirr.md" in fileNames
         assert result["result"] == "pass"
 
         # Verify the mocks were called with correct arguments
@@ -203,15 +209,18 @@ class TestCheckPIRR:
         ]
 
         result = pirr_checks.check_repo_visibility(client, repository_name)
-        assert result["message"] == "Repositor contains PIRR documentation."
+        assert result["message"] == "Repository does not contain PIRR documentation."
         assert result["details"]["repository_name"] == "TestRepo"
         assert result["details"]["repository_details"] == {
             "private": True,
             "visibility": "private",
         }
-
-        assert result["details"]["repository_contents"][1]["name"] == "PIRR.md"
-        assert result["result"] == "pass"
+        fileNames = [
+            content.get("name").lower()
+            for content in result["details"]["repository_contents"]
+        ]
+        assert "pirr.md" not in fileNames
+        assert result["result"] == "fail"
 
         # Verify the mocks were called with correct arguments
         mock_get_details.assert_called_once_with(client, repository_name)

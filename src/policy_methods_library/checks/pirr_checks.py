@@ -83,8 +83,8 @@ def check_repo_visibility(client: GitHubRestClient, repository_name: str) -> dic
             "result": "fail",
             "message": "Repository does not contain PIRR documentation.",
             "details": {
-                "repo_name": repository_name,
-                "repo_details": repo_details,
-                "repo_contents": repo_contents,
+                "repository_name": repository_name,
+                "repository_details": repo_details,
+                "repository_contents": repo_contents,
             },
         }
