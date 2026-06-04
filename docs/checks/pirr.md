@@ -57,10 +57,51 @@ then the check will return
 
 - any other combiniation will cause the check to error
 
+## Reference
+
+::: src/policy_methods_library.checks.pirr_checks.check_repo_visibility
+
 ## Usage Examples
 
 ```python
+from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.get_contents import get_repo_contents
+from policy_methods_library.utils.get_details import get_repo_details
+# Setup GitHub Client
 
+# Note: These credentials are placeholders. In a real implementation, 
+# you would securely retrieve these from your environment or a secrets manager.
+app_id = "your_app_id"
+private_key = "your_private_key"
+github_organisation = "your_github_organisation"
+
+client = GitHubRestClient(
+    owner=github_organisation,
+    app_id=app_id,
+    private_key=private_key,
+)
+
+# Run Check with Data Retrieval
+
+response = check_repository_access(client=client, repository_name="your_repository_name")
+
+# Process response
+
+result = response.get("result")
+message = response.get("message")
+
+match result:
+    case "pass":
+        print(f"Check Passed: {message}")
+    case "fail":
+        print(f"Check Failed: {message}")
+        details = response.get("details")
+        individual_collaborators = details.get("individual_collaborators", [])
+        print(f"Individual collaborators found: {individual_collaborators}")
+    case "error":
+        print(f"Check Error: {message}")
+    case _:
+        print("Unexpected result returned.")
 ```
 
 ## GitHub Integration Used
@@ -77,7 +118,6 @@ see utils/get_contents
   - Input the githubRestAPI Client and the repository name
   - Return  a list of files for the repository
 
-
 ## References
 
 [GitHub Usage Policy :]{Software Engineering Principles_Policies_Guidelines_Templates_Plans and more/Software Engineering Policies/GitHub Usage Policy.pdf}
@@ -85,4 +125,3 @@ see utils/get_contents
 [GitHub Documentation for repository details:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)
 
 [GitHub Documentation for repository conents:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)
-
