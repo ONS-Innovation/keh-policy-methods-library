@@ -89,12 +89,12 @@ def check_inactivity(
     if last_updated_date < one_year_ago:
         return {
             "result": "fail",
-            "message": f"Repository has been inactive since {last_updated_date.strftime('%Y-%m-%d')}.",
+            "message": f"Repository {repository_name} has been inactive since {last_updated_date.strftime('%Y-%m-%d')}.",
             "details": {"last_updated": last_updated},
         }
     else:
         return {
             "result": "pass",
-            "message": "Repository has been updated within the last year.",
+            "message": f"Repository {repository_name} has been updated within the last year.",
             "details": {"last_updated": last_updated},
         }
