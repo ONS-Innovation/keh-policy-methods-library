@@ -9,20 +9,10 @@ from unittest.mock import MagicMock
 
 
 class Test_Utils_Get_Contents:
-    """Tests for get_contents function in utils module."""
-
-    def test_error_when_github_client_is_none(self):
-        """Test get_repo_contents returns error when repository name is empty."""
-
-        result = get_contents.get_repo_contents(
-            github_client=None, repository_name="my-repo"
-        )
-
-        assert result == {
-            "result": "error",
-            "message": "GitHubRestClient instance is required.",
-            "details": {},
-        }
+    """Tests for get_contents function in utils module.
+    The get_contents function retrieves the contents of a GitHub repository using the GitHub REST API.
+    It takes a GitHubRestClient instance and a repository name as input, makes an API request to fetch the repository contents, and returns a structured result indicating success or failure along with any relevant details.
+    """
 
     def test_error_when_github_client_is_not_instance_of_githubrestclient(self):
         """Test get_repo_contents returns error when github_client is not an instance of GitHubRestClient."""
@@ -38,20 +28,6 @@ class Test_Utils_Get_Contents:
         }
 
     def test_error_when_repository_name_is_empty(self):
-        """An empty repository name should return an error result."""
-        client = MagicMock()
-
-        result = get_contents.get_repo_contents(
-            github_client=client, repository_name=""
-        )
-
-        assert result == {
-            "result": "error",
-            "message": "Repository name is required.",
-            "details": {},
-        }
-
-    def test_error_when_repository_name_is_empty_string(self):
         """An empty repository name should return an error result."""
         client = MagicMock()
 

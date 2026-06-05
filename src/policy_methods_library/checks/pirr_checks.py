@@ -7,12 +7,14 @@ from policy_methods_library.utils.get_details import get_repo_details
 
 def check_repo_visibility(client: GitHubRestClient, repository_name: str) -> dict:
     """
+    This function checks if a repository visibility is either private or internal and contains PIRR documentation.
+
     Args:
         client (GitHubRestClient): The GitHub REST client.
         repository_name (str): The name of the repository to check.
 
     Returns:
-            dict: A dictionary containing the result of the check (pass/fail), a message, and any relevant details.
+            dict: A dictionary containing the result of the check (pass/fail/error), a message, and any relevant details.
     """
 
     if not isinstance(repository_name, str) or repository_name.strip() == "":
@@ -71,7 +73,7 @@ def check_repo_visibility(client: GitHubRestClient, repository_name: str) -> dic
     if any(content.get("name").lower() == "pirr.md" for content in repo_contents):
         return {
             "result": "pass",
-            "message": "Repositor contains PIRR documentation.",
+            "message": "Repository contains PIRR documentation.",
             "details": {
                 "repository_name": repository_name,
                 "repository_details": repo_details,
