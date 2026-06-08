@@ -66,6 +66,17 @@ client = GitHubRestClient(
 
 Detailed examples of the functionality provided by the package can be found in the documentation, which is available in the `docs` directory and deployed to GitHub Pages.
 
+The package currently provides checks including (but not limited to):
+
+- **CODEOWNERS** – verifies a `CODEOWNERS` file exists at a recognised path in the repository.
+- **License** – verifies a `LICENSE` file is present in public repositories.
+- **README** – verifies a `README.md` file is present.
+- **Gitignore** – verifies a `.gitignore` file is present.
+- **Security Scanning** – verifies Push Protection and Secret Scanning are enabled for public repositories.
+- **Dependabot** – verifies Dependabot automated security fixes are enabled.
+
+For the full list of available checks and their usage, refer to the documentation.
+
 ### Developer Instructions
 
 When developing the package, you can use the `tests/manual_testing.py` file for manual testing of the package during development. This file has a GitHub Client instance already setup which can be used to test the checks in the `policy_methods_library`.
@@ -89,6 +100,7 @@ src/
 └── policy_methods_library/
    ├── checks/                # Core business logic for checking policy adherence.
    │   ├── __init__.py
+   │   ├── codeowners.py      # Check for CODEOWNERS file presence.
    │   └── ...                # files for each specific check
    │
    ├── github/                # GitHub API integrations.
