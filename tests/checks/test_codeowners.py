@@ -71,7 +71,10 @@ class TestCheckCodeowners:
         client.owner = "my-org"
 
         not_found = requests.HTTPError(response=MagicMock(status_code=404))
-        client.make_request.side_effect = [not_found, _make_file_response("* @my-org/owners\n")]
+        client.make_request.side_effect = [
+            not_found,
+            _make_file_response("* @my-org/owners\n"),
+        ]
 
         result = check_codeowners(client=client, repository_name="my-repo")
 
@@ -134,7 +137,11 @@ class TestCheckCodeowners:
             "message": "Repository 'my-repo' does not contain a CODEOWNERS file.",
             "details": {
                 "repository_name": "my-repo",
-                "checked_paths": ["CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS"],
+                "checked_paths": [
+                    "CODEOWNERS",
+                    ".github/CODEOWNERS",
+                    "docs/CODEOWNERS",
+                ],
             },
         }
 
