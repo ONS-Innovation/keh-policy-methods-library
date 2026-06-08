@@ -19,7 +19,7 @@ def check_codeowners(
     """Check if a repository has a CODEOWNERS file.
 
     Searches for a CODEOWNERS file in the repository root, `.github/`, and `docs/` directories,
-    which are the locations GitHub recognises for CODEOWNERS files.
+    (referenced as CODEOWNERS_PATHS) which are the locations GitHub recognises for CODEOWNERS files.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.

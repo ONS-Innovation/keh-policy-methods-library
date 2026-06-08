@@ -5,9 +5,9 @@ This helps ensure that every repository has clearly defined code ownership, enab
 
 ## GitHub Usage Policy Origin
 
-Based on GitHub Usage Policy, clause 5.3.5, in summary:
+Based on GitHub Usage Policy, clause 5.3.4, in summary:
 
-- All repositories must include a `CODEOWNERS` file to define who is responsible for reviewing changes to different parts of the codebase.
+- All repositories must include a `CODEOWNERS` file that contains the GitHub Team name or GitHub ID(s) defining who is responsible for the repository.
 
 ## Check Criteria
 
