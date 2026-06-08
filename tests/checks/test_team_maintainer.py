@@ -24,7 +24,8 @@ class TestCheckTeamMaintainer:
 
     def test_error_when_team_slug_is_none(self):
         """A None team_slug should return an error result."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
+        client.owner = "my-org"
 
         result = check_team_maintainer(client=client, team_slug=None)
 
@@ -36,7 +37,8 @@ class TestCheckTeamMaintainer:
 
     def test_error_when_team_slug_is_empty_string(self):
         """An empty team_slug should return an error result."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
+        client.owner = "my-org"
 
         result = check_team_maintainer(client=client, team_slug="")
 
@@ -48,7 +50,7 @@ class TestCheckTeamMaintainer:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result with the error message."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -62,7 +64,7 @@ class TestCheckTeamMaintainer:
 
     def test_error_when_response_is_not_a_list(self):
         """A non-list response payload should return an error result."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
 
         response = MagicMock()
@@ -79,7 +81,7 @@ class TestCheckTeamMaintainer:
 
     def test_fails_when_team_has_no_maintainers(self):
         """A team with zero maintainers should fail."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
 
         response = MagicMock()
@@ -100,7 +102,7 @@ class TestCheckTeamMaintainer:
 
     def test_passes_when_team_has_one_maintainer(self):
         """A team with one maintainer should pass."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
 
         response = MagicMock()
@@ -132,7 +134,7 @@ class TestCheckTeamMaintainer:
 
     def test_passes_when_team_has_multiple_maintainers(self):
         """A team with multiple maintainers should pass."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
 
         response = MagicMock()
@@ -173,7 +175,7 @@ class TestCheckTeamMaintainer:
 
     def test_calls_correct_api_endpoint(self):
         """The check should call the correct API endpoint with role=maintainer filter."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
 
         response = MagicMock()
@@ -188,7 +190,7 @@ class TestCheckTeamMaintainer:
 
     def test_passes_with_additional_response_fields(self):
         """Additional fields in the API response should not affect the check result."""
-        client = create_autospec(GitHubRestClient)()
+        client = create_autospec(GitHubRestClient)
         client.owner = "my-org"
 
         response = MagicMock()
