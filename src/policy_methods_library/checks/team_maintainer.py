@@ -33,6 +33,7 @@ def check_team_maintainer(
         }
 
     try:
+        # Note: Pagination is not required here as we only need to check if there is at least one maintainer.
         response = client.make_request(
             "GET",
             f"/orgs/{client.owner}/teams/{team_slug}/members?role=maintainer",
