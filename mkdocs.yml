@@ -16,7 +16,7 @@ nav:
       - Naming Convention: checks/naming_convention.md
       - Inactivity: checks/inactivity.md
       - Repository Access: checks/repository_access.md
-      - PIRR: checks/pirr.md
+      - PIRR: checks/pirr_checks.md
       - External Pull Request: checks/external_pull_request.md
       - Security Scanning: checks/security_scanning.md
       - Readme: checks/readme_check.md
