@@ -10,6 +10,7 @@ from policy_methods_library.checks.dependabot_slo import (
 # get_dependabot_slo
 # ---------------------------------------------------------------------------
 
+
 class TestGetDependabotSLO:
     def test_error_when_client_is_none(self):
         """No client should return an error result."""
@@ -20,7 +21,7 @@ class TestGetDependabotSLO:
             "message": "GitHubRestClient instance is required.",
             "details": {},
         }
-    
+
     def test_error_when_verifying_organisation_raises_exception(self):
         """An exception during organisation verification should return an error result."""
         client = MagicMock()
@@ -68,7 +69,7 @@ class TestGetDependabotSLO:
             "message": "API response does not contain organisation data.",
             "details": {"response": ["unexpected", "response"]},
         }
-    
+
     def test_error_when_fetching_dependabot_alerts_raises_exception(self):
         """An exception during dependabot alerts retrieval should return an error result."""
         client = MagicMock()
@@ -80,7 +81,10 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 raise RuntimeError("connection timeout")
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -93,7 +97,7 @@ class TestGetDependabotSLO:
             "message": "Error fetching Dependabot alerts: connection timeout.",
             "details": {},
         }
-    
+
     def test_error_when_pull_request_response_is_not_a_list(self):
         """A non-list response payload should return an error result."""
         client = MagicMock()
@@ -108,7 +112,10 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -137,7 +144,10 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -163,8 +173,8 @@ class TestGetDependabotSLO:
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         fake_open_alert = {
-            "number": 101, 
-            "state": "open", 
+            "number": 101,
+            "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
         }
 
@@ -177,7 +187,10 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -204,14 +217,14 @@ class TestGetDependabotSLO:
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         fake_open_critical_alert = {
-            "number": 101, 
-            "state": "open", 
+            "number": 101,
+            "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
         }
 
         fake_open_low_alert = {
-            "number": 102, 
-            "state": "open", 
+            "number": 102,
+            "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/102",
         }
 
@@ -226,9 +239,15 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return critical_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=low":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=low"
+            ):
                 return low_response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -242,7 +261,10 @@ class TestGetDependabotSLO:
             "details": {
                 "total_open_alerts": 2,
                 "number_alerts_by_severity": {"critical": 1, "low": 1},
-                "failing_alerts": {"critical": [fake_open_critical_alert], "low": [fake_open_low_alert]},
+                "failing_alerts": {
+                    "critical": [fake_open_critical_alert],
+                    "low": [fake_open_low_alert],
+                },
             },
         }
 
@@ -261,7 +283,10 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -272,7 +297,10 @@ class TestGetDependabotSLO:
         client.make_request.assert_has_calls(
             [
                 call("GET", "/orgs/my-org"),
-                call("GET", "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"),
+                call(
+                    "GET",
+                    "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical",
+                ),
             ]
         )
 
@@ -316,9 +344,15 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return page1_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical&page=2":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical&page=2"
+            ):
                 return page2_response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -340,9 +374,13 @@ class TestGetDependabotSLO:
         client.make_request.assert_has_calls(
             [
                 call("GET", "/orgs/my-org"),
-                call("GET", "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"),
                 call(
-                    "GET", "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical&page=2"
+                    "GET",
+                    "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical",
+                ),
+                call(
+                    "GET",
+                    "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical&page=2",
                 ),
             ]
         )
@@ -355,11 +393,13 @@ class TestGetDependabotSLO:
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        open_critical_alert = {
+        open_critical_alert = (
+            {
                 "number": 101,
                 "state": "open",
                 "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
             },
+        )
 
         response = MagicMock()
         response.json.return_value = [open_critical_alert]
@@ -368,7 +408,10 @@ class TestGetDependabotSLO:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical":
+            if (
+                endpoint
+                == "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"
+            ):
                 return response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -388,10 +431,13 @@ class TestGetDependabotSLO:
 
         # Verify no additional pages were requested
         assert client.make_request.call_count == 2
-        
+
         client.make_request.assert_has_calls(
             [
                 call("GET", "/orgs/my-org"),
-                call("GET", "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical"),
+                call(
+                    "GET",
+                    "/orgs/my-org/dependabot/alerts?per_page=100&state=open&severity=critical",
+                ),
             ]
         )
