@@ -22,6 +22,7 @@ nav:
       - Dependabot: checks/dependabot.md
       - Gitignore: checks/gitignore.md
       - License: checks/license_check.md
+      - Team Maintainer: checks/team_maintainer.md
       - CODEOWNERS: checks/codeowners.md
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
