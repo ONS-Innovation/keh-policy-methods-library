@@ -91,9 +91,11 @@ def get_dependabot_slo(
                         "details": {"response": response_dependabot_alerts},
                     }
 
-                next_page_url = response.links.get("next", {}).get("url")
-
-                if not next_page_url:
+                if response.links and "next" in response.links:
+                    next_page_url = response.links["next"]["url"].replace(
+                        "https://api.github.com", ""
+                    )
+                else:
                     has_next_page = False
 
     except Exception as e:
