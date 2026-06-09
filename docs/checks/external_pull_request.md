@@ -13,7 +13,7 @@ Inspired by the GitHub Usage Policy, clause 5.5.6, in summary:
 ## Check Criteria
 
 - The check first verifies that the client is authenticated against an organisation account.
-- The check retrieves open pull requests from the repository.
+- The check retrieves open pull requests from the repository (with automatic pagination support to handle repositories with many open PRs).
 - For each pull request author, the check verifies whether that user is a member of the organisation.
 - If all pull request authors are organisation members, the check will pass.
 - If one or more pull request authors are not organisation members, the check will fail.
@@ -90,6 +90,7 @@ The check uses these GitHub API endpoints:
 The `details` object returned by this check contains:
 
 - `repository_name`: The repository that was checked.
+- `open_pull_request_count`: The total number of open pull requests in the repository.
 - `external_pull_requests`: A list of pull requests authored by non-organisation members.
   Each list item contains:
   - `number`: Pull request number.

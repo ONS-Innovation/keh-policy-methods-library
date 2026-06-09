@@ -110,24 +110,41 @@ def check_external_pull_request(
     if organisation_check_result is not None:
         return organisation_check_result
 
+    pull_requests = []
+    next_page_url = (
+        f"/repos/{client.owner}/{repository_name}/pulls?state=open&per_page=100"
+    )
+    has_next_page = True
+
     try:
-        response = client.make_request(
-            "GET",
-            f"/repos/{client.owner}/{repository_name}/pulls?state=open",
-        )
-        pull_requests = response.json()
+        while has_next_page:
+            response = client.make_request(
+                "GET",
+                next_page_url,
+            )
+            response_pull_requests = response.json()
+
+            if isinstance(response_pull_requests, list):
+                pull_requests.extend(response_pull_requests)
+            else:
+                return {
+                    "result": "error",
+                    "message": "API response does not contain a list of pull requests.",
+                    "details": {"response": response_pull_requests},
+                }
+
+            if response.links and "next" in response.links:
+                next_page_url = response.links["next"]["url"].replace(
+                    "https://api.github.com", ""
+                )
+            else:
+                has_next_page = False
+
     except Exception as e:
         return {
             "result": "error",
             "message": f"An error occurred while retrieving pull requests: {str(e)}",
             "details": {},
-        }
-
-    if not isinstance(pull_requests, list):
-        return {
-            "result": "error",
-            "message": "API response does not contain a list of pull requests.",
-            "details": {"response": pull_requests},
         }
 
     external_pull_requests = []
@@ -169,6 +186,7 @@ def check_external_pull_request(
             "message": f"Repository '{repository_name}' has external pull requests authored by non-organisation members.",
             "details": {
                 "repository_name": repository_name,
+                "open_pull_request_count": len(pull_requests),
                 "external_pull_requests": external_pull_requests,
             },
         }
@@ -178,6 +196,7 @@ def check_external_pull_request(
         "message": f"Repository '{repository_name}' has no external pull requests.",
         "details": {
             "repository_name": repository_name,
+            "open_pull_request_count": len(pull_requests),
             "external_pull_requests": external_pull_requests,
         },
     }

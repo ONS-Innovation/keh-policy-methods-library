@@ -96,7 +96,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 raise RuntimeError("connection timeout")
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -124,7 +124,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -148,11 +148,12 @@ class TestCheckExternalPullRequest:
 
         pulls_response = MagicMock()
         pulls_response.json.return_value = [{"number": 1, "title": "Improve docs"}]
+        pulls_response.links = {}
 
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -176,11 +177,12 @@ class TestCheckExternalPullRequest:
 
         pulls_response = MagicMock()
         pulls_response.json.return_value = []
+        pulls_response.links = {}
 
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -193,6 +195,7 @@ class TestCheckExternalPullRequest:
             "message": "Repository 'my-repo' has no external pull requests.",
             "details": {
                 "repository_name": "my-repo",
+                "open_pull_request_count": 0,
                 "external_pull_requests": [],
             },
         }
@@ -207,6 +210,7 @@ class TestCheckExternalPullRequest:
             {"number": 1, "title": "Update workflow", "user": {"login": "alice"}},
             {"number": 2, "title": "Bump deps", "user": {"login": "bob"}},
         ]
+        pulls_response.links = {}
 
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
@@ -217,7 +221,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
             if endpoint in [
                 "/orgs/my-org/members/alice",
@@ -236,6 +240,7 @@ class TestCheckExternalPullRequest:
             "message": "Repository 'my-repo' has no external pull requests.",
             "details": {
                 "repository_name": "my-repo",
+                "open_pull_request_count": 2,
                 "external_pull_requests": [],
             },
         }
@@ -253,6 +258,7 @@ class TestCheckExternalPullRequest:
                 "user": {"login": "dependabot[bot]"},
             }
         ]
+        pulls_response.links = {}
 
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
@@ -260,7 +266,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
             if endpoint == "/orgs/my-org/members/dependabot[bot]":
                 raise AssertionError("dependabot[bot] membership should not be checked")
@@ -275,6 +281,7 @@ class TestCheckExternalPullRequest:
             "message": "Repository 'my-repo' has no external pull requests.",
             "details": {
                 "repository_name": "my-repo",
+                "open_pull_request_count": 1,
                 "external_pull_requests": [],
             },
         }
@@ -297,6 +304,7 @@ class TestCheckExternalPullRequest:
                 "user": {"login": "external-contributor"},
             },
         ]
+        pulls_response.links = {}
 
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
@@ -304,7 +312,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
             if endpoint == "/orgs/my-org/members/dependabot[bot]":
                 raise AssertionError("dependabot[bot] membership should not be checked")
@@ -324,6 +332,7 @@ class TestCheckExternalPullRequest:
             "message": "Repository 'my-repo' has external pull requests authored by non-organisation members.",
             "details": {
                 "repository_name": "my-repo",
+                "open_pull_request_count": 2,
                 "external_pull_requests": [
                     {
                         "number": 88,
@@ -348,6 +357,7 @@ class TestCheckExternalPullRequest:
                 "user": {"login": "external-contributor"},
             },
         ]
+        pulls_response.links = {}
 
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
@@ -358,7 +368,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
 
             if endpoint == "/orgs/my-org/members/alice":
@@ -382,6 +392,7 @@ class TestCheckExternalPullRequest:
             "message": "Repository 'my-repo' has external pull requests authored by non-organisation members.",
             "details": {
                 "repository_name": "my-repo",
+                "open_pull_request_count": 2,
                 "external_pull_requests": [
                     {
                         "number": 202,
@@ -405,6 +416,7 @@ class TestCheckExternalPullRequest:
                 "user": {"login": "alice"},
             }
         ]
+        pulls_response.links = {}
 
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
@@ -412,7 +424,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
 
             if endpoint == "/orgs/my-org/members/alice":
@@ -446,6 +458,7 @@ class TestCheckExternalPullRequest:
                 "user": {"login": "alice"},
             }
         ]
+        pulls_response.links = {}
 
         org_response = MagicMock()
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
@@ -456,7 +469,7 @@ class TestCheckExternalPullRequest:
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
 
             if endpoint == "/orgs/my-org/members/alice":
@@ -485,11 +498,12 @@ class TestCheckExternalPullRequest:
 
         pulls_response = MagicMock()
         pulls_response.json.return_value = []
+        pulls_response.links = {}
 
         def make_request_side_effect(method: str, endpoint: str):
             if endpoint == "/orgs/my-org":
                 return org_response
-            if endpoint == "/repos/my-org/my-repo/pulls?state=open":
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
                 return pulls_response
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
 
@@ -500,6 +514,173 @@ class TestCheckExternalPullRequest:
         client.make_request.assert_has_calls(
             [
                 call("GET", "/orgs/my-org"),
-                call("GET", "/repos/my-org/my-repo/pulls?state=open"),
+                call("GET", "/repos/my-org/my-repo/pulls?state=open&per_page=100"),
+            ]
+        )
+
+    def test_handles_paginated_pull_requests(self):
+        """The check should handle paginated pull requests across multiple pages."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        org_response = MagicMock()
+        org_response.json.return_value = {"type": "Organization", "login": "my-org"}
+
+        # First page response with a next link
+        page1_response = MagicMock()
+        page1_response.json.return_value = [
+            {"number": 1, "title": "Page 1 PR", "user": {"login": "alice"}},
+        ]
+        page1_response.links = {
+            "next": {
+                "url": "https://api.github.com/repos/my-org/my-repo/pulls?state=open&per_page=100&page=2"
+            }
+        }
+
+        # Second page response without a next link
+        page2_response = MagicMock()
+        page2_response.json.return_value = [
+            {"number": 2, "title": "Page 2 PR", "user": {"login": "bob"}},
+        ]
+        page2_response.links = {}
+
+        membership_response = MagicMock()
+        membership_response.status_code = 204
+
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
+            if endpoint == "/orgs/my-org":
+                return org_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
+                return page1_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100&page=2":
+                return page2_response
+            if endpoint in [
+                "/orgs/my-org/members/alice",
+                "/orgs/my-org/members/bob",
+            ]:
+                assert kwargs.get("allow_redirects") is False
+                return membership_response
+            raise AssertionError(f"Unexpected endpoint called: {endpoint}")
+
+        client.make_request.side_effect = make_request_side_effect
+
+        result = check_external_pull_request(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository 'my-repo' has no external pull requests.",
+            "details": {
+                "repository_name": "my-repo",
+                "open_pull_request_count": 2,
+                "external_pull_requests": [],
+            },
+        }
+
+        # Verify pagination was handled correctly
+        client.make_request.assert_has_calls(
+            [
+                call("GET", "/orgs/my-org"),
+                call("GET", "/repos/my-org/my-repo/pulls?state=open&per_page=100"),
+                call(
+                    "GET", "/repos/my-org/my-repo/pulls?state=open&per_page=100&page=2"
+                ),
+                call("GET", "/orgs/my-org/members/alice", allow_redirects=False),
+                call("GET", "/orgs/my-org/members/bob", allow_redirects=False),
+            ]
+        )
+
+    def test_handles_pull_requests_with_no_links_attribute(self):
+        """The check should handle responses where links is None."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        org_response = MagicMock()
+        org_response.json.return_value = {"type": "Organization", "login": "my-org"}
+
+        pulls_response = MagicMock()
+        pulls_response.json.return_value = [
+            {"number": 1, "title": "Test PR", "user": {"login": "alice"}},
+        ]
+        pulls_response.links = None
+
+        membership_response = MagicMock()
+        membership_response.status_code = 204
+
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
+            if endpoint == "/orgs/my-org":
+                return org_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
+                return pulls_response
+            if endpoint == "/orgs/my-org/members/alice":
+                assert kwargs.get("allow_redirects") is False
+                return membership_response
+            raise AssertionError(f"Unexpected endpoint called: {endpoint}")
+
+        client.make_request.side_effect = make_request_side_effect
+
+        result = check_external_pull_request(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository 'my-repo' has no external pull requests.",
+            "details": {
+                "repository_name": "my-repo",
+                "open_pull_request_count": 1,
+                "external_pull_requests": [],
+            },
+        }
+
+    def test_pagination_stops_when_no_next_link(self):
+        """The check should stop pagination when response has links but no next key."""
+        client = MagicMock()
+        client.owner = "my-org"
+
+        org_response = MagicMock()
+        org_response.json.return_value = {"type": "Organization", "login": "my-org"}
+
+        # First page with PRs but no next link (last page)
+        pulls_response = MagicMock()
+        pulls_response.json.return_value = [
+            {"number": 1, "title": "Only PR", "user": {"login": "alice"}},
+        ]
+        pulls_response.links = {
+            "prev": {
+                "url": "https://api.github.com/repos/my-org/my-repo/pulls?state=open&per_page=100&page=1"
+            }
+        }
+
+        membership_response = MagicMock()
+        membership_response.status_code = 204
+
+        def make_request_side_effect(method: str, endpoint: str, **kwargs):
+            if endpoint == "/orgs/my-org":
+                return org_response
+            if endpoint == "/repos/my-org/my-repo/pulls?state=open&per_page=100":
+                return pulls_response
+            if endpoint == "/orgs/my-org/members/alice":
+                assert kwargs.get("allow_redirects") is False
+                return membership_response
+            raise AssertionError(f"Unexpected endpoint called: {endpoint}")
+
+        client.make_request.side_effect = make_request_side_effect
+
+        result = check_external_pull_request(client=client, repository_name="my-repo")
+
+        assert result == {
+            "result": "pass",
+            "message": "Repository 'my-repo' has no external pull requests.",
+            "details": {
+                "repository_name": "my-repo",
+                "open_pull_request_count": 1,
+                "external_pull_requests": [],
+            },
+        }
+
+        # Verify no additional pages were requested
+        client.make_request.assert_has_calls(
+            [
+                call("GET", "/orgs/my-org"),
+                call("GET", "/repos/my-org/my-repo/pulls?state=open&per_page=100"),
+                call("GET", "/orgs/my-org/members/alice", allow_redirects=False),
             ]
         )

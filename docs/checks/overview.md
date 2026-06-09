@@ -16,6 +16,8 @@ Documentation on each component within the checks module can be found in the rel
 - `security_scanning.py`: Contains methods for checking that Push Protection and Secret Scanning are enabled for public repositories.
 - `dependabot.py`: Contains methods for checking that Dependabot automated security fixes are enabled for repositories.
 - `license.py`: Contains method for checking whether a repository includes a `LICENSE` file.
+- `team_maintainer.py`: Contains method for checking that a GitHub team has at least one maintainer.
+- `codeowners.py`: Contains method for checking whether a repository includes a `CODEOWNERS` file.
 - `pirr_checks.py`: Contains methods for checking that private and internal repositories include `pirr.md`
 
 ## Importing the Checks Module
