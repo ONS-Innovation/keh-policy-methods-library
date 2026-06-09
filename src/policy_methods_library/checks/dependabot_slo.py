@@ -35,9 +35,9 @@ def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
             "message": "Client is not authenticated as an organisation.",
             "details": {"organisation": organisation_data},
         }
-    
+
     return None
-    
+
 
 def get_dependabot_slo(
     client: GitHubRestClient,
@@ -60,7 +60,7 @@ def get_dependabot_slo(
             "message": "GitHubRestClient instance is required.",
             "details": {},
         }
-    
+
     if levels is None:
         levels = ["critical", "high", "medium", "low"]
 
@@ -71,12 +71,11 @@ def get_dependabot_slo(
             "details": {},
         }
 
-
     organisation_check_result = _verify_client_organisation(client=client)
     if organisation_check_result is not None:
         return organisation_check_result
 
-    dependabot_alerts = {level: [] for level in levels}
+    dependabot_alerts: dict[str, list] = {level: [] for level in levels}
 
     try:
         for level in levels:
@@ -87,10 +86,7 @@ def get_dependabot_slo(
             has_next_page = True
 
             while has_next_page:
-                response = client.make_request(
-                    "GET",
-                    next_page_url
-                )
+                response = client.make_request("GET", next_page_url)
                 response_dependabot_alerts = response.json()
 
                 if isinstance(response_dependabot_alerts, list):
@@ -101,22 +97,24 @@ def get_dependabot_slo(
                         "message": f"API response does not contain a list of Dependabot {level} alerts.",
                         "details": {"response": response_dependabot_alerts},
                     }
-                
+
                 next_page_url = response.links.get("next", {}).get("url")
-                
+
                 if not next_page_url:
                     has_next_page = False
-    
+
     except Exception as e:
         return {
             "result": "error",
             "message": f"Error fetching Dependabot alerts: {str(e)}.",
             "details": {},
         }
-    
-    number_alerts_by_severity = {level: len(alerts) for level, alerts in dependabot_alerts.items()}
+
+    number_alerts_by_severity = {
+        level: len(alerts) for level, alerts in dependabot_alerts.items()
+    }
     total_open_alerts = sum(number_alerts_by_severity.values())
-    
+
     if total_open_alerts == 0:
         return {
             "result": "pass",
@@ -124,9 +122,9 @@ def get_dependabot_slo(
             "details": {
                 "total_open_alerts": total_open_alerts,
                 "number_alerts_by_severity": number_alerts_by_severity,
-            }
+            },
         }
-    
+
     return {
         "result": "fail",
         "message": f"Found {total_open_alerts} open Dependabot security alerts. Please resolve these alerts within the policy-defined SLO timeline.",
@@ -134,5 +132,5 @@ def get_dependabot_slo(
             "total_open_alerts": total_open_alerts,
             "number_alerts_by_severity": number_alerts_by_severity,
             "failing_alerts": dependabot_alerts,
-        }
+        },
     }
