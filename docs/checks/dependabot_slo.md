@@ -4,12 +4,12 @@ The Dependabot SLO Check verifies that all open Dependabot security alerts in an
 
 ## GitHub Usage Policy Origin
 
-Inspired by the GitHub Usage Policy, clause 5.5.4. 
+Inspired by the GitHub Usage Policy, clause 5.5.4.
 
 Where open Dependabot alerts must be resolved within defined SLOs:
 
 | Severity | Timeframe |
-|----------|-----------|
+| ---------- | ----------- |
 | Critical | 5 working days |
 | High | 15 working days |
 | Medium | 60 working days |
