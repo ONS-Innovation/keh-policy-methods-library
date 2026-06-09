@@ -61,15 +61,8 @@ def get_dependabot_slo(
             "details": {},
         }
 
-    if levels is None:
+    if levels is None or levels == []:
         levels = ["critical", "high", "medium", "low"]
-
-    elif levels == []:
-        return {
-            "result": "error",
-            "message": "Severity levels are required.",
-            "details": {},
-        }
 
     organisation_check_result = _verify_client_organisation(client=client)
     if organisation_check_result is not None:
