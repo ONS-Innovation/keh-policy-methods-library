@@ -1,13 +1,19 @@
+"""
+Get a list of repository files from GitHub.
+"""
+
 from policy_methods_library.github.clients import GitHubRestClient
 
 
 def get_repo_contents(github_client: GitHubRestClient, repository_name: str) -> dict:
     """
     Args:
-            github_client (GitHubRestClient): The GitHub REST client to use for making requests.
-            repository_name (str): The name of the repository for which to retrieve contents.
+            github_client (GitHubRestClient): The GitHub REST client to use for making requests.The name of the repository for which to retrieve contents.
     Returns:
-            list: A list of dictionaries containing the details of each file or directory in the repository.
+            dict: A dictionary containing the result of the check (pass/fail), a message, and any relevant details.
+            The details will include :-
+                repository name
+                conents: A list of dictionaries containing the details of each file or directory in the repository.
     """
 
     if not github_client:
@@ -30,19 +36,15 @@ def get_repo_contents(github_client: GitHubRestClient, repository_name: str) -> 
             f"/repos/{github_client.owner}/{repository_name}/contents",
         )
 
-        contents = response.json()
-
-        if not isinstance(contents, list):
-            return {
-                "result": "error",
-                "message": "API response is not a valid JSON array.",
-                "details": {"response": contents},
-            }
         return {
             "result": "pass",
-            "message": f"Successfully retrieved contents for repository '{repository_name}'.",
-            "details": contents,
+            "message": "Repository contents retrieved successfully.",
+            "details": {
+                "repository_name": repository_name,
+                "contents": response.json(),
+            },
         }
+
     except Exception as e:
         return {
             "result": "error",

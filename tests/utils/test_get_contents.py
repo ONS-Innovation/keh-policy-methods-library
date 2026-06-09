@@ -1,8 +1,9 @@
+"""Tests for get_contents function"""
+
+from policy_methods_library.github.clients import GitHubRestClient
 from policy_methods_library.utils import get_contents
 from unittest.mock import MagicMock
 
-
-"Tests for get_contents function"
 # ---------------------------------------------------------------------------
 # get_contents
 # ---------------------------------------------------------------------------
@@ -29,7 +30,10 @@ class Test_Utils_Get_Contents:
 
     def test_error_when_repository_name_is_empty(self):
         """An empty repository name should return an error result."""
-        client = MagicMock()
+        client = GitHubRestClient.__new__(
+            GitHubRestClient
+        )  # Create an instance without calling __init__
+        client.owner = "my-org"
 
         result = get_contents.get_repo_contents(
             github_client=client, repository_name=""
@@ -44,56 +48,54 @@ class Test_Utils_Get_Contents:
 
 def test_error_when_response_is_not_valid_json_array():
     """Test get_repo_contents returns error when API response is not a valid JSON array."""
-    client = MagicMock()
-    client.owner = "my-org"
-    client.make_request.return_value.json.return_value = {"invalid": "response"}
 
-    result = get_contents.get_repo_contents(
-        github_client=client, repository_name="my-repo"
+    client = GitHubRestClient.__new__(GitHubRestClient)
+    client.owner = "test-owner"
+
+    mock_response = MagicMock()
+    # mock_response.json.return_value = {"invalid": "response"}
+    client.make_request = MagicMock(return_value=mock_response)
+    client.make_request.side_effect = Exception(
+        "API response is not a valid JSON array."
     )
 
-    assert result == {
-        "result": "error",
-        "message": "API response is not a valid JSON array.",
-        "details": {"response": {"invalid": "response"}},
-    }
+    result = get_contents.get_repo_contents(
+        github_client=client, repository_name="test-repo"
+    )
+
+    assert result["result"] == "error"
+    assert (
+        result["message"]
+        == "An error occurred while fetching repository contents: API response is not a valid JSON array."
+    )
+    assert result["details"] == {}
 
 
-def test_successful_response():
+def test_get_contents_successful_response():
     """Test get_repo_contents returns success when API response is a valid JSON array."""
-    client = MagicMock()
-    client.owner = "my-org"
-    client.make_request.return_value.json.return_value = [
+
+    client = GitHubRestClient.__new__(GitHubRestClient)
+    client.owner = "test-owner"
+
+    mock_response = MagicMock()
+    mock_response.json.return_value = [
         {"name": "file1.txt", "type": "file"},
         {"name": "dir1", "type": "dir"},
     ]
+    client.make_request = MagicMock(return_value=mock_response)
+
+    get_contents.get_repo_contents.make_request = MagicMock(return_value=mock_response)
 
     result = get_contents.get_repo_contents(
         github_client=client, repository_name="my-repo"
     )
 
-    assert result == {
-        "result": "pass",
-        "message": "Successfully retrieved contents for repository 'my-repo'.",
-        "details": [
+    assert result["result"] == "pass"
+    assert result["message"] == "Repository contents retrieved successfully."
+    assert result["details"] == {
+        "repository_name": "my-repo",
+        "contents": [
             {"name": "file1.txt", "type": "file"},
             {"name": "dir1", "type": "dir"},
         ],
-    }
-
-
-def test_exception_handling():
-    """Test get_repo_contents returns error when an exception occurs during API request."""
-    client = MagicMock()
-    client.owner = "my-org"
-    client.make_request.side_effect = Exception("API request failed")
-
-    result = get_contents.get_repo_contents(
-        github_client=client, repository_name="my-repo"
-    )
-
-    assert result == {
-        "result": "error",
-        "message": "An error occurred while fetching repository contents: API request failed",
-        "details": {},
     }

@@ -1,3 +1,6 @@
+"""
+Get repository details from GitHub."""
+
 from policy_methods_library.github.clients import GitHubRestClient
 
 
@@ -5,7 +8,7 @@ def get_repo_details(github_client: GitHubRestClient, repository_name: str) -> d
     """
     Args:
             github_client (GitHubRestClient): The GitHub REST client to use for making requests.
-            repository_name (str): The name of the repository for which to retrieve details.
+            repository_name (str): The name of t"he repository for which to retrieve details.
 
     Returns:
             dict: A dictionary containing the result of the check (pass/fail), a message, and any relevant details.
@@ -14,15 +17,15 @@ def get_repo_details(github_client: GitHubRestClient, repository_name: str) -> d
     if not github_client:
         return {
             "result": "error",
-            "message": "GitHub client cannot be None.",
-            "details": {"github_client": github_client},
+            "message": "GitHubRestClient instance is required.",
+            "details": {},
         }
 
     if not repository_name:
         return {
             "result": "error",
-            "message": "Repository name cannot be empty.",
-            "details": {"repository_name": repository_name},
+            "message": "Repository name is required.",
+            "details": {},
         }
 
     try:
@@ -30,19 +33,13 @@ def get_repo_details(github_client: GitHubRestClient, repository_name: str) -> d
             "GET", f"/repos/{github_client.owner}/{repository_name}"
         )
 
-        details = response.json()
-
-        if not isinstance(details, dict):
-            return {
-                "result": "error",
-                "message": "API response is not a valid JSON object.",
-                "details": {"response": details},
-            }
-
         return {
             "result": "pass",
-            "message": f"Successfully retrieved details for repository '{repository_name}'.",
-            "details": details,
+            "message": "Repository details retrieved successfully.",
+            "details": {
+                "repository_name": repository_name,
+                "details": response.json(),
+            },
         }
 
     except Exception as e:
