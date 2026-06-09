@@ -16,6 +16,7 @@ Documentation on each component within the checks module can be found in the rel
 - `security_scanning.py`: Contains methods for checking that Push Protection and Secret Scanning are enabled for public repositories.
 - `dependabot.py`: Contains methods for checking that Dependabot automated security fixes are enabled for repositories.
 - `license.py`: Contains method for checking whether a repository includes a `LICENSE` file.
+- `codeowners.py`: Contains method for checking whether a repository includes a `CODEOWNERS` file.
 
 ## Importing the Checks Module
 
