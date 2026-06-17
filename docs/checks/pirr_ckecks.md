@@ -65,13 +65,7 @@ the_check_response = repository_details  # replace with actual check response ob
 result = the_check_response.get("result")
 message = the_check_response.get("message")
 
-match result:
-    case "pass":
-        print(f"Check Passed: {message}")
-    case "fail":
-        print(f"Check Failed: {message}")
-        details = the_check_response.get("details")
-        individual_collaborators = details.get("individual_collaborators", [])
+t("individual_collaborators", [])
         print(f"Individual collaborators found: {individual_collaborators}")
     case "error":
         print(f"Check Error: {message}")

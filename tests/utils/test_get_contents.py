@@ -1,7 +1,9 @@
 """Tests for get_contents function"""
 
 from policy_methods_library.github.clients import GitHubRestClient
+
 from policy_methods_library.utils import get_contents
+
 from unittest.mock import MagicMock
 
 # ---------------------------------------------------------------------------
@@ -11,12 +13,16 @@ from unittest.mock import MagicMock
 
 class Test_Utils_Get_Contents:
     """Tests for get_contents function in utils module.
-    The get_contents function retrieves the contents of a GitHub repository using the GitHub REST API.
-    It takes a GitHubRestClient instance and a repository name as input, makes an API request to fetch the repository contents, and returns a structured result indicating success or failure along with any relevant details.
+    The get_contents function retrieves the contents of a GitHub repository
+    using the GitHub REST API. It takes a GitHubRestClient instance and a
+    repository name as input, makes an API request to fetch the repository
+    contents, and returns a structured result indicating success or failure
+    along with any relevant details.
     """
 
     def test_error_when_github_client_is_not_instance_of_githubrestclient(self):
-        """Test get_repo_contents returns error when github_client is not an instance of GitHubRestClient."""
+        """Test get_repo_contents returns error when github_client is not
+        an instance of GitHubRestClient."""
 
         result = get_contents.get_repo_contents(
             github_client={}, repository_name="my-repo"
@@ -47,7 +53,7 @@ class Test_Utils_Get_Contents:
 
 
 def test_error_when_response_is_not_valid_json_array():
-    """Test get_repo_contents returns error when API response is not a valid JSON array."""
+    """Test get_repo_contents returns error for invalid API response."""
 
     client = GitHubRestClient.__new__(GitHubRestClient)
     client.owner = "test-owner"
@@ -63,16 +69,21 @@ def test_error_when_response_is_not_valid_json_array():
         github_client=client, repository_name="test-repo"
     )
 
+    print(result)
+
     assert result["result"] == "error"
-    assert (
-        result["message"]
-        == "An error occurred while fetching repository contents: API response is not a valid JSON array."
+    expected_message = (
+        "An error occurred while fetching repository contents: "
+        "API response is not a valid JSON array."
     )
+    assert result["message"] == expected_message
     assert result["details"] == {}
 
 
 def test_get_contents_successful_response():
-    """Test get_repo_contents returns success when API response is a valid JSON array."""
+    """Test get_repo_contents returns success when API response
+    is a valid JSON array.
+    """
 
     client = GitHubRestClient.__new__(GitHubRestClient)
     client.owner = "test-owner"
