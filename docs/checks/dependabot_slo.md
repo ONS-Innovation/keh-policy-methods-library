@@ -8,20 +8,22 @@ Inspired by the GitHub Usage Policy, clause 5.5.4.
 
 Where open Dependabot alerts must be resolved within defined SLOs:
 
-| Severity | Timeframe       |
-|----------|-----------------|
-| Critical | 5 working days  |
-| High     | 15 working days |
-| Medium   | 60 working days |
-| Low      | 90 working days |
+| Severity | Timeframe      |
+|----------|----------------|
+| Critical | 5 days         |
+| High     | 15 days        |
+| Medium   | 60 days        |
+| Low      | 90 days        |
 
 ## Check Criteria
 
 - The check first verifies that the client is authenticated against an organisation account.
 - The check retrieves all open Dependabot security alerts from the organisation (with automatic pagination support to handle organisations with many alerts).
 - Alerts are grouped by severity level: critical, high, medium, and low.
-- If no open Dependabot alerts are found, the check will pass.
-- If one or more open Dependabot alerts exist at any severity level, the check will fail.
+- If no open Dependabot alerts are found, or all alerts are within their severity-level SLO, the check will pass.
+- If one or more open Dependabot alerts exist that exceed their severity-level SLO, the check will fail.
+- Alerts with missing or invalid `created_at` timestamps are treated as failures (exceeding SLO).
+- Alerts created exactly at the SLO boundary are considered as exceeding the SLO.
 - If the API requests fail or the response is malformed, the check will return an error status.
 
 > Note: This check retrieves alerts across all severity levels by default. The severity levels checked can be customised by providing a custom list of severity values.

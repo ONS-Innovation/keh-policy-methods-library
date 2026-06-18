@@ -11,8 +11,10 @@ _SLO_DAYS: dict[str, int] = {
     "low": 90,
 }
 
+NOW = datetime.now(timezone.utc)
 
-def _exceeds_slo(alert: dict, severity: str, now: datetime) -> bool:
+
+def _exceeds_slo(alert: dict, severity: str) -> bool:
     """
     Return True if the alert has exceeded its SLO or has a missing/invalid created_at.
     Alerts with a missing or broken created_at are considered failures.
@@ -21,7 +23,6 @@ def _exceeds_slo(alert: dict, severity: str, now: datetime) -> bool:
     Args:
         alert: dictionary for the alert
         severity: string for level of severity
-        now: the current time
 
     Returns:
         Boolean value for whether the SLO is exceeded or not
@@ -38,7 +39,7 @@ def _exceeds_slo(alert: dict, severity: str, now: datetime) -> bool:
     except (ValueError, TypeError):
         return True
 
-    slo_deadline = now - timedelta(days=_SLO_DAYS[severity])
+    slo_deadline = NOW - timedelta(days=_SLO_DAYS[severity])
     return created_at <= slo_deadline
 
 
@@ -81,14 +82,12 @@ def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
 def get_dependabot_slo(
     client: GitHubRestClient,
     levels: list[str] | None = None,
-    _now: datetime | None = None,
 ) -> dict:
     """Get open Dependabot security alerts grouped by severity.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.
         levels: A list of alert severities to include in the check.
-        _now: The current time
 
     Returns:
         A dictionary with the result of the check, including 'result' (pass/fail/error),
@@ -104,8 +103,6 @@ def get_dependabot_slo(
 
     if levels is None or levels == []:
         levels = ["critical", "high", "medium", "low"]
-
-    now = _now if _now is not None else datetime.now(timezone.utc)
 
     organisation_check_result = _verify_client_organisation(client=client)
     if organisation_check_result is not None:
@@ -151,7 +148,7 @@ def get_dependabot_slo(
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
-            if _exceeds_slo(alert, level, now):
+            if _exceeds_slo(alert, level):
                 exceeded_alerts[level].append(alert)
 
     number_alerts_by_severity = {

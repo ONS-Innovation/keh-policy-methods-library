@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, call
 
+from policy_methods_library.checks import dependabot_slo as dependabot_slo_check
 from policy_methods_library.checks.dependabot_slo import (
     get_dependabot_slo,
 )
@@ -482,14 +483,19 @@ class TestGetDependabotSLO:
 
         client.make_request.side_effect = _side_effect
 
+    def _set_fixed_now(self):
+        """Set module-global NOW so SLO boundary tests stay deterministic."""
+        dependabot_slo_check.NOW = _FIXED_NOW
+
     def test_passes_when_all_alerts_are_within_slo(self):
         """Alerts that have not yet exceeded their SLO should not cause a failure."""
         client = self._make_org_client()
+        self._set_fixed_now()
         # 4 days old — critical SLO is 5 days, so still within SLO.
         alert = {"number": 1, "state": "open", "created_at": _created_at(4)}
         self._setup_alert_response(client, "critical", [alert])
 
-        result = get_dependabot_slo(client=client, levels=["critical"], _now=_FIXED_NOW)
+        result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result == {
             "result": "pass",
@@ -503,11 +509,12 @@ class TestGetDependabotSLO:
     def test_fails_when_alert_exceeds_slo(self):
         """An alert older than its SLO threshold should be returned as failing."""
         client = self._make_org_client()
+        self._set_fixed_now()
         # 6 days old — critical SLO is 5 days, so exceeded.
         alert = {"number": 1, "state": "open", "created_at": _created_at(6)}
         self._setup_alert_response(client, "critical", [alert])
 
-        result = get_dependabot_slo(client=client, levels=["critical"], _now=_FIXED_NOW)
+        result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result == {
             "result": "fail",
@@ -522,11 +529,12 @@ class TestGetDependabotSLO:
     def test_fails_when_alert_is_exactly_at_slo_boundary(self):
         """An alert created exactly at the SLO boundary is considered non-compliant."""
         client = self._make_org_client()
+        self._set_fixed_now()
         # Exactly 5 days old — critical SLO is 5 days, boundary counts as failed.
         alert = {"number": 1, "state": "open", "created_at": _created_at(5)}
         self._setup_alert_response(client, "critical", [alert])
 
-        result = get_dependabot_slo(client=client, levels=["critical"], _now=_FIXED_NOW)
+        result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 1
@@ -535,6 +543,7 @@ class TestGetDependabotSLO:
     def test_passes_when_alert_is_one_second_within_boundary(self):
         """An alert one second younger than the SLO threshold should not fail."""
         client = self._make_org_client()
+        self._set_fixed_now()
         # Just under 5 days old (5 days minus 1 second).
         created_at = (_FIXED_NOW - timedelta(days=5) + timedelta(seconds=1)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
@@ -542,17 +551,18 @@ class TestGetDependabotSLO:
         alert = {"number": 1, "state": "open", "created_at": created_at}
         self._setup_alert_response(client, "critical", [alert])
 
-        result = get_dependabot_slo(client=client, levels=["critical"], _now=_FIXED_NOW)
+        result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result["result"] == "pass"
 
     def test_fails_when_alert_has_missing_created_at(self):
         """An alert without a created_at field is treated as non-compliant."""
         client = self._make_org_client()
+        self._set_fixed_now()
         alert = {"number": 1, "state": "open"}
         self._setup_alert_response(client, "critical", [alert])
 
-        result = get_dependabot_slo(client=client, levels=["critical"], _now=_FIXED_NOW)
+        result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 1
@@ -561,10 +571,11 @@ class TestGetDependabotSLO:
     def test_fails_when_alert_has_invalid_created_at(self):
         """An alert with an unparseable created_at is treated as non-compliant."""
         client = self._make_org_client()
+        self._set_fixed_now()
         alert = {"number": 1, "state": "open", "created_at": "not-a-date"}
         self._setup_alert_response(client, "critical", [alert])
 
-        result = get_dependabot_slo(client=client, levels=["critical"], _now=_FIXED_NOW)
+        result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 1
@@ -572,6 +583,7 @@ class TestGetDependabotSLO:
     def test_only_exceeded_alerts_returned_in_mixed_severity_check(self):
         """Only alerts that exceed their per-severity SLO appear in failing_alerts."""
         client = self._make_org_client()
+        self._set_fixed_now()
 
         # critical: 6 days old (SLO 5) → exceeded
         critical_alert = {"number": 1, "state": "open", "created_at": _created_at(6)}
@@ -581,9 +593,7 @@ class TestGetDependabotSLO:
         self._setup_alert_response(client, "critical", [critical_alert])
         self._setup_alert_response(client, "high", [high_alert])
 
-        result = get_dependabot_slo(
-            client=client, levels=["critical", "high"], _now=_FIXED_NOW
-        )
+        result = get_dependabot_slo(client=client, levels=["critical", "high"])
 
         assert result == {
             "result": "fail",
@@ -598,6 +608,7 @@ class TestGetDependabotSLO:
     def test_slo_thresholds_applied_per_severity(self):
         """Each severity level uses its own SLO threshold."""
         client = self._make_org_client()
+        self._set_fixed_now()
 
         # 16 days old: exceeds critical (5) and high (15), within medium (60) and low (90)
         alert = {"number": 1, "state": "open", "created_at": _created_at(16)}
@@ -608,7 +619,6 @@ class TestGetDependabotSLO:
         result = get_dependabot_slo(
             client=client,
             levels=["critical", "high", "medium", "low"],
-            _now=_FIXED_NOW,
         )
 
         assert result["result"] == "fail"
