@@ -1,6 +1,7 @@
 """Checks that Dependabot security alerts are resolved within the policy-defined SLO."""
 
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse
 
 from policy_methods_library.github.clients import GitHubRestClient
 
@@ -146,32 +147,45 @@ def get_dependabot_slo(
         }
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
+    repositories: dict[str, dict[str, int]] = {}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
             if _exceeds_slo(alert, level):
                 exceeded_alerts[level].append(alert)
+                
+                repo_url = alert.get("html_url").strip('"')
+                parts = urlparse(repo_url).path.strip("/").split("/")
+                repo_name = f"{parts[0]}/{parts[1]}"
 
-    number_alerts_by_severity = {
+                if repo_name not in repositories:
+                    repositories[repo_name] = {lv: 0 for lv in levels}
+                
+                repositories[repo_name][level] += 1
+
+
+    total_repositories_affected = len(repositories)
+    total_open_alerts = sum(len(alerts) for alerts in dependabot_alerts.values())
+    
+    number_exceeded_by_severity = {
         level: len(alerts) for level, alerts in exceeded_alerts.items()
     }
-    total_open_alerts = sum(number_alerts_by_severity.values())
+    failing_alerts = sum(number_exceeded_by_severity.values())
 
-    if total_open_alerts == 0:
+    if failing_alerts == 0:
         return {
             "result": "pass",
             "message": "No open Dependabot security alerts found.",
-            "details": {
-                "total_open_alerts": total_open_alerts,
-                "number_alerts_by_severity": number_alerts_by_severity,
-            },
+            "details": {},
         }
 
     return {
         "result": "fail",
-        "message": f"Found {total_open_alerts} open Dependabot security alerts exceeding the policy-defined SLO.",
+        "message": f"Found {failing_alerts} open Dependabot security alerts exceeding the policy-defined SLO.",
         "details": {
             "total_open_alerts": total_open_alerts,
-            "number_alerts_by_severity": number_alerts_by_severity,
-            "failing_alerts": exceeded_alerts,
+            "failing_alerts": failing_alerts,
+            "number_exceeded_by_severity": number_exceeded_by_severity,
+            "total_repositories_affected": total_repositories_affected,
+            "repositories": repositories,
         },
     }
