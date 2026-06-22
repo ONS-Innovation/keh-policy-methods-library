@@ -1,7 +1,7 @@
 """Tests for the secret_scanning_slo check module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from policy_methods_library.checks.secret_scanning_slo import get_secret_scanning_slo
 
@@ -135,7 +135,10 @@ class TestGetSecretScanningSloWithClient:
         result = get_secret_scanning_slo(client=client)
 
         assert result["result"] == "pass"
-        assert "No open Secret Scanning security alerts found exceeding SLO" in result["message"]
+        assert (
+            "No open Secret Scanning security alerts found exceeding SLO"
+            in result["message"]
+        )
 
     def test_fails_when_alerts_exceed_slo(self):
         """Alerts exceeding SLO should result in a fail."""
@@ -169,7 +172,10 @@ class TestGetSecretScanningSloWithClient:
         result = get_secret_scanning_slo(client=client)
 
         assert result["result"] == "fail"
-        assert "2 open Secret Scanning security alerts exceeding the policy-defined SLO" in result["message"]
+        assert (
+            "2 open Secret Scanning security alerts exceeding the policy-defined SLO"
+            in result["message"]
+        )
         assert result["details"]["failing_alerts"] == 2
         assert result["details"]["total_open_alerts"] == 2
         assert result["details"]["total_repositories_affected"] == 2
@@ -200,7 +206,10 @@ class TestGetSecretScanningSloWithClient:
         result = get_secret_scanning_slo(client=client)
 
         assert result["result"] == "fail"
-        assert "1 open Secret Scanning security alerts exceeding the policy-defined SLO" in result["message"]
+        assert (
+            "1 open Secret Scanning security alerts exceeding the policy-defined SLO"
+            in result["message"]
+        )
 
     def test_alert_with_invalid_created_at_format_exceeds_slo(self):
         """An alert with invalid created_at format should be considered as exceeding SLO."""
@@ -259,7 +268,11 @@ class TestGetSecretScanningSloWithClient:
 
         first_response = MagicMock()
         first_response.json.return_value = first_page_alerts
-        first_response.links = {"next": {"url": "https://api.github.com/orgs/my-org/secret-scanning/alerts?per_page=100&state=open&page=2"}}
+        first_response.links = {
+            "next": {
+                "url": "https://api.github.com/orgs/my-org/secret-scanning/alerts?per_page=100&state=open&page=2"
+            }
+        }
 
         second_response = MagicMock()
         second_response.json.return_value = second_page_alerts
@@ -346,7 +359,9 @@ class TestGetSecretScanningSloWithClient:
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 2
         assert result["details"]["failing_alerts"] == 1
-        assert result["details"]["total_repositories_affected"] == 2  # Both repos tracked
+        assert (
+            result["details"]["total_repositories_affected"] == 2
+        )  # Both repos tracked
         # Repository count = initialization (1) + increments for alerts from that repo
         assert result["details"]["repositories"]["my-org/repo1"] == 2
         assert result["details"]["repositories"]["my-org/repo2"] == 2
