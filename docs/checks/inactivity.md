@@ -106,3 +106,9 @@ This check requires the following GitHub App permissions when retrieving data fr
 - `metadata: read` – Required to access basic repository metadata
 
 If the data is passed directly (as shown in the first usage example), no API permissions are required.
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `last_updated`: The ISO 8601 timestamp of the last update to the repository, used to determine whether the repository is inactive.

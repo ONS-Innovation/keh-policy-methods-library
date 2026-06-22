@@ -1,4 +1,4 @@
-# Naming Convention
+# Naming Convention Check
 
 The naming convention check ensures that GitHub repositories adhere to ONS' naming standards, defined within the GitHub Usage Policy.
 
@@ -50,3 +50,9 @@ This check does not directly integrate with GitHub APIs.
 ### Required Permissions
 
 This check does not require any GitHub App permissions, as it performs validation on the repository name provided as a string parameter.
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `repository_name`: The repository name that was checked.

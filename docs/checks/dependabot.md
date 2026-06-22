@@ -71,3 +71,9 @@ The check will use the `GET /repos/{owner}/{repo}/automated-security-fixes` endp
 This check requires the following GitHub App permissions:
 
 - `administration: read` – Required to access repository administration settings
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `enabled`: Boolean indicating whether Dependabot automated security fixes are enabled for the repository.

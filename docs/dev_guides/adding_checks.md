@@ -65,6 +65,7 @@ In this file, provide comprehensive documentation for the check, including:
 - Usage examples demonstrating how to use the check with both direct data input and data retrieval from an API.
 - An explanation of the GitHub Integration / API endpoints used in the check, if applicable.
 - A "Required Permissions" section documenting what GitHub App permissions are needed (if any). Include a note if permissions are only required when retrieving data via API vs. when data is passed directly.
+- A detailed description of the contents of the `details` object returned by the check, if applicable.
 
 > **Note:** The above list is a minimum standard. You should feel free to include any additional information that you think would be helpful.
 

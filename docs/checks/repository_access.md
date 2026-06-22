@@ -78,3 +78,12 @@ This endpoint returns a list of collaborators with their access type and permiss
 This check requires the following GitHub App permissions:
 
 - `metadata: read` – Required to access repository collaborators
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `repository_name`: The name of the repository that was checked.
+- `individual_collaborators`: A list of individual users (type `User`) who have direct access to the repository. Each item contains:
+  - `login`: The GitHub username of the collaborator.
+  - `permissions`: A dictionary of the collaborator's repository permissions (e.g. `pull`, `push`, `admin`).
