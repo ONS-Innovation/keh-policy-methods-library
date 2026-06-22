@@ -112,7 +112,7 @@ The check uses these GitHub API endpoints:
 
 This check requires the following GitHub App permissions:
 
-- `security_events: read` – Required to access Dependabot security alerts and organisation-level security data
+- `dependabot alerts: read` - Required to access Dependabot security alerts
 
 ## Details Object
 
