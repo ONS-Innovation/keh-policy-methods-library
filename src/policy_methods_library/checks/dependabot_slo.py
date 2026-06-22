@@ -150,6 +150,8 @@ def get_dependabot_slo(
     repositories: dict[str, dict[str, int]] = {}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
+
+            # Getting the Repository URL
             repo_url_raw = alert.get("html_url")
 
             if not _exceeds_slo(alert,level):
@@ -160,16 +162,23 @@ def get_dependabot_slo(
 
             exceeded_alerts[level].append(alert)
 
+            # Splitting the URL into parts
             parts = (
                 urlparse(str(repo_url_raw).strip('"'))
                 .path.strip("/")
                 .split("/")
             )
+            # If there are more than two parts in the URL (if not then th elink is invalid)
             if len(parts) >= 2:
+                # org_name/repo_name
                 repo_name = f"{parts[0]}/{parts[1]}"
+
+                # Add Repository and add 1 to the SLO level
                 if repo_name not in repositories:
                     repositories[repo_name] = {lv: 0 for lv in levels}
                 repositories[repo_name][level] += 1
+            else:
+                continue
 
     total_repositories_affected = len(repositories)
     total_open_alerts = sum(len(alerts) for alerts in dependabot_alerts.values())
