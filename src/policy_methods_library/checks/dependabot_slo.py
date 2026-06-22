@@ -150,21 +150,26 @@ def get_dependabot_slo(
     repositories: dict[str, dict[str, int]] = {}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
-            if _exceeds_slo(alert, level):
-                exceeded_alerts[level].append(alert)
+            repo_url_raw = alert.get("html_url")
 
-                repo_url_raw = alert.get("html_url")
-                if repo_url_raw:
-                    parts = (
-                        urlparse(str(repo_url_raw).strip('"'))
-                        .path.strip("/")
-                        .split("/")
-                    )
-                    if len(parts) >= 2:
-                        repo_name = f"{parts[0]}/{parts[1]}"
-                        if repo_name not in repositories:
-                            repositories[repo_name] = {lv: 0 for lv in levels}
-                        repositories[repo_name][level] += 1
+            if not _exceeds_slo(alert,level):
+                continue
+
+            if not repo_url_raw:
+                continue
+
+            exceeded_alerts[level].append(alert)
+
+            parts = (
+                urlparse(str(repo_url_raw).strip('"'))
+                .path.strip("/")
+                .split("/")
+            )
+            if len(parts) >= 2:
+                repo_name = f"{parts[0]}/{parts[1]}"
+                if repo_name not in repositories:
+                    repositories[repo_name] = {lv: 0 for lv in levels}
+                repositories[repo_name][level] += 1
 
     total_repositories_affected = len(repositories)
     total_open_alerts = sum(len(alerts) for alerts in dependabot_alerts.values())
