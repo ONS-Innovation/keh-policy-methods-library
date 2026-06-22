@@ -30,7 +30,7 @@ def _add_working_days(start_date: datetime, num_days: int) -> datetime:
     
     while days_added < num_days:
         current_date += timedelta(days=1)
-        # weekday() returns 0-4 (Mon-Fri) and 5-6 (Sat-Sun)
+
         if current_date.weekday() < 5:
             days_added += 1
     
@@ -181,30 +181,21 @@ def get_dependabot_slo(
         for alert in alerts:
 
             # Getting the Repository URL
-            repo_url_raw = alert.get("html_url")
+            repo = alert.get("repository").get("name")
+            org = client.owner
+            repo_name = f"{org}/{repo}"
 
             if not _exceeds_slo(alert,level):
                 continue
 
-            if not repo_url_raw:
+            if not repo_name:
                 continue
 
             exceeded_alerts[level].append(alert)
 
-            # Splitting the URL into parts
-            parts = (
-                urlparse(str(repo_url_raw).strip('"'))
-                .path.strip("/")
-                .split("/")
-            )
-            # If there are more than two parts in the URL (if not then th elink is invalid)
-            if len(parts) >= 2:
-                # org_name/repo_name
-                repo_name = f"{parts[0]}/{parts[1]}"
-
-                # Add Repository and add 1 to the SLO level
-                if repo_name not in repositories:
-                    repositories[repo_name] = {lv: 0 for lv in levels}
+            # Add Repository and add 1 to the SLO level
+            if repo_name not in repositories:
+                repositories[repo_name] = {lv: 0 for lv in levels}
                 repositories[repo_name][level] += 1
             else:
                 continue
