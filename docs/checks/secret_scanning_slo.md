@@ -1,7 +1,7 @@
 # Secret Scanning SLO Check
 
 The Secret Scanning SLO Check verifies that open Secret Scanning alerts are resolved within the policy-defined SLO of 5 days.
-This helps ensure that potential security vulnerabilities detected by GitHub's secret scanning are addressed promptly to minimize exposure risk.
+This helps ensure that potential security vulnerabilities detected by GitHub's secret scanning are addressed promptly to minimise exposure risk.
 
 ## GitHub Usage Policy Origin
 
@@ -11,13 +11,20 @@ Inspired by the GitHub Usage Policy, clause 5.5.3, in summary:
 
 ## Check Criteria
 
-- The check will fetch all open Secret Scanning alerts for an organization using the GitHub API.
+- The check will fetch all open Secret Scanning alerts for an organisation using the GitHub API.
 - For each alert, it will examine the `created_at` timestamp to determine how long the alert has been open.
 - If an alert was created more than 5 days ago (relative to the current time), it is considered as exceeding the SLO and contributes to a failed check.
 - Alerts with missing or invalid `created_at` timestamps are treated as exceeding the SLO (conservative approach).
 - If no open alerts exceed the 5-day SLO, the check will pass.
 - If one or more alerts exceed the SLO, the check will fail and provide details about the failing alerts and affected repositories.
 - Should there be any issues verifying the organization or fetching alerts, the check will return an error status.
+
+## API Endpoints
+
+This check uses the following GitHub API endpoints:
+
+- `GET /orgs/{owner}` – Verifies that the client is authenticated as an organisation account
+- `GET /orgs/{owner}/secret-scanning/alerts?per_page=100&state=open` – Fetches all open secret scanning alerts for the organisation (paginated)
 
 ## Reference
 
@@ -70,14 +77,7 @@ match result:
         print("Unexpected result returned.")
 ```
 
-### Required Permissions
-
-This check requires the following GitHub App permissions:
-
-- `secret_scanning: read` – Required to access secret scanning alerts for the organization
-- `administration: read` – Required to verify that the client is authenticated as an organization
-
-## Details object
+## Details Object
 
 When the check returns a failure, the `details` field includes the following information:
 

@@ -10,14 +10,13 @@ _SLO: int = 5
 _NOW = datetime.now(timezone.utc)
 
 
-def _exceeds_slo(alert: dict, now: datetime) -> bool:
+def _exceeds_slo(alert: dict) -> bool:
     """
     Returns True, if the alerts exceeds the SLO fix by date (5 days)
     Alerts with a missing or broken created_at are considered failures.
 
     Args:
         alert: dictionary for the alert
-        now: the current time
 
     Returns:
         Boolean value for whether the SLO is exceeded or not
@@ -35,7 +34,7 @@ def _exceeds_slo(alert: dict, now: datetime) -> bool:
     except (ValueError, TypeError):
         return True
 
-    return (now - created_at) > timedelta(days=_SLO)
+    return (_NOW - created_at) > timedelta(days=_SLO)
 
 
 def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
@@ -81,7 +80,6 @@ def get_secret_scanning_slo(
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.
-        _now: The current time
 
     Returns:
         A dictionary with the result of the check, including 'result' (pass/fail/error),
@@ -94,8 +92,6 @@ def get_secret_scanning_slo(
             "message": "GitHubRestClient instance is required.",
             "details": {},
         }
-
-    now = _NOW if _NOW is not None else datetime.now(timezone.utc)
 
     organisation_check_result = _verify_client_organisation(client=client)
     if organisation_check_result is not None:
@@ -138,17 +134,22 @@ def get_secret_scanning_slo(
     exceeded_alerts: list = []
     repositories: dict[str, int] = {}
     for alert in secret_scanning_alerts:
-        if _exceeds_slo(alert, now):
-            exceeded_alerts.append(alert)
+        # Getting the Repository URL
+        repo = alert.get("repository").get("name")
+        org = client.owner
+        repo_name = f"{org}/{repo}"
 
-        repo_url_raw = alert.get("html_url")
-        if repo_url_raw:
-            parts = urlparse(str(repo_url_raw).strip('"')).path.strip("/").split("/")
-            if len(parts) >= 2:
-                repo_name = f"{parts[0]}/{parts[1]}"
-                if repo_name not in repositories:
-                    repositories[repo_name] = 1
-                repositories[repo_name] += 1
+        if not _exceeds_slo(alert, _NOW):
+            continue
+
+        if not repo_name:
+            continue
+
+        exceeded_alerts.append(alert)
+
+        if repo_name not in repositories:
+            repositories[repo_name] = 1
+        repositories[repo_name] += 1
 
     total_repositories_affected = len(repositories)
     total_open_alerts = len(secret_scanning_alerts)
