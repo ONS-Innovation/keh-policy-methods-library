@@ -198,7 +198,7 @@ def get_dependabot_slo(
     if failing_alerts == 0:
         return {
             "result": "pass",
-            "message": "No open Dependabot security alerts found.",
+            "message": "All alerts are within policy defined SLO.",
             "details": {},
         }
 
