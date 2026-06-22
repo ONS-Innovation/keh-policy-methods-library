@@ -15,6 +15,28 @@ _SLO_DAYS: dict[str, int] = {
 NOW = datetime.now(timezone.utc)
 
 
+def _add_working_days(start_date: datetime, num_days: int) -> datetime:
+    """Add a number of working days (Monday-Friday) to a date, excluding weekends.
+    
+    Args:
+        start_date: The starting datetime
+        num_days: Number of working days to add
+        
+    Returns:
+        A datetime representing the start_date plus num_days working days
+    """
+    current_date = start_date
+    days_added = 0
+    
+    while days_added < num_days:
+        current_date += timedelta(days=1)
+        # weekday() returns 0-4 (Mon-Fri) and 5-6 (Sat-Sun)
+        if current_date.weekday() < 5:
+            days_added += 1
+    
+    return current_date
+
+
 def _exceeds_slo(alert: dict, severity: str) -> bool:
     """
     Return True if the alert has exceeded its SLO or has a missing/invalid created_at.
@@ -40,8 +62,8 @@ def _exceeds_slo(alert: dict, severity: str) -> bool:
     except (ValueError, TypeError):
         return True
 
-    slo_deadline = NOW - timedelta(days=_SLO_DAYS[severity])
-    return created_at <= slo_deadline
+    slo_deadline = _add_working_days(created_at, _SLO_DAYS[severity])
+    return NOW > slo_deadline
 
 
 def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
