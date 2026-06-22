@@ -1,7 +1,6 @@
 """Checks that Dependabot security alerts are resolved within the policy-defined SLO."""
 
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlparse
 
 from policy_methods_library.github.clients import GitHubRestClient
 
@@ -17,23 +16,23 @@ NOW = datetime.now(timezone.utc)
 
 def _add_working_days(start_date: datetime, num_days: int) -> datetime:
     """Add a number of working days (Monday-Friday) to a date, excluding weekends.
-    
+
     Args:
         start_date: The starting datetime
         num_days: Number of working days to add
-        
+
     Returns:
         A datetime representing the start_date plus num_days working days
     """
     current_date = start_date
     days_added = 0
-    
+
     while days_added < num_days:
         current_date += timedelta(days=1)
 
         if current_date.weekday() < 5:
             days_added += 1
-    
+
     return current_date
 
 
@@ -125,7 +124,7 @@ def get_dependabot_slo(
         }
 
     valid_levels = ["critical", "high", "medium", "low"]
-    
+
     if levels is None or levels == []:
         levels = valid_levels
     else:
@@ -179,13 +178,12 @@ def get_dependabot_slo(
     repositories: dict[str, dict[str, int]] = {}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
-
             # Getting the Repository URL
             repo = alert.get("repository").get("name")
             org = client.owner
             repo_name = f"{org}/{repo}"
 
-            if not _exceeds_slo(alert,level):
+            if not _exceeds_slo(alert, level):
                 continue
 
             if not repo_name:
