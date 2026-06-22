@@ -1,16 +1,20 @@
 """Checks that the secret scanner alerts are resolved within the policy-defined SLO."""
 
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse
 
 from policy_methods_library.github.clients import GitHubRestClient
 
 _SLO: int = 5
 
+_NOW = datetime.now(timezone.utc)
+
+
 def _exceeds_slo(alert: dict, now: datetime) -> bool:
     """
     Returns True, if the alerts exceeds the SLO fix by date (5 days)
     Alerts with a missing or broken created_at are considered failures.
-    
+
     Args:
         alert: dictionary for the alert
         now: the current time
@@ -23,15 +27,15 @@ def _exceeds_slo(alert: dict, now: datetime) -> bool:
 
     if not created_at_str:
         return True
-    
+
     try:
         created_at = datetime.strptime(created_at_str, "%Y-%m-%dT%H:%M:%SZ").replace(
             tzinfo=timezone.utc
         )
     except (ValueError, TypeError):
         return True
-    
-    return created_at < timedelta(days=_SLO)
+
+    return (now - created_at) > timedelta(days=_SLO)
 
 
 def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
@@ -71,11 +75,10 @@ def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
 
 
 def get_secret_scanning_slo(
-        client: GitHubRestClient,
-        _now: datetime | None = None
+    client: GitHubRestClient,
 ) -> dict:
     """Get all open Secret Scanning alerts
-    
+
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.
         _now: The current time
@@ -91,20 +94,19 @@ def get_secret_scanning_slo(
             "message": "GitHubRestClient instance is required.",
             "details": {},
         }
-    
-    now = _now if _now is not None else datetime.now(timezone.utc)
+
+    now = _NOW if _NOW is not None else datetime.now(timezone.utc)
 
     organisation_check_result = _verify_client_organisation(client=client)
     if organisation_check_result is not None:
         return organisation_check_result
-    
-    secret_scanning_alerts: dict = {"alerts"}
+
+    secret_scanning_alerts: list = []
 
     try:
         next_page_url = (
-                f"/orgs/{client.owner}/secret-scanning/alerts"
-                f"?per_page=100&state=open"
-            )
+            f"/orgs/{client.owner}/secret-scanning/alerts?per_page=100&state=open"
+        )
         has_next_page = True
 
         while has_next_page:
@@ -112,18 +114,18 @@ def get_secret_scanning_slo(
             response_secret_scanning_alerts = response.json()
 
             if isinstance(response_secret_scanning_alerts, list):
-                secret_scanning_alerts.extend(response_secret_scanning_alerts)
+                secret_scanning_alerts.extend(response_secret_scanning_alerts)  # type: ignore[union-attr]
             else:
                 return {
-                        "result": "error",
-                        "message": f"API response does not contain a list of Secret Scanning alerts.",
-                        "details": {"response": response_secret_scanning_alerts},
-                    }
-            
+                    "result": "error",
+                    "message": "API response does not contain a list of Secret Scanning alerts.",
+                    "details": {"response": response_secret_scanning_alerts},
+                }
+
             if response.links and "next" in response.links:
-                    next_page_url = response.links["next"]["url"].replace(
-                        "https://api.github.com", ""
-                    )
+                next_page_url = response.links["next"]["url"].replace(
+                    "https://api.github.com", ""
+                )
             else:
                 has_next_page = False
     except Exception as e:
@@ -132,29 +134,41 @@ def get_secret_scanning_slo(
             "message": f"Error fetching Secret Scanning alerts: {str(e)}.",
             "details": {},
         }
-    
+
     exceeded_alerts: list = []
-    for alerts in secret_scanning_alerts.items():
-        for alert in alerts:
-            if _exceeds_slo(alerts, now):
-                exceeded_alerts.append(alert)
+    repositories: dict[str, int] = {}
+    for alert in secret_scanning_alerts:
+        if _exceeds_slo(alert, now):
+            exceeded_alerts.append(alert)
 
-    total_open_alerts = len(exceeded_alerts)
+        repo_url_raw = alert.get("html_url")
+        if repo_url_raw:
+            parts = urlparse(str(repo_url_raw).strip('"')).path.strip("/").split("/")
+            if len(parts) >= 2:
+                repo_name = f"{parts[0]}/{parts[1]}"
+                if repo_name not in repositories:
+                    repositories[repo_name] = 1
+                repositories[repo_name] += 1
 
-    if total_open_alerts == 0:
+    total_repositories_affected = len(repositories)
+    total_open_alerts = len(secret_scanning_alerts)
+
+    total_exceeding_alerts = len(exceeded_alerts)
+
+    if total_exceeding_alerts == 0:
         return {
             "result": "pass",
             "message": "No open Secret Scanning security alerts found exceeding SLO.",
-            "details": {
-                "total_open_alerts": total_open_alerts,
-            },
+            "details": {},
         }
 
     return {
         "result": "fail",
-        "message": f"Found {total_open_alerts} open Secret Scanning security alerts exceeding the policy-defined SLO.",
+        "message": f"Found {total_exceeding_alerts} open Secret Scanning security alerts exceeding the policy-defined SLO.",
         "details": {
             "total_open_alerts": total_open_alerts,
-            "failing_alerts": exceeded_alerts,
+            "failing_alerts": total_exceeding_alerts,
+            "total_repositories_affected": total_repositories_affected,
+            "repositories": repositories,
         },
     }
