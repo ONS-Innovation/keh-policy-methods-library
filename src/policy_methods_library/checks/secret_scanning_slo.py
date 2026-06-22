@@ -1,7 +1,6 @@
 """Checks that the secret scanner alerts are resolved within the policy-defined SLO."""
 
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlparse
 
 from policy_methods_library.github.clients import GitHubRestClient
 
@@ -139,7 +138,7 @@ def get_secret_scanning_slo(
         org = client.owner
         repo_name = f"{org}/{repo}"
 
-        if not _exceeds_slo(alert, _NOW):
+        if not _exceeds_slo(alert):
             continue
 
         if not repo_name:
