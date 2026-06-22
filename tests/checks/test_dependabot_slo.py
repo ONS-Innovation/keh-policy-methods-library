@@ -169,10 +169,7 @@ class TestGetDependabotSLO:
         assert result == {
             "result": "pass",
             "message": "No open Dependabot security alerts found.",
-            "details": {
-                "total_open_alerts": 0,
-                "number_alerts_by_severity": {"critical": 0},
-            },
+            "details": {},
         }
 
     def test_fails_when_open_dependabot_alerts_exist(self):
@@ -214,8 +211,10 @@ class TestGetDependabotSLO:
             "message": "Found 1 open Dependabot security alerts exceeding the policy-defined SLO.",
             "details": {
                 "total_open_alerts": 1,
-                "number_alerts_by_severity": {"critical": 1},
-                "failing_alerts": {"critical": [fake_open_alert]},
+                "failing_alerts": 1,
+                "number_exceeded_by_severity": {"critical": 1},
+                "total_repositories_affected": 1,
+                "repositories": {"orgs/my-org": {"critical": 1}},
             },
         }
 
@@ -271,11 +270,10 @@ class TestGetDependabotSLO:
             "message": "Found 2 open Dependabot security alerts exceeding the policy-defined SLO.",
             "details": {
                 "total_open_alerts": 2,
-                "number_alerts_by_severity": {"critical": 1, "low": 1},
-                "failing_alerts": {
-                    "critical": [fake_open_critical_alert],
-                    "low": [fake_open_low_alert],
-                },
+                "failing_alerts": 2,
+                "number_exceeded_by_severity": {"critical": 1, "low": 1},
+                "total_repositories_affected": 1,
+                "repositories": {"orgs/my-org": {"critical": 1, "low": 1}},
             },
         }
 
@@ -376,8 +374,10 @@ class TestGetDependabotSLO:
             "message": "Found 2 open Dependabot security alerts exceeding the policy-defined SLO.",
             "details": {
                 "total_open_alerts": 2,
-                "number_alerts_by_severity": {"critical": 2},
-                "failing_alerts": {"critical": page1_alerts + page2_alerts},
+                "failing_alerts": 2,
+                "number_exceeded_by_severity": {"critical": 2},
+                "total_repositories_affected": 1,
+                "repositories": {"orgs/my-org": {"critical": 2}},
             },
         }
 
@@ -433,8 +433,10 @@ class TestGetDependabotSLO:
             "message": "Found 1 open Dependabot security alerts exceeding the policy-defined SLO.",
             "details": {
                 "total_open_alerts": 1,
-                "number_alerts_by_severity": {"critical": 1},
-                "failing_alerts": {"critical": [open_critical_alert]},
+                "failing_alerts": 1,
+                "number_exceeded_by_severity": {"critical": 1},
+                "total_repositories_affected": 1,
+                "repositories": {"orgs/my-org": {"critical": 1}},
             },
         }
 
@@ -500,10 +502,7 @@ class TestGetDependabotSLO:
         assert result == {
             "result": "pass",
             "message": "No open Dependabot security alerts found.",
-            "details": {
-                "total_open_alerts": 0,
-                "number_alerts_by_severity": {"critical": 0},
-            },
+            "details": {},
         }
 
     def test_fails_when_alert_exceeds_slo(self):
@@ -521,8 +520,10 @@ class TestGetDependabotSLO:
             "message": "Found 1 open Dependabot security alerts exceeding the policy-defined SLO.",
             "details": {
                 "total_open_alerts": 1,
-                "number_alerts_by_severity": {"critical": 1},
-                "failing_alerts": {"critical": [alert]},
+                "failing_alerts": 1,
+                "number_exceeded_by_severity": {"critical": 1},
+                "total_repositories_affected": 0,
+                "repositories": {},
             },
         }
 
@@ -538,7 +539,7 @@ class TestGetDependabotSLO:
 
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 1
-        assert result["details"]["failing_alerts"] == {"critical": [alert]}
+        assert result["details"]["failing_alerts"] == 1
 
     def test_passes_when_alert_is_one_second_within_boundary(self):
         """An alert one second younger than the SLO threshold should not fail."""
@@ -566,7 +567,7 @@ class TestGetDependabotSLO:
 
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 1
-        assert result["details"]["failing_alerts"] == {"critical": [alert]}
+        assert result["details"]["failing_alerts"] == 1
 
     def test_fails_when_alert_has_invalid_created_at(self):
         """An alert with an unparseable created_at is treated as non-compliant."""
@@ -599,9 +600,11 @@ class TestGetDependabotSLO:
             "result": "fail",
             "message": "Found 1 open Dependabot security alerts exceeding the policy-defined SLO.",
             "details": {
-                "total_open_alerts": 1,
-                "number_alerts_by_severity": {"critical": 1, "high": 0},
-                "failing_alerts": {"critical": [critical_alert], "high": []},
+                "total_open_alerts": 2,
+                "failing_alerts": 1,
+                "number_exceeded_by_severity": {"critical": 1, "high": 0},
+                "total_repositories_affected": 0,
+                "repositories": {},
             },
         }
 
@@ -622,9 +625,9 @@ class TestGetDependabotSLO:
         )
 
         assert result["result"] == "fail"
-        counts = result["details"]["number_alerts_by_severity"]
+        counts = result["details"]["number_exceeded_by_severity"]
         assert counts["critical"] == 1  # 16d > 5d SLO
         assert counts["high"] == 1  # 16d > 15d SLO
         assert counts["medium"] == 0  # 16d < 60d SLO
         assert counts["low"] == 0  # 16d < 90d SLO
-        assert result["details"]["total_open_alerts"] == 2
+        assert result["details"]["total_open_alerts"] == 4
