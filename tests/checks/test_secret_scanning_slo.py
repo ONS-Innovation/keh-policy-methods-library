@@ -119,6 +119,7 @@ class TestGetSecretScanningSloWithClient:
         recent_alert = {
             "created_at": (now - timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/my-repo/security/secret-scanning/1",
+            "repository": {"name": "my-repo"},
         }
 
         alerts_response = MagicMock()
@@ -152,10 +153,12 @@ class TestGetSecretScanningSloWithClient:
         old_alert_1 = {
             "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
+            "repository": {"name": "repo1"},
         }
         old_alert_2 = {
             "created_at": (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/repo2/security/secret-scanning/2",
+            "repository": {"name": "repo2"},
         }
 
         alerts_response = MagicMock()
@@ -190,6 +193,7 @@ class TestGetSecretScanningSloWithClient:
 
         alert_no_created_at = {
             "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
+            "repository": {"name": "repo1"},
         }
 
         alerts_response = MagicMock()
@@ -222,6 +226,7 @@ class TestGetSecretScanningSloWithClient:
         alert_invalid_date = {
             "created_at": "invalid-date-format",
             "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
+            "repository": {"name": "repo1"},
         }
 
         alerts_response = MagicMock()
@@ -255,6 +260,7 @@ class TestGetSecretScanningSloWithClient:
             {
                 "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
+                "repository": {"name": "repo1"},
             }
         ]
 
@@ -263,6 +269,7 @@ class TestGetSecretScanningSloWithClient:
             {
                 "created_at": (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "html_url": "https://github.com/my-org/repo2/security/secret-scanning/2",
+                "repository": {"name": "repo2"},
             }
         ]
 
@@ -299,10 +306,12 @@ class TestGetSecretScanningSloWithClient:
         alert_1 = {
             "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/same-repo/security/secret-scanning/1",
+            "repository": {"name": "same-repo"},
         }
         alert_2 = {
             "created_at": (now - timedelta(days=8)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/same-repo/security/secret-scanning/2",
+            "repository": {"name": "same-repo"},
         }
 
         alerts_response = MagicMock()
@@ -337,10 +346,12 @@ class TestGetSecretScanningSloWithClient:
         recent_alert = {
             "created_at": (now - timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
+            "repository": {"name": "repo1"},
         }
         old_alert = {
             "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/repo2/security/secret-scanning/2",
+            "repository": {"name": "repo2"},
         }
 
         alerts_response = MagicMock()
@@ -359,11 +370,8 @@ class TestGetSecretScanningSloWithClient:
         assert result["result"] == "fail"
         assert result["details"]["total_open_alerts"] == 2
         assert result["details"]["failing_alerts"] == 1
-        assert (
-            result["details"]["total_repositories_affected"] == 2
-        )  # Both repos tracked
-        # Repository count = initialization (1) + increments for alerts from that repo
-        assert result["details"]["repositories"]["my-org/repo1"] == 2
+        assert result["details"]["total_repositories_affected"] == 1
+        # Only exceeding alerts are tracked by repository.
         assert result["details"]["repositories"]["my-org/repo2"] == 2
 
     def test_handles_alerts_with_missing_html_url(self):
@@ -378,9 +386,11 @@ class TestGetSecretScanningSloWithClient:
         alert_with_url = {
             "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
+            "repository": {"name": "repo1"},
         }
         alert_without_url = {
             "created_at": (now - timedelta(days=8)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "repository": {"name": "repo1"},
         }
 
         alerts_response = MagicMock()
@@ -400,5 +410,5 @@ class TestGetSecretScanningSloWithClient:
         assert result["details"]["total_open_alerts"] == 2
         assert result["details"]["failing_alerts"] == 2
         assert result["details"]["total_repositories_affected"] == 1
-        # Repository count = initialization (1) + increment for the alert with URL (1) = 2
-        assert result["details"]["repositories"]["my-org/repo1"] == 2
+        # Repository count = initialization (1) + increments for 2 alerts = 3
+        assert result["details"]["repositories"]["my-org/repo1"] == 3
