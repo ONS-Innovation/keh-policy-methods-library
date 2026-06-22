@@ -3,7 +3,7 @@
 When using this library, the functionality and quality of the data you can access is determined by the permissions granted to your GitHub App. The following table outlines the permissions required for various features of this library:
 
 | Feature | Required Permissions |
-|---------|----------------------|
+| --------- | ---------------------- |
 | CODEOWNERS Check | `contents: read` |
 | Dependabot Check | `administration: read` |
 | External Pull Request Check | `pull_requests: read`, `members: read` |
