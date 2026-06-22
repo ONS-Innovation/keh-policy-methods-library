@@ -64,10 +64,17 @@ In this file, provide comprehensive documentation for the check, including:
 - A reference to the check function in the codebase (use MkDocStrings for this).
 - Usage examples demonstrating how to use the check with both direct data input and data retrieval from an API.
 - An explanation of the GitHub Integration / API endpoints used in the check, if applicable.
+- A "Required Permissions" section documenting what GitHub App permissions are needed (if any). Include a note if permissions are only required when retrieving data via API vs. when data is passed directly.
 
 > **Note:** The above list is a minimum standard. You should feel free to include any additional information that you think would be helpful.
 
-## Step 6: Integrate the Check into the Library
+## Step 6: Update General Documentation
+
+In addition to the check documentation, you should also update any general documentation that references checks, such as overview pages or indexes, to include the new check.
+
+An important page to highlight is the `github-app-permissions.md` page, which lists all the checks in the library and the GitHub App permissions they require. This **must** be updated to include the new check and its required permissions (if any).
+
+## Step 7: Integrate the Check into the Library
 
 Finally, you will need to integrate the new check into the library so that it can be easily imported and used.
 

@@ -67,3 +67,9 @@ match result:
 The check uses the `GET /repos/{owner}/{repo}/contents/` endpoint to retrieve the top-level contents of the repository and look for `license.md`, `license.txt`, or `license`
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content)
+
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `contents: read` – Required to access repository file contents

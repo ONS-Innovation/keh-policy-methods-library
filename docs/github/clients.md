@@ -6,6 +6,16 @@ Currently, this module includes a client for the GitHub REST API, which can be u
 Using these classes can simplify the process of making requests to the GitHub API, as they handle the authentication process and handle lots of the boilerplate code
 required to make requests to the GitHub API (i.e. setting up the header).
 
+## Authentication Support
+
+Each client class in this module supports authentication using a GitHub App's credentials, or a personal access token (PAT). The client classes handle the authentication process for you, allowing you to easily authenticate requests to the GitHub API using a GitHub App's credentials or a PAT.
+
+Both authentication methods are supported, but it is recommended to use a GitHub App's credentials for authentication, as this provides a more secure and granular way of authenticating with the GitHub API. Both authentication methods will make use of fine-grained permissions, which can be set up when creating the GitHub App or generating the PAT.
+
+- For further information on GitHub App authentication, please refer to the [GitHub Auth](./auth.md) documentation.
+- For further information on personal access token authentication, please refer to the [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) documentation.
+- For further information on GitHub App permissions, please refer to the [GitHub App Permissions](../github-app-permissions.md) documentation.
+
 ## Benefits of Using the Clients Module
 
 Using the REST API Client as an example, the benefits of using the client defined in this module include:

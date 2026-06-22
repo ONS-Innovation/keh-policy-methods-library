@@ -46,3 +46,7 @@ match result:
 ## GitHub Integration Used
 
 This check does not directly integrate with GitHub APIs.
+
+### Required Permissions
+
+This check does not require any GitHub App permissions, as it performs validation on the repository name provided as a string parameter.

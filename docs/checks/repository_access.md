@@ -72,3 +72,9 @@ If `affiliation=direct` is not included, the response may include collaborators 
 This endpoint returns a list of collaborators with their access type and permissions.
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2026-03-10#list-repository-collaborators)
+
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `metadata: read` – Required to access repository collaborators
