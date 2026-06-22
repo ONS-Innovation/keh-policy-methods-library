@@ -102,8 +102,15 @@ def get_dependabot_slo(
             "details": {},
         }
 
+    valid_levels = ["critical", "high", "medium", "low"]
+    
     if levels is None or levels == []:
-        levels = ["critical", "high", "medium", "low"]
+        levels = valid_levels
+    else:
+        levels = [level for level in levels if level in valid_levels]
+
+        if not levels:
+            levels = valid_levels
 
     organisation_check_result = _verify_client_organisation(client=client)
     if organisation_check_result is not None:

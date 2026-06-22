@@ -114,6 +114,14 @@ This check requires the following GitHub App permissions:
 
 - `dependabot alerts: read` - Required to access Dependabot security alerts
 
+## Valid Levels
+
+The `levels` must be one of these:
+- `critical`
+- `high`
+- `medium`
+- `low`
+
 ## Details Object
 
 The `details` object (when a failure occurs) returned by this check contains:
