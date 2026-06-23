@@ -23,7 +23,7 @@ class TestGetSecretScanningSloWithClient:
         }
 
     def test_error_when_client_raises_exception_during_org_verification(self):
-        """An exception during organization verification should return an error result."""
+        """An exception during organisation verification should return an error result."""
         client = MagicMock()
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
@@ -48,7 +48,7 @@ class TestGetSecretScanningSloWithClient:
         assert "organisation data" in result["message"]
 
     def test_error_when_organisation_type_is_not_organization(self):
-        """An API response with a non-Organization type should return an error result."""
+        """An API response with a non-Organisation type should return an error result."""
         client = MagicMock()
         client.owner = "my-org"
 

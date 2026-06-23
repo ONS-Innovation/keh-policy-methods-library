@@ -17,7 +17,7 @@ Inspired by the GitHub Usage Policy, clause 5.5.3, in summary:
 - Alerts with missing or invalid `created_at` timestamps are treated as exceeding the SLO (conservative approach).
 - If no open alerts exceed the 5-day SLO, the check will pass.
 - If one or more alerts exceed the SLO, the check will fail and provide details about the failing alerts and affected repositories.
-- Should there be any issues verifying the organization or fetching alerts, the check will return an error status.
+- Should there be any issues verifying the organisation or fetching alerts, the check will return an error status.
 
 ## API Endpoints
 
@@ -81,7 +81,7 @@ match result:
 
 When the check returns a failure, the `details` field includes the following information:
 
-- `total_open_alerts`: The total number of open Secret Scanning alerts in the organization.
+- `total_open_alerts`: The total number of open Secret Scanning alerts in the organisation.
 - `failing_alerts`: The number of alerts that exceed the 5-day SLO.
 - `total_repositories_affected`: The count of unique repositories that contain alerts exceeding the SLO.
 - `repositories`: A dictionary mapping repository identifiers (in the format `{owner}/{repo}`) to the count of failing alerts in each repository.
