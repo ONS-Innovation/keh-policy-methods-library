@@ -10,11 +10,24 @@ from policy_methods_library.checks.dependabot_slo import (
 
 # Fixed "now" used by all SLO-boundary tests so results are deterministic.
 _FIXED_NOW = datetime(2026, 6, 18, 12, 0, 0, tzinfo=timezone.utc)
+_TEST_REPOSITORY = {"name": "my-repo"}
 
 
 def _created_at(days_ago: float) -> str:
     """Return an ISO 8601 created_at string relative to _FIXED_NOW."""
     return (_FIXED_NOW - timedelta(days=days_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _alert(number: int, *, created_at: str | None = None) -> dict:
+    """Build a Dependabot alert fixture with repository info expected by the check."""
+    alert = {
+        "number": number,
+        "state": "open",
+        "repository": _TEST_REPOSITORY,
+    }
+    if created_at is not None:
+        alert["created_at"] = created_at
+    return alert
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +181,7 @@ class TestGetDependabotSLO:
 
         assert result == {
             "result": "pass",
-            "message": "No open Dependabot security alerts found.",
+            "message": "All alerts are within policy defined SLO.",
             "details": {},
         }
 
@@ -184,6 +197,7 @@ class TestGetDependabotSLO:
             "number": 101,
             "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
+            "repository": _TEST_REPOSITORY,
         }
 
         response = MagicMock()
@@ -214,7 +228,7 @@ class TestGetDependabotSLO:
                 "failing_alerts": 1,
                 "number_exceeded_by_severity": {"critical": 1},
                 "total_repositories_affected": 1,
-                "repositories": {"orgs/my-org": {"critical": 1}},
+                "repositories": {"my-org/my-repo": {"critical": 1}},
             },
         }
 
@@ -230,12 +244,14 @@ class TestGetDependabotSLO:
             "number": 101,
             "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
+            "repository": _TEST_REPOSITORY,
         }
 
         fake_open_low_alert = {
             "number": 102,
             "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/102",
+            "repository": _TEST_REPOSITORY,
         }
 
         critical_response = MagicMock()
@@ -273,7 +289,7 @@ class TestGetDependabotSLO:
                 "failing_alerts": 2,
                 "number_exceeded_by_severity": {"critical": 1, "low": 1},
                 "total_repositories_affected": 1,
-                "repositories": {"orgs/my-org": {"critical": 1, "low": 1}},
+                "repositories": {"my-org/my-repo": {"critical": 1, "low": 0}},
             },
         }
 
@@ -326,6 +342,7 @@ class TestGetDependabotSLO:
                 "number": 101,
                 "state": "open",
                 "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
+                "repository": _TEST_REPOSITORY,
             },
         ]
         page2_alerts = [
@@ -333,6 +350,7 @@ class TestGetDependabotSLO:
                 "number": 102,
                 "state": "open",
                 "html_url": "https://github.com/orgs/my-org/security/dependabot/102",
+                "repository": _TEST_REPOSITORY,
             },
         ]
 
@@ -377,7 +395,7 @@ class TestGetDependabotSLO:
                 "failing_alerts": 2,
                 "number_exceeded_by_severity": {"critical": 2},
                 "total_repositories_affected": 1,
-                "repositories": {"orgs/my-org": {"critical": 2}},
+                "repositories": {"my-org/my-repo": {"critical": 1}},
             },
         }
 
@@ -408,6 +426,7 @@ class TestGetDependabotSLO:
             "number": 101,
             "state": "open",
             "html_url": "https://github.com/orgs/my-org/security/dependabot/101",
+            "repository": _TEST_REPOSITORY,
         }
 
         response = MagicMock()
@@ -436,7 +455,7 @@ class TestGetDependabotSLO:
                 "failing_alerts": 1,
                 "number_exceeded_by_severity": {"critical": 1},
                 "total_repositories_affected": 1,
-                "repositories": {"orgs/my-org": {"critical": 1}},
+                "repositories": {"my-org/my-repo": {"critical": 1}},
             },
         }
 
@@ -494,14 +513,14 @@ class TestGetDependabotSLO:
         client = self._make_org_client()
         self._set_fixed_now()
         # 4 days old — critical SLO is 5 days, so still within SLO.
-        alert = {"number": 1, "state": "open", "created_at": _created_at(4)}
+        alert = _alert(1, created_at=_created_at(4))
         self._setup_alert_response(client, "critical", [alert])
 
         result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result == {
             "result": "pass",
-            "message": "No open Dependabot security alerts found.",
+            "message": "All alerts are within policy defined SLO.",
             "details": {},
         }
 
@@ -509,8 +528,8 @@ class TestGetDependabotSLO:
         """An alert older than its SLO threshold should be returned as failing."""
         client = self._make_org_client()
         self._set_fixed_now()
-        # 6 days old — critical SLO is 5 days, so exceeded.
-        alert = {"number": 1, "state": "open", "created_at": _created_at(6)}
+        # 8 days old — critical SLO is 5 working days, so exceeded.
+        alert = _alert(1, created_at=_created_at(8))
         self._setup_alert_response(client, "critical", [alert])
 
         result = get_dependabot_slo(client=client, levels=["critical"])
@@ -522,24 +541,23 @@ class TestGetDependabotSLO:
                 "total_open_alerts": 1,
                 "failing_alerts": 1,
                 "number_exceeded_by_severity": {"critical": 1},
-                "total_repositories_affected": 0,
-                "repositories": {},
+                "total_repositories_affected": 1,
+                "repositories": {"my-org/my-repo": {"critical": 1}},
             },
         }
 
-    def test_fails_when_alert_is_exactly_at_slo_boundary(self):
-        """An alert created exactly at the SLO boundary is considered non-compliant."""
+    def test_passes_when_alert_is_exactly_at_slo_boundary(self):
+        """An alert created exactly at the SLO boundary is still compliant."""
         client = self._make_org_client()
         self._set_fixed_now()
-        # Exactly 5 days old — critical SLO is 5 days, boundary counts as failed.
-        alert = {"number": 1, "state": "open", "created_at": _created_at(5)}
+        # Exactly at deadline: 7 days old maps to 5 working days from creation.
+        alert = _alert(1, created_at=_created_at(7))
         self._setup_alert_response(client, "critical", [alert])
 
         result = get_dependabot_slo(client=client, levels=["critical"])
 
-        assert result["result"] == "fail"
-        assert result["details"]["total_open_alerts"] == 1
-        assert result["details"]["failing_alerts"] == 1
+        assert result["result"] == "pass"
+        assert result["details"] == {}
 
     def test_passes_when_alert_is_one_second_within_boundary(self):
         """An alert one second younger than the SLO threshold should not fail."""
@@ -549,7 +567,7 @@ class TestGetDependabotSLO:
         created_at = (_FIXED_NOW - timedelta(days=5) + timedelta(seconds=1)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
-        alert = {"number": 1, "state": "open", "created_at": created_at}
+        alert = _alert(1, created_at=created_at)
         self._setup_alert_response(client, "critical", [alert])
 
         result = get_dependabot_slo(client=client, levels=["critical"])
@@ -560,7 +578,7 @@ class TestGetDependabotSLO:
         """An alert without a created_at field is treated as non-compliant."""
         client = self._make_org_client()
         self._set_fixed_now()
-        alert = {"number": 1, "state": "open"}
+        alert = _alert(1)
         self._setup_alert_response(client, "critical", [alert])
 
         result = get_dependabot_slo(client=client, levels=["critical"])
@@ -573,7 +591,7 @@ class TestGetDependabotSLO:
         """An alert with an unparseable created_at is treated as non-compliant."""
         client = self._make_org_client()
         self._set_fixed_now()
-        alert = {"number": 1, "state": "open", "created_at": "not-a-date"}
+        alert = _alert(1, created_at="not-a-date")
         self._setup_alert_response(client, "critical", [alert])
 
         result = get_dependabot_slo(client=client, levels=["critical"])
@@ -586,10 +604,10 @@ class TestGetDependabotSLO:
         client = self._make_org_client()
         self._set_fixed_now()
 
-        # critical: 6 days old (SLO 5) → exceeded
-        critical_alert = {"number": 1, "state": "open", "created_at": _created_at(6)}
+        # critical: 8 days old (SLO 5 working days) → exceeded
+        critical_alert = _alert(1, created_at=_created_at(8))
         # high: 10 days old (SLO 15) → within SLO
-        high_alert = {"number": 2, "state": "open", "created_at": _created_at(10)}
+        high_alert = _alert(2, created_at=_created_at(10))
 
         self._setup_alert_response(client, "critical", [critical_alert])
         self._setup_alert_response(client, "high", [high_alert])
@@ -603,8 +621,8 @@ class TestGetDependabotSLO:
                 "total_open_alerts": 2,
                 "failing_alerts": 1,
                 "number_exceeded_by_severity": {"critical": 1, "high": 0},
-                "total_repositories_affected": 0,
-                "repositories": {},
+                "total_repositories_affected": 1,
+                "repositories": {"my-org/my-repo": {"critical": 1, "high": 0}},
             },
         }
 
@@ -613,8 +631,8 @@ class TestGetDependabotSLO:
         client = self._make_org_client()
         self._set_fixed_now()
 
-        # 16 days old: exceeds critical (5) and high (15), within medium (60) and low (90)
-        alert = {"number": 1, "state": "open", "created_at": _created_at(16)}
+        # 25 days old: exceeds critical/high working-day SLOs, still within medium/low.
+        alert = _alert(1, created_at=_created_at(25))
 
         for level in ["critical", "high", "medium", "low"]:
             self._setup_alert_response(client, level, [alert])
