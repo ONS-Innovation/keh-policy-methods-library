@@ -67,3 +67,17 @@ match result:
 The check uses the `GET /repos/{owner}/{repo}/contents/` endpoint to retrieve the top-level contents of the repository and look for `license.md`, `license.txt`, or `license`
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content)
+
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `contents: read` – Required to access repository file contents
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `repository_name`: The name of the repository that was checked.
+- `required_file`: The name of the required file that was checked for (`license`).
+- `is_public` *(private repository pass only)*: Boolean indicating whether the repository is public. Will be `false` when the check passes due to the repository being private.

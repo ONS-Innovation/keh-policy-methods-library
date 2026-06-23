@@ -114,6 +114,14 @@ If the data is not passed directly, the check will use the `GET /repos/{owner}/{
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/repos/repos?apiVersion=2026-03-10#get-a-repository)
 
+### Required Permissions
+
+This check requires the following GitHub App permissions when retrieving data from the API:
+
+- `administration: read` – Required to access repository security and analysis settings
+
+If the data is passed directly (as shown in the first usage example), no API permissions are required.
+
 ## Details Object
 
 For applicable public repositories, the `details` object returned by this check contains the following fields:

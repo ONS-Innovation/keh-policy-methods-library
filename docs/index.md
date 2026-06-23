@@ -39,6 +39,7 @@ docs/
 ├── index.md                    # This file.
 ├── documentation.md            # A guide on how the project documentation is structured (what to document in the README vs in the documentation, and why).
 ├── implementation_examples.md  # Some examples of how to implement the methods defined in the library, including example code snippets and explanations.
+├── github-app-permissions.md   # A list of the permissions required for the GitHub App, including a description of each permission and why it is needed.
 │
 ├── github/
 │   ├── overview.md             # An overview of the GitHub-related methods defined in the library, including their purpose and how they fit into the overall library.

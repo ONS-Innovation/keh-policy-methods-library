@@ -90,6 +90,7 @@ class TestCheckLicense:
             "details": {
                 "repository_name": "my-repo",
                 "required_file": "license",
+                "is_public": True,
             },
         }
 
@@ -155,6 +156,7 @@ class TestCheckLicense:
             "details": {
                 "repository_name": "my-repo",
                 "required_file": "license",
+                "is_public": True,
             },
         }
 

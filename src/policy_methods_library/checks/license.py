@@ -71,6 +71,7 @@ def check_license(
                 "details": {
                     "repository_name": repository_name,
                     "required_file": "license",
+                    "is_public": True,
                 },
             }
 
@@ -80,6 +81,7 @@ def check_license(
             "details": {
                 "repository_name": repository_name,
                 "required_file": "license",
+                "is_public": True,
             },
         }
 
