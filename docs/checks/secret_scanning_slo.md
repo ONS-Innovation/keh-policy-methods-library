@@ -70,6 +70,15 @@ match result:
         print("Unexpected result returned.")
 ```
 
+## GitHub Integration Used
+
+This check uses the following GitHub API endpoints:
+
+- `GET /orgs/{owner}` – Verifies that the client is authenticated as an organisation account
+- `GET /orgs/{owner}/secret-scanning/alerts?per_page=100&state=open` – Fetches all open secret scanning alerts for the organisation (paginated)
+
+[GitHub Documentation :link:](https://docs.github.com/en/rest/secret-scanning/secret-scanning)
+
 ### Required Permissions
 
 This check requires the following GitHub App permissions:
@@ -84,12 +93,3 @@ When the check returns a failure, the `details` field includes the following inf
 - `failing_alerts`: The number of alerts that exceed the 5-day SLO.
 - `total_repositories_affected`: The count of unique repositories that contain alerts exceeding the SLO.
 - `repositories`: A dictionary mapping repository identifiers (in the format `{owner}/{repo}`) to the count of failing alerts in each repository.
-
-## GitHub Integration Used
-
-This check uses the following GitHub API endpoints:
-
-- `GET /orgs/{owner}` – Verifies that the client is authenticated as an organisation account
-- `GET /orgs/{owner}/secret-scanning/alerts?per_page=100&state=open` – Fetches all open secret scanning alerts for the organisation (paginated)
-
-[GitHub Documentation :link:](https://docs.github.com/en/rest/secret-scanning/secret-scanning)
