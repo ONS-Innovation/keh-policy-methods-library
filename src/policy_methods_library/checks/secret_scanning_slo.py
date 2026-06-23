@@ -8,6 +8,27 @@ _SLO: int = 5
 
 _NOW = datetime.now(timezone.utc)
 
+def _add_working_days(start_date: datetime, num_days: int) -> datetime:
+    """Add a number of working days (Monday-Friday) to a date, excluding weekends.
+
+    Args:
+        start_date: The starting datetime
+        num_days: Number of working days to add
+
+    Returns:
+        A datetime representing the start_date plus num_days working days
+    """
+    current_date = start_date
+    days_added = 0
+
+    while days_added < num_days:
+        current_date += timedelta(days=1)
+
+        if current_date.weekday() < 5:
+            days_added += 1
+
+    return current_date
+
 
 def _exceeds_slo(alert: dict) -> bool:
     """
@@ -33,7 +54,8 @@ def _exceeds_slo(alert: dict) -> bool:
     except (ValueError, TypeError):
         return True
 
-    return (_NOW - created_at) > timedelta(days=_SLO)
+    slo_deadline = _add_working_days(created_at, _SLO)
+    return _NOW > slo_deadline
 
 
 def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
