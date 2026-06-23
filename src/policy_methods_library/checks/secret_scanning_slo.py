@@ -6,6 +6,7 @@ from policy_methods_library.github.clients import GitHubRestClient
 
 _SLO: int = 5
 
+
 def _add_working_days(start_date: datetime, num_days: int) -> datetime:
     """Add a number of working days (Monday-Friday) to a date, excluding weekends.
 
