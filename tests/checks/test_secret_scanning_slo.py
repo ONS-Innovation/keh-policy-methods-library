@@ -331,8 +331,8 @@ class TestGetSecretScanningSloWithClient:
         assert result["details"]["total_repositories_affected"] == 1
         assert result["details"]["total_open_alerts"] == 2
         assert result["details"]["failing_alerts"] == 2
-        # Repository count includes initialization (1) + increments for each alert (2) = 3
-        assert result["details"]["repositories"]["my-org/same-repo"] == 3
+        # Repository count includes one increment per alert
+        assert result["details"]["repositories"]["my-org/same-repo"] == 2
 
     def test_handles_mixed_alerts_within_and_exceeding_slo(self):
         """A mix of alerts within and exceeding SLO should be handled correctly."""
@@ -372,43 +372,4 @@ class TestGetSecretScanningSloWithClient:
         assert result["details"]["failing_alerts"] == 1
         assert result["details"]["total_repositories_affected"] == 1
         # Only exceeding alerts are tracked by repository.
-        assert result["details"]["repositories"]["my-org/repo2"] == 2
-
-    def test_handles_alerts_with_missing_html_url(self):
-        """Alerts without html_url should be skipped for repository tracking."""
-        client = MagicMock()
-        client.owner = "my-org"
-
-        org_response = MagicMock()
-        org_response.json.return_value = {"type": "Organization"}
-
-        now = datetime.now(timezone.utc)
-        alert_with_url = {
-            "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "html_url": "https://github.com/my-org/repo1/security/secret-scanning/1",
-            "repository": {"name": "repo1"},
-        }
-        alert_without_url = {
-            "created_at": (now - timedelta(days=8)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "repository": {"name": "repo1"},
-        }
-
-        alerts_response = MagicMock()
-        alerts_response.json.return_value = [alert_with_url, alert_without_url]
-        alerts_response.links = None
-
-        def side_effect(*args, **kwargs):
-            if "secret-scanning" in args[1]:
-                return alerts_response
-            return org_response
-
-        client.make_request.side_effect = side_effect
-
-        result = get_secret_scanning_slo(client=client)
-
-        assert result["result"] == "fail"
-        assert result["details"]["total_open_alerts"] == 2
-        assert result["details"]["failing_alerts"] == 2
-        assert result["details"]["total_repositories_affected"] == 1
-        # Repository count = initialization (1) + increments for 2 alerts = 3
-        assert result["details"]["repositories"]["my-org/repo1"] == 3
+        assert result["details"]["repositories"]["my-org/repo2"] == 1

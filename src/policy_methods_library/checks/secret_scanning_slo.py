@@ -6,8 +6,6 @@ from policy_methods_library.github.clients import GitHubRestClient
 
 _SLO: int = 5
 
-_NOW = datetime.now(timezone.utc)
-
 def _add_working_days(start_date: datetime, num_days: int) -> datetime:
     """Add a number of working days (Monday-Friday) to a date, excluding weekends.
 
@@ -55,7 +53,8 @@ def _exceeds_slo(alert: dict) -> bool:
         return True
 
     slo_deadline = _add_working_days(created_at, _SLO)
-    return _NOW > slo_deadline
+    now = datetime.now(timezone.utc)
+    return now > slo_deadline
 
 
 def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
@@ -169,7 +168,7 @@ def get_secret_scanning_slo(
         exceeded_alerts.append(alert)
 
         if repo_name not in repositories:
-            repositories[repo_name] = 1
+            repositories[repo_name] = 0
         repositories[repo_name] += 1
 
     total_repositories_affected = len(repositories)
