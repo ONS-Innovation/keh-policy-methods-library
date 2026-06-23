@@ -79,6 +79,12 @@ A `404` response indicates the file is absent at that path; any other HTTP error
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content)
 
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `contents: read` – Required to access repository file contents
+
 ## Details Object
 
 The `details` object returned by this check contains the following fields:

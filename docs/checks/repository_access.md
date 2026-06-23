@@ -72,3 +72,18 @@ If `affiliation=direct` is not included, the response may include collaborators 
 This endpoint returns a list of collaborators with their access type and permissions.
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2026-03-10#list-repository-collaborators)
+
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `metadata: read` – Required to access repository collaborators
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `repository_name`: The name of the repository that was checked.
+- `individual_collaborators`: A list of individual users (type `User`) who have direct access to the repository. Each item contains:
+  - `login`: The GitHub username of the collaborator.
+  - `permissions`: A dictionary of the collaborator's repository permissions (e.g. `pull`, `push`, `admin`).
