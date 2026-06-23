@@ -96,6 +96,15 @@ response = get_dependabot_slo(
 )
 ```
 
+### Valid Levels
+
+The `levels` must be one of these:
+
+- `critical`
+- `high`
+- `medium`
+- `low`
+
 ## GitHub Integration Used
 
 The check uses these GitHub API endpoints:
@@ -113,15 +122,6 @@ The check uses these GitHub API endpoints:
 This check requires the following GitHub App permissions:
 
 - `dependabot alerts: read` - Required to access Dependabot security alerts
-
-## Valid Levels
-
-The `levels` must be one of these:
-
-- `critical`
-- `high`
-- `medium`
-- `low`
 
 ## Details Object
 
