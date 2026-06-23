@@ -105,7 +105,7 @@ def test_get_contents_successful_response():
     assert result["message"] == "Repository contents retrieved successfully."
     assert result["details"] == {
         "repository_name": "my-repo",
-        "contents": [
+        "repository_contents": [
             {"name": "file1.txt", "type": "file"},
             {"name": "dir1", "type": "dir"},
         ],

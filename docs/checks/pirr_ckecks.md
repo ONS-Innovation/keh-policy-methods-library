@@ -28,7 +28,7 @@ if found will return a success else return a fail
 
 ## Reference
 
-::: src.policy_methods_library.checks.pirr_checks.check_repo_visibility
+::: src.policy_methods_library.checks.pirrcheck_repo_visibility
 
 ## Usage Examples
 
@@ -77,7 +77,7 @@ t("individual_collaborators", [])
 
 The check uses the fillowing :-
 
-- `GET /repos/{owner}/{repo}/'
+- 'GET /repos/{owner}/{repo}/'
 see utils get_details
   - Input the githubRestAPI Client and the repository name
   - Returns the repository details as json/dictionary

@@ -1,12 +1,13 @@
-"""This module contains the checks for PIRR"""
-
 from policy_methods_library.github.clients import GitHubRestClient
 
 from policy_methods_library.utils.get_contents import get_repo_contents
-# Backwards-compatible alias: some tests (or callers) reference get_repo_content
-get_repo_content = get_repo_contents
 
 from policy_methods_library.utils.get_details import get_repo_details
+
+"""------------------------------------------------------------
+This module contains the checks for PIRR
+the details for which are under each funtion
+------------------------------------------------------------"""
 
 
 def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
@@ -39,10 +40,8 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
     try:
         repo_details = get_repo_details(client, repository_name)
 
-        if (
-            not repo_details["details"]['details']['private']
-            and repo_details["details"]['details']['visibility'] == "public"
-        ):
+        if (not repo_details["details"]["repository_details"]["private"] and
+            repo_details["details"]["repository_details"]["visibility"].lower() == "public"):
             return {
                 "result": "pass",
                 "message": (
@@ -51,45 +50,66 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 ),
                 "details": {
                     "repository_name": repository_name,
-                    "repository_details": repo_details["details"]['details']
+                    "repository_details": (
+                        repo_details["details"]["repository_details"]
+                    ),
                 },
             }
-        else:
+        elif (repo_details["details"]["repository_details"]["private"] 
+              and repo_details[ "details"]["repository_details"]["visibility"].lower() in ["private", "internal"]):
             try:
                 repo_contents = get_repo_contents(client, repository_name)
+
                 if any(
                     content.get("name", "").lower() == "pirr.md"
-                    for content in repo_contents
+                    for content in repo_contents["details"]["repository_contents"]
                 ):
                     return {
                         "result": "pass",
                         "message": "Repository contains PIRR documentation.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repo_details,
-                            "repository_contents": repo_contents,
+                            "repository_details": repo_details["details"][
+                                "repository_details"
+                            ],
+                            "repository_contents": repo_contents['details']['repository_contents'],
                         },
                     }
                 else:
                     return {
-                        "result": "faii",
-                        "message": "Repository does not contain PIRR documentation",
+                        "result": "fail",
+                        "message": "Repository missing PIRR documentation.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repo_details,
-                            "repository_contents": repo_contents,
+                            "repository_details": repo_details['details']['repository_details'],
+                            "repository_contents": repo_contents['details']['repository_contents'],
                         },
                     }
             except Exception as e:
                 return {
                     "result": "error",
-                    "message": f"Error fetching repository contents: {str(e)}",
-                    "details": {},
+                    "message": (f"Error fetching repository content: {str(e)}."),
+                    "details": {
+                        "repository_name": repository_name,
+                        "repository_details": repo_details["details"][
+                            "repository_details"
+                        ],
+                        "repository_contents": {},
+                    },
                 }
+        else:
+            return {
+                "result": "error",
+                "message": f"Repository visibility or privacy settings are unexpected for {repository_name}.",
+                "details": {
+                    "repository_name": repository_name,
+                    "repository_details": repo_details["details"]["repository_details"],
+                },
+            }
 
     except Exception as e:
         return {
             "result": "error",
-            "message": f"Error fetching repository details: {str(e)}",
+            "message": (f"Error fetching repository details: {str(e)}"),
             "details": {},
         }

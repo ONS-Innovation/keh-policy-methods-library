@@ -7,13 +7,13 @@ from policy_methods_library.github.clients import GitHubRestClient
 def get_repo_details(github_client: GitHubRestClient, repository_name: str) -> dict:
     """
     Args:
-            github_client (GitHubRestClient): 
+            github_client (GitHubRestClient):
             The GitHub REST client to use for making requests.
-            repository_name (str); the name of the repository 
+            repository_name (str); the name of the repository
             for which to retrieve details.
 
     Returns:
-            dict: A dictionary containing the result of the check (pass/fail), 
+            dict: A dictionary containing the result of the check (pass/fail),
             a message, and any relevant details.
     """
 
@@ -41,14 +41,15 @@ def get_repo_details(github_client: GitHubRestClient, repository_name: str) -> d
             "message": "Repository details retrieved successfully.",
             "details": {
                 "repository_name": repository_name,
-                "details": response.json(),
+                "repository_details": response.json(),
             },
         }
 
     except Exception as e:
         return {
             "result": "error",
-            "message": f"An error occurred while fetching "
-            f"repository details: {str(e)}",
+            "message": (
+                f"An error occurred while fetching repository details: {str(e)}"
+            ),
             "details": {},
         }

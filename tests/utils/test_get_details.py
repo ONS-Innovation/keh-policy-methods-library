@@ -1,7 +1,9 @@
 """Tests for get_repo_details function"""
 
 from policy_methods_library.github.clients import GitHubRestClient
+
 from policy_methods_library.utils import get_details
+
 from unittest.mock import MagicMock
 
 
@@ -95,13 +97,11 @@ class Test_Utils_Get_Details:
 
         # Assert that the details indicate success and contain the expected data
 
-        print(result)
-
         assert result["result"] == "pass"
         assert result["message"] == "Repository details retrieved successfully."
         assert result["details"] == {
             "repository_name": "test-repo",
-            "details": {
+            "repository_details": {
                 "id": 123,
                 "name": "test-repo",
                 "private": True,
