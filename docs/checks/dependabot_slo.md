@@ -117,6 +117,7 @@ This check requires the following GitHub App permissions:
 ## Valid Levels
 
 The `levels` must be one of these:
+
 - `critical`
 - `high`
 - `medium`
