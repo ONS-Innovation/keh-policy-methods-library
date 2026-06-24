@@ -214,9 +214,9 @@ class TestCheckCodeowners:
         result = check_codeowners(client=client, repository_name="my-repo")
 
         assert result["result"] == "error"
-        assert "An error occurred while fetching repository contents" in result[
-            "message"
-        ]
+        assert (
+            "An error occurred while fetching repository contents" in result["message"]
+        )
 
     def test_error_when_client_raises_exception(self):
         """An unexpected exception during the API call should return an error result."""
