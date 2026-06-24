@@ -1,7 +1,7 @@
 """Tests for the secret_scanning_slo check module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import create_autospec
+from unittest.mock import create_autospec, patch
 
 from requests import Response
 
@@ -376,3 +376,45 @@ class TestGetSecretScanningSloWithClient:
         assert result["details"]["total_repositories_affected"] == 1
         # Only exceeding alerts are tracked by repository.
         assert result["details"]["repositories"]["my-org/repo2"] == 1
+
+    def test_error_when_pagination_utility_returns_non_list(self):
+        """Type narrowing guard should catch if pagination utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.secret_scanning_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.secret_scanning_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = "unexpected_string"
+
+            result = get_secret_scanning_slo(client=client)
+
+            assert result["result"] == "error"
+            assert "Unexpected Secret Scanning alerts format" in result["message"]
+
+    def test_error_when_alert_item_is_not_dict(self):
+        """Type narrowing guard should reject non-dict items in alert list."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.secret_scanning_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.secret_scanning_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = ["string_instead_of_dict"]
+
+            result = get_secret_scanning_slo(client=client)
+
+            assert result["result"] == "error"
+            assert "unexpected item format" in result["message"]

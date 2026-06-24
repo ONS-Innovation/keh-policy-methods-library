@@ -1,6 +1,6 @@
 """Tests for the license check module."""
 
-from unittest.mock import call, create_autospec
+from unittest.mock import call, create_autospec, patch
 
 from requests import Response
 
@@ -173,3 +173,88 @@ class TestCheckLicense:
             "message": "An error occurred while fetching repository details: connection timeout",
             "details": {},
         }
+
+    def test_error_when_repo_details_utility_returns_string(self):
+        """Type narrowing guard should catch if details utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.license.get_repo_details"
+        ) as mock_details:
+            mock_details.return_value = "unexpected_string"
+
+            result = check_license(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Unexpected repository details format" in result["message"]
+
+    def test_error_when_contents_utility_returns_string(self):
+        """Type narrowing guard should catch if contents utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.license.get_repo_details"
+            ) as mock_details,
+            patch(
+                "policy_methods_library.checks.license.get_repo_contents"
+            ) as mock_contents,
+        ):
+            mock_details.return_value = {"private": False}
+            mock_contents.return_value = "unexpected_string"
+
+            result = check_license(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Unexpected repository contents format" in result["message"]
+
+    def test_error_when_utility_exception_propagates(self):
+        """Outer exception handler should catch any unexpected errors."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.license.get_repo_details"
+        ) as mock_details:
+            mock_details.side_effect = RuntimeError("unexpected error")
+
+            result = check_license(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Error fetching repository data" in result["message"]
+            assert "unexpected error" in result["message"]
+
+    def test_error_when_get_repo_contents_returns_error_dict(self):
+        """When get_repo_contents utility returns error dict, should propagate error."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.license.get_repo_details"
+            ) as mock_details,
+            patch(
+                "policy_methods_library.checks.license.get_repo_contents"
+            ) as mock_contents,
+        ):
+            mock_details.return_value = {"private": False}
+            mock_contents.return_value = {"error": "Repository not found"}
+
+            result = check_license(client, "my-repo")
+
+            assert result["result"] == "error"
+            assert result["message"] == "Repository not found"
+
+    def test_license_check_with_empty_repository_name(self):
+        """When repository_name is empty string, should return error."""
+        client = GitHubRestClient(
+            owner="my-org",
+            access_token="test_token",
+        )
+
+        result = check_license(client, "")
+
+        assert result["result"] == "error"
+        assert "Repository name is required" in result["message"]

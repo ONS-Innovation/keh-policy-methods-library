@@ -1,6 +1,6 @@
 """Tests for the external_pull_request check module."""
 
-from unittest.mock import call, create_autospec
+from unittest.mock import call, create_autospec, patch
 
 from requests import HTTPError, Response
 
@@ -685,3 +685,49 @@ class TestCheckExternalPullRequest:
                 call("GET", "/orgs/my-org/members/alice", allow_redirects=False),
             ]
         )
+
+    def test_error_when_pagination_utility_returns_non_list(self):
+        """Type narrowing guard should catch if pagination utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.external_pull_request.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.external_pull_request.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = "unexpected_string"
+
+            result = check_external_pull_request(
+                client=client, repository_name="my-repo"
+            )
+
+            assert result["result"] == "error"
+            assert "Unexpected pull requests format" in result["message"]
+
+    def test_error_when_pull_request_item_is_not_dict(self):
+        """Type narrowing guard should reject non-dict items in pull request list."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.external_pull_request.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.external_pull_request.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = ["string_instead_of_dict"]
+
+            result = check_external_pull_request(
+                client=client, repository_name="my-repo"
+            )
+
+            assert result["result"] == "error"
+            assert "unexpected item format" in result["message"]

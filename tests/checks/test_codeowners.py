@@ -1,7 +1,7 @@
 """Tests for the codeowners check module."""
 
 import base64
-from unittest.mock import call, create_autospec
+from unittest.mock import call, create_autospec, patch
 
 import requests
 from requests import Response
@@ -231,3 +231,34 @@ class TestCheckCodeowners:
             "message": "An error occurred while fetching repository contents: connection timeout",
             "details": {},
         }
+
+    def test_error_when_contents_utility_returns_non_dict(self):
+        """Type narrowing guard should catch if contents utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.codeowners.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.return_value = ["unexpected", "list"]
+
+            result = check_codeowners(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Unexpected CODEOWNERS API response format" in result["message"]
+
+    def test_error_when_utility_exception_propagates(self):
+        """Outer exception handler should catch any unexpected errors."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.codeowners.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.side_effect = RuntimeError("unexpected error")
+
+            result = check_codeowners(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Error fetching repository data" in result["message"]
+            assert "unexpected error" in result["message"]

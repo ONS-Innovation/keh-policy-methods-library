@@ -103,3 +103,21 @@ class TestUtilsGetContents:
 
         assert result["status_code"] == "404"
         assert "An error occurred while fetching repository contents" in result["error"]
+
+    def test_error_when_path_is_not_string(self):
+        """When path parameter is not a string, should return error."""
+        client = GitHubRestClient(
+            owner="my-org",
+            access_token="test_token",
+        )
+
+        # Call with non-string path (e.g., integer)
+        result = get_contents.get_repo_contents(
+            github_client=client,
+            repository_name="my-repo",
+            path=123,  # type: ignore
+        )
+
+        assert isinstance(result, dict)
+        assert "error" in result
+        assert "Path must be a string" in result["error"]

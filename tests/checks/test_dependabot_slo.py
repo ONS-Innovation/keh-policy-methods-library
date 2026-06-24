@@ -698,3 +698,45 @@ class TestGetDependabotSLO:
         # But the repo itself is only recorded once in repositories.
         assert result["details"]["total_repositories_affected"] == 1
         assert result["details"]["repositories"] == {"my-org/my-repo": {"critical": 1}}
+
+    def test_error_when_pagination_utility_returns_non_list(self):
+        """Type narrowing guard should catch if pagination utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.dependabot_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.dependabot_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = "unexpected_string"
+
+            result = get_dependabot_slo(client=client, levels=["critical"])
+
+            assert result["result"] == "error"
+            assert "Unexpected Dependabot critical alerts format" in result["message"]
+
+    def test_error_when_alert_item_is_not_dict(self):
+        """Type narrowing guard should reject non-dict items in alert list."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.dependabot_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.dependabot_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = ["string_instead_of_dict"]
+
+            result = get_dependabot_slo(client=client, levels=["critical"])
+
+            assert result["result"] == "error"
+            assert "unexpected item format" in result["message"]

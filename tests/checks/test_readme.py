@@ -1,6 +1,6 @@
 """Tests for the readme check module."""
 
-from unittest.mock import create_autospec
+from unittest.mock import create_autospec, patch
 
 from requests import Response
 
@@ -116,3 +116,34 @@ class TestCheckReadme:
             "message": "An error occurred while fetching repository contents: connection timeout",
             "details": {},
         }
+
+    def test_error_when_contents_utility_returns_string(self):
+        """Type narrowing guard should catch if contents utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.readme.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.return_value = "unexpected_string"
+
+            result = check_readme(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Unexpected repository contents format" in result["message"]
+
+    def test_error_when_utility_exception_propagates(self):
+        """Outer exception handler should catch any unexpected errors."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.readme.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.side_effect = RuntimeError("unexpected error")
+
+            result = check_readme(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Error fetching repository data" in result["message"]
+            assert "unexpected error" in result["message"]
