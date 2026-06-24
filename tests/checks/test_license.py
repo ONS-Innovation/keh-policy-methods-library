@@ -80,7 +80,7 @@ class TestCheckLicense:
         client.make_request.assert_has_calls(
             [
                 call("GET", "/repos/my-org/my-repo"),
-                call("GET", "/repos/my-org/my-repo/contents/"),
+                call("GET", "/repos/my-org/my-repo/contents"),
             ]
         )
 

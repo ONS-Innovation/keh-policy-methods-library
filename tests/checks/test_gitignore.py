@@ -52,7 +52,7 @@ class TestCheckGitignore:
         result = check_gitignore(client=client, repository_name="my-repo")
 
         client.make_request.assert_called_once_with(
-            "GET", "/repos/my-org/my-repo/contents/"
+            "GET", "/repos/my-org/my-repo/contents"
         )
 
         assert result == {
