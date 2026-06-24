@@ -253,3 +253,73 @@ class TestCheckPIRR:
         )
         assert result["details"]["repository_name"] == repository_name
         assert result["details"]["repository_details"] == repository_details
+
+    @patch("policy_methods_library.checks.pirr.get_repo_details")
+    @patch("policy_methods_library.checks.pirr.get_repo_contents")
+    def test_error_when_get_repo_contents_returns_unexpected_format(
+        self, mock_get_contents, mock_get_details
+    ):
+        """get_repo_contents returning a non-error, non-list dict hits the unexpected-format guard."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+        repository_details = {"private": True, "visibility": "private"}
+
+        mock_get_details.return_value = repository_details
+        mock_get_contents.return_value = {"unexpected": "payload"}
+
+        result = pirr.check_pirr(client, repository_name)
+
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
+        assert result["result"] == "error"
+        assert result["message"] == "Unexpected repository contents format."
+        assert result["details"]["repository_name"] == repository_name
+        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_contents"] == {}
+
+    @patch("policy_methods_library.checks.pirr.get_repo_details")
+    @patch("policy_methods_library.checks.pirr.get_repo_contents")
+    def test_error_when_get_repo_contents_raises_exception(
+        self, mock_get_contents, mock_get_details
+    ):
+        """get_repo_contents raising an exception is caught by the inner except block."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+        repository_details = {"private": True, "visibility": "private"}
+
+        mock_get_details.return_value = repository_details
+        mock_get_contents.side_effect = Exception("connection reset")
+
+        result = pirr.check_pirr(client, repository_name)
+
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
+        assert result["result"] == "error"
+        assert (
+            result["message"] == "Error fetching repository content: connection reset."
+        )
+        assert result["details"]["repository_name"] == repository_name
+        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_contents"] == {}
+
+    @patch("policy_methods_library.checks.pirr.get_repo_details")
+    @patch("policy_methods_library.checks.pirr.get_repo_contents")
+    def test_error_when_get_repo_details_raises_exception(
+        self, mock_get_contents, mock_get_details
+    ):
+        """get_repo_details raising an exception is caught by the outer except block."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+
+        mock_get_details.side_effect = Exception("timeout")
+
+        result = pirr.check_pirr(client, repository_name)
+
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_not_called()
+        assert result["result"] == "error"
+        assert result["message"] == "Error evaluating PIRR check: timeout"
+        assert result["details"] == {}
