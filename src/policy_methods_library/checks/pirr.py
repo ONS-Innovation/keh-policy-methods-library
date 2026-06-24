@@ -51,10 +51,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
         if not is_private and visibility == "public":
             return {
                 "result": "pass",
-                "message": (
-                    f"Successfully retrieved the details for "
-                    f"repository {repository_name}"
-                ),
+                "message": "Repository is public. PIRR documentation is not required.",
                 "details": {
                     "repository_name": repository_name,
                     "repository_details": repository_details,

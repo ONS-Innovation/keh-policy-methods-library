@@ -48,6 +48,10 @@ class TestCheckPIRR:
         mock_get_details.assert_called_once_with(client, repository_name)
         mock_get_contents.assert_not_called()
         assert result["result"] == "pass"
+        assert (
+            result["message"]
+            == "Repository is public. PIRR documentation is not required."
+        )
         assert result["details"]["repository_name"] == repository_name
         assert result["details"]["repository_details"] == repository_details
 
@@ -221,4 +225,31 @@ class TestCheckPIRR:
         assert result["message"] == "Repository missing PIRR documentation."
         assert result["details"]["repository_name"] == repository_name
         assert result["details"]["repository_details"] == repository_details
-        assert result["details"]["repository_contents"] == repository_contents
+
+    @patch("policy_methods_library.checks.pirr.get_repo_details")
+    @patch("policy_methods_library.checks.pirr.get_repo_contents")
+    def test_error_for_unexpected_details_not_private_not_public(
+        self, mock_get_contents, mock_get_details
+    ):
+        """private=False with a non-public visibility should hit the unexpected-settings branch."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+        repository_details = {
+            "private": False,
+            "visibility": "private",
+        }
+
+        mock_get_details.return_value = repository_details
+
+        result = pirr.check_pirr(client, repository_name)
+
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_not_called()
+        assert result["result"] == "error"
+        assert result["message"] == (
+            "Repository visibility or privacy settings are unexpected for "
+            f"{repository_name}."
+        )
+        assert result["details"]["repository_name"] == repository_name
+        assert result["details"]["repository_details"] == repository_details
