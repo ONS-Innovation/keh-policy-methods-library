@@ -81,7 +81,7 @@ When using shared helper utilities in `policy_methods_library/utils`, treat them
 
 This keeps check outputs stable for users while allowing internal helper utilities to be most flexible, efficient and maintainable.
 
-Documentation about the helper utilities is available in the [Helper Utilities (Internal)](helper_utilities.md) guide.
+Documentation about the helper utilities is available in the [Helper Utilities (Internal)](../helper_utilities.md) guide.
 
 ## Step 6: Update General Documentation
 
