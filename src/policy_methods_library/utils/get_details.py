@@ -1,55 +1,38 @@
-"""
-Get repository details from GitHub."""
+"""Get repository details from GitHub."""
+
+from typing import Any
 
 from policy_methods_library.github.clients import GitHubRestClient
 
 
-def get_repo_details(github_client: GitHubRestClient, repository_name: str) -> dict:
-    """
+def get_repo_details(
+    github_client: GitHubRestClient, repository_name: str
+) -> dict[str, Any]:
+    """Return repository details data or an error object.
+
     Args:
-            github_client (GitHubRestClient):
-            The GitHub REST client to use for making requests.
-            repository_name (str); the name of the repository
-            for which to retrieve details.
+        github_client: GitHub REST client used to make API calls.
+        repository_name: Name of the repository.
 
     Returns:
-            dict: A dictionary containing the result of the check (pass/fail),
-            a message, and any relevant details.
+        On success: Repository details as returned by GitHub.
+        On error: {"error": "<message>"}
     """
 
-    if not github_client:
-        return {
-            "result": "error",
-            "message": "GitHubRestClient instance is required.",
-            "details": {},
-        }
+    if not isinstance(github_client, GitHubRestClient):
+        return {"error": "GitHubRestClient instance is required."}
 
-    if not repository_name:
-        return {
-            "result": "error",
-            "message": "Repository name is required.",
-            "details": {},
-        }
+    if not isinstance(repository_name, str) or repository_name.strip() == "":
+        return {"error": "Repository name is required."}
 
     try:
         response = github_client.make_request(
             "GET", f"/repos/{github_client.owner}/{repository_name}"
         )
 
-        return {
-            "result": "pass",
-            "message": "Repository details retrieved successfully.",
-            "details": {
-                "repository_name": repository_name,
-                "repository_details": response.json(),
-            },
-        }
+        return response.json()
 
     except Exception as e:
         return {
-            "result": "error",
-            "message": (
-                f"An error occurred while fetching repository details: {str(e)}"
-            ),
-            "details": {},
+            "error": f"An error occurred while fetching repository details: {str(e)}"
         }

@@ -1,42 +1,29 @@
-"""
-Get a list of repository files from GitHub.
-"""
+"""Get a list of repository files from GitHub."""
+
+from typing import Any
 
 from policy_methods_library.github.clients import GitHubRestClient
 
 
-def get_repo_contents(github_client: GitHubRestClient, repository_name: str) -> dict:
-    """
+def get_repo_contents(
+    github_client: GitHubRestClient, repository_name: str
+) -> list[dict[str, Any]] | dict[str, str]:
+    """Return repository top-level contents data or an error object.
+
     Args:
-            github_client (GitHubRestClient): The GitHub REST client to use for
-            making requests.  The name of the repository for which to retrieve
-            contents.
+        github_client: GitHub REST client used to make API calls.
+        repository_name: Name of the repository.
+
     Returns:
-            dict: A dictionary containing the result of the
-            check (pass/fail),
-            a message,
-            and any relevant details.
-
-            The details will include :-
-                repository name
-
-                contents: A list of dictionaries containing the details of each file
-                or directory in the repository.
+        On success: Repository contents as returned by GitHub.
+        On error: {"error": "<message>"}
     """
 
-    if not github_client:
-        return {
-            "result": "error",
-            "message": "GitHubRestClient instance is required.",
-            "details": {},
-        }
+    if not isinstance(github_client, GitHubRestClient):
+        return {"error": "GitHubRestClient instance is required."}
 
-    if not repository_name:
-        return {
-            "result": "error",
-            "message": "Repository name is required.",
-            "details": {},
-        }
+    if not isinstance(repository_name, str) or repository_name.strip() == "":
+        return {"error": "Repository name is required."}
 
     try:
         response = github_client.make_request(
@@ -44,19 +31,9 @@ def get_repo_contents(github_client: GitHubRestClient, repository_name: str) -> 
             f"/repos/{github_client.owner}/{repository_name}/contents",
         )
 
-        return {
-            "result": "pass",
-            "message": "Repository contents retrieved successfully.",
-            "details": {
-                "repository_name": repository_name,
-                "repository_contents": response.json(),
-            },
-        }
+        return response.json()
 
     except Exception as e:
         return {
-            "result": "error",
-            "message": f"An error occurred while fetching repository "
-            f"contents: {str(e)}",
-            "details": {},
+            "error": f"An error occurred while fetching repository contents: {str(e)}"
         }

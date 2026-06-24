@@ -35,7 +35,15 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
 
     try:
         repo_details = get_repo_details(client, repository_name)
-        repository_details = repo_details["details"]["repository_details"]
+
+        if isinstance(repo_details, dict) and "error" in repo_details:
+            return {
+                "result": "error",
+                "message": repo_details["error"],
+                "details": {},
+            }
+
+        repository_details = repo_details
 
         is_private = repository_details["private"]
         visibility = repository_details["visibility"].lower()
@@ -56,7 +64,30 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
         if is_private and visibility in ["private", "internal"]:
             try:
                 repo_contents = get_repo_contents(client, repository_name)
-                repository_contents = repo_contents["details"]["repository_contents"]
+
+                if isinstance(repo_contents, dict) and "error" in repo_contents:
+                    return {
+                        "result": "error",
+                        "message": repo_contents["error"],
+                        "details": {
+                            "repository_name": repository_name,
+                            "repository_details": repository_details,
+                            "repository_contents": {},
+                        },
+                    }
+
+                if not isinstance(repo_contents, list):
+                    return {
+                        "result": "error",
+                        "message": "Unexpected repository contents format.",
+                        "details": {
+                            "repository_name": repository_name,
+                            "repository_details": repository_details,
+                            "repository_contents": {},
+                        },
+                    }
+
+                repository_contents = repo_contents
 
                 if any(
                     content.get("name", "").lower() == "pirr.md"
@@ -107,6 +138,6 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
     except Exception as e:
         return {
             "result": "error",
-            "message": (f"Error fetching repository details: {str(e)}"),
+            "message": f"Error evaluating PIRR check: {str(e)}",
             "details": {},
         }
