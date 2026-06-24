@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.organisation import verify_client_organisation
 from policy_methods_library.utils.pagination import get_paginated_list
 
 _SLO_DAYS: dict[str, int] = {
@@ -66,42 +67,6 @@ def _exceeds_slo(alert: dict, severity: str) -> bool:
     return NOW > slo_deadline
 
 
-def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
-    """Validate that the client owner resolves to an organisation account.
-
-    Args:
-        client: An instance of the GitHubRestClient to validate.
-
-    Returns:
-        A standard error result dictionary when validation fails, otherwise None.
-    """
-    try:
-        response = client.make_request("GET", f"/orgs/{client.owner}")
-        organisation_data = response.json()
-    except Exception as e:
-        return {
-            "result": "error",
-            "message": f"An error occurred while verifying organisation authentication: {str(e)}",
-            "details": {},
-        }
-
-    if not isinstance(organisation_data, dict):
-        return {
-            "result": "error",
-            "message": "API response does not contain organisation data.",
-            "details": {"response": organisation_data},
-        }
-
-    if organisation_data.get("type") != "Organization":
-        return {
-            "result": "error",
-            "message": "Client is not authenticated as an organisation.",
-            "details": {"organisation": organisation_data},
-        }
-
-    return None
-
-
 def get_dependabot_slo(
     client: GitHubRestClient,
     levels: list[str] | None = None,
@@ -134,7 +99,7 @@ def get_dependabot_slo(
         if not levels:
             levels = valid_levels
 
-    organisation_check_result = _verify_client_organisation(client=client)
+    organisation_check_result = verify_client_organisation(client=client)
     if organisation_check_result is not None:
         return organisation_check_result
 
