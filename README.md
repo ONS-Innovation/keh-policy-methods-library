@@ -119,6 +119,10 @@ src/
    │   ├── auth.py            # Functions to handle authentication with the GitHub API.
    │   └── clients.py         # Client for making REST API calls to GitHub.
    │
+   ├── utils/                 # Internal helper utilities used by checks.
+   │   ├── __init__.py
+   │   └── ...                # files for each specific utility
+   │
    └── __init__.py            # Init file for the package.
 ```
 

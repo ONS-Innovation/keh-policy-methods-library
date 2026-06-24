@@ -5,6 +5,8 @@ repo_url: https://github.com/ONS-Innovation/keh-policy-methods-library
 repo_name: KEH Policy Methods Library
 nav:
   - Home: index.md
+  - GitHub App Permissions: github-app-permissions.md
+  - Helper Utilities: helper_utilities.md
   - Implementation Examples: implementation_examples.md
   - Documentation: documentation.md
   - GitHub Modules:
