@@ -3,6 +3,7 @@
 from requests import HTTPError
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.pagination import get_paginated_list
 
 
 def _is_organisation_member(client: GitHubRestClient, username: str) -> bool:
@@ -110,40 +111,27 @@ def check_external_pull_request(
     if organisation_check_result is not None:
         return organisation_check_result
 
-    pull_requests = []
-    next_page_url = (
+    initial_endpoint = (
         f"/repos/{client.owner}/{repository_name}/pulls?state=open&per_page=100"
     )
-    has_next_page = True
 
-    try:
-        while has_next_page:
-            response = client.make_request(
-                "GET",
-                next_page_url,
-            )
-            response_pull_requests = response.json()
+    pull_requests = get_paginated_list(
+        client,
+        initial_endpoint=initial_endpoint,
+        list_name="pull requests",
+    )
 
-            if isinstance(response_pull_requests, list):
-                pull_requests.extend(response_pull_requests)
-            else:
-                return {
-                    "result": "error",
-                    "message": "API response does not contain a list of pull requests.",
-                    "details": {"response": response_pull_requests},
-                }
+    if isinstance(pull_requests, dict) and "error" in pull_requests:
+        if "response" in pull_requests:
+            return {
+                "result": "error",
+                "message": pull_requests["error"],
+                "details": {"response": pull_requests["response"]},
+            }
 
-            if response.links and "next" in response.links:
-                next_page_url = response.links["next"]["url"].replace(
-                    "https://api.github.com", ""
-                )
-            else:
-                has_next_page = False
-
-    except Exception as e:
         return {
             "result": "error",
-            "message": f"An error occurred while retrieving pull requests: {str(e)}",
+            "message": f"An error occurred while retrieving pull requests: {pull_requests['error']}",
             "details": {},
         }
 

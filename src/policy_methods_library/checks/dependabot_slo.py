@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.pagination import get_paginated_list
 
 _SLO_DAYS: dict[str, int] = {
     "critical": 5,
@@ -139,40 +140,33 @@ def get_dependabot_slo(
 
     dependabot_alerts: dict[str, list] = {level: [] for level in levels}
 
-    try:
-        for level in levels:
-            next_page_url = (
-                f"/orgs/{client.owner}/dependabot/alerts"
-                f"?per_page=100&state=open&severity={level}"
-            )
-            has_next_page = True
+    for level in levels:
+        initial_endpoint = (
+            f"/orgs/{client.owner}/dependabot/alerts"
+            f"?per_page=100&state=open&severity={level}"
+        )
 
-            while has_next_page:
-                response = client.make_request("GET", next_page_url)
-                response_dependabot_alerts = response.json()
+        alerts_for_level = get_paginated_list(
+            client,
+            initial_endpoint=initial_endpoint,
+            list_name=f"Dependabot {level} alerts",
+        )
 
-                if isinstance(response_dependabot_alerts, list):
-                    dependabot_alerts[level].extend(response_dependabot_alerts)
-                else:
-                    return {
-                        "result": "error",
-                        "message": f"API response does not contain a list of Dependabot {level} alerts.",
-                        "details": {"response": response_dependabot_alerts},
-                    }
+        if isinstance(alerts_for_level, dict) and "error" in alerts_for_level:
+            if "response" in alerts_for_level:
+                return {
+                    "result": "error",
+                    "message": alerts_for_level["error"],
+                    "details": {"response": alerts_for_level["response"]},
+                }
 
-                if response.links and "next" in response.links:
-                    next_page_url = response.links["next"]["url"].replace(
-                        "https://api.github.com", ""
-                    )
-                else:
-                    has_next_page = False
+            return {
+                "result": "error",
+                "message": f"Error fetching Dependabot alerts: {alerts_for_level['error']}.",
+                "details": {},
+            }
 
-    except Exception as e:
-        return {
-            "result": "error",
-            "message": f"Error fetching Dependabot alerts: {str(e)}.",
-            "details": {},
-        }
+        dependabot_alerts[level].extend(alerts_for_level)
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     repositories: dict[str, dict[str, int]] = {}

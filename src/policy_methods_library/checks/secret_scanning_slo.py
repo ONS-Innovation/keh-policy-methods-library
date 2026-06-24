@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.pagination import get_paginated_list
 
 _SLO: int = 5
 
@@ -118,37 +119,26 @@ def get_secret_scanning_slo(
     if organisation_check_result is not None:
         return organisation_check_result
 
-    secret_scanning_alerts: list = []
+    initial_endpoint = (
+        f"/orgs/{client.owner}/secret-scanning/alerts?per_page=100&state=open"
+    )
+    secret_scanning_alerts = get_paginated_list(
+        client,
+        initial_endpoint=initial_endpoint,
+        list_name="Secret Scanning alerts",
+    )
 
-    try:
-        next_page_url = (
-            f"/orgs/{client.owner}/secret-scanning/alerts?per_page=100&state=open"
-        )
-        has_next_page = True
+    if isinstance(secret_scanning_alerts, dict) and "error" in secret_scanning_alerts:
+        if "response" in secret_scanning_alerts:
+            return {
+                "result": "error",
+                "message": secret_scanning_alerts["error"],
+                "details": {"response": secret_scanning_alerts["response"]},
+            }
 
-        while has_next_page:
-            response = client.make_request("GET", next_page_url)
-            response_secret_scanning_alerts = response.json()
-
-            if isinstance(response_secret_scanning_alerts, list):
-                secret_scanning_alerts.extend(response_secret_scanning_alerts)  # type: ignore[union-attr]
-            else:
-                return {
-                    "result": "error",
-                    "message": "API response does not contain a list of Secret Scanning alerts.",
-                    "details": {"response": response_secret_scanning_alerts},
-                }
-
-            if response.links and "next" in response.links:
-                next_page_url = response.links["next"]["url"].replace(
-                    "https://api.github.com", ""
-                )
-            else:
-                has_next_page = False
-    except Exception as e:
         return {
             "result": "error",
-            "message": f"Error fetching Secret Scanning alerts: {str(e)}.",
+            "message": f"Error fetching Secret Scanning alerts: {secret_scanning_alerts['error']}.",
             "details": {},
         }
 
