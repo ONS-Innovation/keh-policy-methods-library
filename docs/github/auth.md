@@ -41,6 +41,8 @@ With this GitHub App created and installed, you will need to make note of the fo
 - `APP_ID`: The ID of your GitHub App.
 - `PRIVATE_KEY`: The private key of your GitHub App, which can be generated in the GitHub App settings. This should be stored securely, such as in a secrets manager or environment variable (This will be a `.pem` file).
 
+A list of permissions required for the GitHub App can be found in the [GitHub App Permissions](../github-app-permissions.md) documentation.
+
 ## Auth Module Contents
 
 ### `get_access_token()`

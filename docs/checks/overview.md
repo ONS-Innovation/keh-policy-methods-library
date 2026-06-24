@@ -15,6 +15,7 @@ Documentation on each component within the checks module can be found in the rel
 - `external_pull_request.py`: Contains methods for checking that open pull requests are authored by organisation members only.
 - `security_scanning.py`: Contains methods for checking that Push Protection and Secret Scanning are enabled for public repositories.
 - `dependabot.py`: Contains methods for checking that Dependabot automated security fixes are enabled for repositories.
+- `dependabot_slo.py`: Contains methods for retrieving all open dependabot alerts across the whole organisation.
 - `license.py`: Contains method for checking whether a repository includes a `LICENSE` file.
 - `team_maintainer.py`: Contains method for checking that a GitHub team has at least one maintainer.
 - `codeowners.py`: Contains method for checking whether a repository includes a `CODEOWNERS` file.

@@ -1,12 +1,13 @@
 """Tests for the external_pull_request check module."""
 
-from unittest.mock import MagicMock, call
+from unittest.mock import call, create_autospec
 
-from requests import HTTPError
+from requests import HTTPError, Response
 
 from policy_methods_library.checks.external_pull_request import (
     check_external_pull_request,
 )
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -27,7 +28,7 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_repository_name_is_empty(self):
         """An empty repository name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_external_pull_request(client=client, repository_name="")
 
@@ -39,7 +40,7 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_verifying_organisation_raises_exception(self):
         """An exception during organisation verification should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -53,10 +54,10 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_client_is_not_an_organisation(self):
         """A non-organisation /orgs response should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "User", "login": "my-org"}
         client.make_request.return_value = org_response
 
@@ -70,10 +71,10 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_organisation_response_is_not_a_dict(self):
         """A non-dictionary organisation response should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = ["unexpected", "response"]
         client.make_request.return_value = org_response
 
@@ -87,10 +88,10 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_fetching_pull_requests_raises_exception(self):
         """An exception during pull request retrieval should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         def make_request_side_effect(method: str, endpoint: str):
@@ -112,13 +113,13 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_pull_request_response_is_not_a_list(self):
         """A non-list response payload should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"message": "unexpected"}
 
         def make_request_side_effect(method: str, endpoint: str):
@@ -140,13 +141,13 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_pull_request_author_is_missing(self):
         """A pull request without an author login should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [{"number": 1, "title": "Improve docs"}]
         pulls_response.links = {}
 
@@ -169,13 +170,13 @@ class TestCheckExternalPullRequest:
 
     def test_passes_when_no_open_pull_requests_exist(self):
         """No open pull requests should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = []
         pulls_response.links = {}
 
@@ -202,20 +203,20 @@ class TestCheckExternalPullRequest:
 
     def test_passes_when_all_pull_request_authors_are_org_members(self):
         """A repository with PRs authored by org members only should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {"number": 1, "title": "Update workflow", "user": {"login": "alice"}},
             {"number": 2, "title": "Bump deps", "user": {"login": "bob"}},
         ]
         pulls_response.links = {}
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        membership_response = MagicMock()
+        membership_response = create_autospec(Response, instance=True)
         membership_response.status_code = 204
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -247,10 +248,10 @@ class TestCheckExternalPullRequest:
 
     def test_passes_when_only_open_pull_request_is_dependabot(self):
         """A dependabot PR should be ignored as an allowed exception."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {
                 "number": 77,
@@ -260,7 +261,7 @@ class TestCheckExternalPullRequest:
         ]
         pulls_response.links = {}
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -288,10 +289,10 @@ class TestCheckExternalPullRequest:
 
     def test_ignores_dependabot_and_still_fails_for_other_external_authors(self):
         """Dependabot should be ignored while non-members still cause a failure."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {
                 "number": 77,
@@ -306,7 +307,7 @@ class TestCheckExternalPullRequest:
         ]
         pulls_response.links = {}
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -318,7 +319,7 @@ class TestCheckExternalPullRequest:
                 raise AssertionError("dependabot[bot] membership should not be checked")
             if endpoint == "/orgs/my-org/members/external-contributor":
                 assert kwargs.get("allow_redirects") is False
-                not_member_response = MagicMock()
+                not_member_response = create_autospec(Response, instance=True)
                 not_member_response.status_code = 404
                 raise HTTPError("Not Found", response=not_member_response)
             raise AssertionError(f"Unexpected endpoint called: {endpoint}")
@@ -345,10 +346,10 @@ class TestCheckExternalPullRequest:
 
     def test_fails_when_external_pull_request_exists(self):
         """A repository with at least one non-member PR author should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {"number": 101, "title": "Internal PR", "user": {"login": "alice"}},
             {
@@ -359,10 +360,10 @@ class TestCheckExternalPullRequest:
         ]
         pulls_response.links = {}
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        membership_response = MagicMock()
+        membership_response = create_autospec(Response, instance=True)
         membership_response.status_code = 204
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -377,7 +378,7 @@ class TestCheckExternalPullRequest:
 
             if endpoint == "/orgs/my-org/members/external-contributor":
                 assert kwargs.get("allow_redirects") is False
-                not_member_response = MagicMock()
+                not_member_response = create_autospec(Response, instance=True)
                 not_member_response.status_code = 404
                 raise HTTPError("Not Found", response=not_member_response)
 
@@ -405,10 +406,10 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_membership_check_returns_unexpected_http_error(self):
         """A non-404 HTTP error during membership check should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {
                 "number": 11,
@@ -418,7 +419,7 @@ class TestCheckExternalPullRequest:
         ]
         pulls_response.links = {}
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -429,7 +430,7 @@ class TestCheckExternalPullRequest:
 
             if endpoint == "/orgs/my-org/members/alice":
                 assert kwargs.get("allow_redirects") is False
-                forbidden_response = MagicMock()
+                forbidden_response = create_autospec(Response, instance=True)
                 forbidden_response.status_code = 403
                 raise HTTPError("Forbidden", response=forbidden_response)
 
@@ -447,10 +448,10 @@ class TestCheckExternalPullRequest:
 
     def test_error_when_membership_check_returns_302(self):
         """A 302 from membership check should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {
                 "number": 11,
@@ -460,10 +461,10 @@ class TestCheckExternalPullRequest:
         ]
         pulls_response.links = {}
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        membership_response = MagicMock()
+        membership_response = create_autospec(Response, instance=True)
         membership_response.status_code = 302
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -490,13 +491,13 @@ class TestCheckExternalPullRequest:
 
     def test_calls_expected_pull_request_endpoint(self):
         """The check should call the pull requests endpoint for the repository."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = []
         pulls_response.links = {}
 
@@ -520,14 +521,14 @@ class TestCheckExternalPullRequest:
 
     def test_handles_paginated_pull_requests(self):
         """The check should handle paginated pull requests across multiple pages."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         # First page response with a next link
-        page1_response = MagicMock()
+        page1_response = create_autospec(Response, instance=True)
         page1_response.json.return_value = [
             {"number": 1, "title": "Page 1 PR", "user": {"login": "alice"}},
         ]
@@ -538,13 +539,13 @@ class TestCheckExternalPullRequest:
         }
 
         # Second page response without a next link
-        page2_response = MagicMock()
+        page2_response = create_autospec(Response, instance=True)
         page2_response.json.return_value = [
             {"number": 2, "title": "Page 2 PR", "user": {"login": "bob"}},
         ]
         page2_response.links = {}
 
-        membership_response = MagicMock()
+        membership_response = create_autospec(Response, instance=True)
         membership_response.status_code = 204
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -591,19 +592,19 @@ class TestCheckExternalPullRequest:
 
     def test_handles_pull_requests_with_no_links_attribute(self):
         """The check should handle responses where links is None."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {"number": 1, "title": "Test PR", "user": {"login": "alice"}},
         ]
         pulls_response.links = None
 
-        membership_response = MagicMock()
+        membership_response = create_autospec(Response, instance=True)
         membership_response.status_code = 204
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):
@@ -632,14 +633,14 @@ class TestCheckExternalPullRequest:
 
     def test_pagination_stops_when_no_next_link(self):
         """The check should stop pagination when response has links but no next key."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         # First page with PRs but no next link (last page)
-        pulls_response = MagicMock()
+        pulls_response = create_autospec(Response, instance=True)
         pulls_response.json.return_value = [
             {"number": 1, "title": "Only PR", "user": {"login": "alice"}},
         ]
@@ -649,7 +650,7 @@ class TestCheckExternalPullRequest:
             }
         }
 
-        membership_response = MagicMock()
+        membership_response = create_autospec(Response, instance=True)
         membership_response.status_code = 204
 
         def make_request_side_effect(method: str, endpoint: str, **kwargs):

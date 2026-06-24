@@ -21,6 +21,7 @@ nav:
       - Security Scanning: checks/security_scanning.md
       - Readme: checks/readme_check.md
       - Dependabot: checks/dependabot.md
+      - Dependabot SLO: checks/dependabot_slo.md
       - Gitignore: checks/gitignore.md
       - License: checks/license_check.md
       - Team Maintainer: checks/team_maintainer.md
