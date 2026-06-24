@@ -315,3 +315,50 @@ class TestCheckPIRR:
         assert result["details"]["repository_name"] == repository_name
         assert result["details"]["repository_details"] == repository_details
         assert result["details"]["repository_contents"] == repository_contents
+
+    @patch("policy_methods_library.checks.pirr.get_repo_details")
+    @patch("policy_methods_library.checks.pirr.get_repo_contents")
+    def test_fail_for_internal_repository_without_pirr(
+        self, mock_get_contents, mock_get_details
+    ):
+        """Test that internal repositories also require PIRR documentation."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+        repository_details = {
+            "private": True,
+            "visibility": "internal",
+        }
+        repository_contents = [
+            {"name": "README.md", "type": "file"},
+            {"name": "main.py", "type": "file"},
+        ]
+
+        mock_get_details.return_value = {
+            "result": "pass",
+            "message": "Repository details retrieved successfully.",
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repository_details,
+            },
+        }
+
+        mock_get_contents.return_value = {
+            "result": "pass",
+            "message": "Repository contents retrieved successfully.",
+            "details": {
+                "repository_name": repository_name,
+                "repository_contents": repository_contents,
+            },
+        }
+
+        result = pirr.check_pirr(client, repository_name)
+
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
+
+        assert result["result"] == "fail"
+        assert result["message"] == "Repository missing PIRR documentation."
+        assert result["details"]["repository_name"] == repository_name
+        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_contents"] == repository_contents

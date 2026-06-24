@@ -7,8 +7,8 @@ from policy_methods_library.utils.get_details import get_repo_details
 
 def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
     """Check PIRR requirements based on repository visibility.
-    Passes if the repository is public or if it is private/internal and contains a file named 'PIRR.md'.
-    Fails if the repository is private/internal and does not contain a file named 'PIRR.md'.
+    Passes if the repository is public or if it is private/internal and contains a `pirr.md` file.
+    Fails if the repository is private/internal and does not contain a `pirr.md` file.
 
     Args:
         client (GitHubRestClient): The GitHub REST client.

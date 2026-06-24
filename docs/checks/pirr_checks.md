@@ -75,3 +75,18 @@ match result:
 - `GET /repos/{owner}/{repo}/contents/` to retrieve top-level repository contents.
 
 [GitHub Documentation for repository contents :link:](https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content)
+
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `metadata: read` – Required to access repository visibility and privacy settings
+- `contents: read` – Required to access top-level repository contents and check for `pirr.md`
+
+## Details Object
+
+The `details` object returned by this check can contain the following fields:
+
+- `repository_name`: The name of the repository that was checked.
+- `repository_details`: Repository metadata returned from the repository details endpoint, including fields such as `visibility` and `private`.
+- `repository_contents`: The top-level repository contents returned by the contents endpoint. This field is included when content lookup is attempted for private/internal repositories.
