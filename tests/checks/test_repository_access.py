@@ -1,8 +1,11 @@
 """Tests for the repository_access check module."""
 
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec
+
+from requests import Response
 
 from policy_methods_library.checks.repository_access import check_repository_access
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -23,7 +26,7 @@ class TestCheckRepositoryAccess:
 
     def test_error_when_repository_name_is_empty(self):
         """An empty repository name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_repository_access(client=client, repository_name="")
 
@@ -35,7 +38,7 @@ class TestCheckRepositoryAccess:
 
     def test_error_when_client_request_raises_exception(self):
         """An exception during the API call should return an error result with the error message."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -49,10 +52,10 @@ class TestCheckRepositoryAccess:
 
     def test_error_when_response_is_not_a_list(self):
         """A non-list response payload should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"message": "unexpected"}
         client.make_request.return_value = response
 
@@ -66,10 +69,10 @@ class TestCheckRepositoryAccess:
 
     def test_fails_when_individual_users_have_access(self):
         """A repository with direct individual collaborators should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {
                 "login": "alice",
@@ -106,10 +109,10 @@ class TestCheckRepositoryAccess:
 
     def test_passes_when_no_individual_users_have_access(self):
         """A repository with no direct individual collaborators should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {
                 "login": "my-org/devops-team",

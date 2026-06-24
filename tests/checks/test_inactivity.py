@@ -1,10 +1,12 @@
 """Tests for the inactivity check module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec
 
+from requests import Response
 
 from policy_methods_library.checks.inactivity import check_inactivity
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +108,7 @@ class TestCheckInactivityWithClient:
 
     def test_error_when_repository_name_is_none(self):
         """A client without a repository_name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_inactivity(client=client)
 
@@ -118,7 +120,7 @@ class TestCheckInactivityWithClient:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result with the error message."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -132,10 +134,10 @@ class TestCheckInactivityWithClient:
 
     def test_error_when_response_missing_updated_at(self):
         """An API response without 'updated_at' should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"name": "my-repo"}
         client.make_request.return_value = response
 
@@ -146,10 +148,10 @@ class TestCheckInactivityWithClient:
 
     def test_error_when_response_updated_at_is_not_a_string(self):
         """A non-string 'updated_at' in the API response should return a type error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"updated_at": 123}
         client.make_request.return_value = response
 
@@ -163,14 +165,14 @@ class TestCheckInactivityWithClient:
 
     def test_passes_for_recently_updated_repo_via_client(self):
         """A valid API response with a recent updated_at date should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
         recent_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"updated_at": recent_date}
         client.make_request.return_value = response
 
@@ -185,14 +187,14 @@ class TestCheckInactivityWithClient:
 
     def test_fails_for_inactive_repo_via_client(self):
         """A valid API response with an old updated_at date should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
         old_date = (datetime.now(timezone.utc) - timedelta(days=500)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"updated_at": old_date}
         client.make_request.return_value = response
 

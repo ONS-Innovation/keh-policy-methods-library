@@ -1,8 +1,11 @@
 """Tests for the security_scanning check module."""
 
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec
+
+from requests import Response
 
 from policy_methods_library.checks.security_scanning import check_security_scanning
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -202,7 +205,7 @@ class TestCheckSecurityScanningWithClient:
 
     def test_error_when_repository_name_is_none(self):
         """A client without a repository_name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_security_scanning(client=client)
 
@@ -214,7 +217,7 @@ class TestCheckSecurityScanningWithClient:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result with the error message."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -228,10 +231,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_error_when_response_missing_security_and_analysis(self):
         """An API response without 'security_and_analysis' should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"name": "my-repo", "visibility": "public"}
         client.make_request.return_value = response
 
@@ -242,10 +245,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_error_when_response_missing_visibility(self):
         """An API response without 'visibility' should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "name": "my-repo",
             "security_and_analysis": {
@@ -262,10 +265,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_passes_for_enabled_features_via_client(self):
         """A valid API response with both features enabled should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "visibility": "public",
             "security_and_analysis": {
@@ -283,10 +286,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_fails_for_disabled_features_via_client(self):
         """A valid API response with disabled features should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "visibility": "public",
             "security_and_analysis": {
@@ -304,10 +307,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_fails_for_partial_features_via_client(self):
         """A valid API response with one feature enabled and one disabled should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "visibility": "public",
             "security_and_analysis": {
@@ -327,10 +330,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_passes_for_private_repository_via_client(self):
         """Private repositories should pass because this check is not applicable."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "visibility": "private",
             "security_and_analysis": {
@@ -350,10 +353,10 @@ class TestCheckSecurityScanningWithClient:
 
     def test_makes_correct_api_call(self):
         """The check should make the correct API call to retrieve repository data."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "visibility": "public",
             "security_and_analysis": {

@@ -1,8 +1,11 @@
 """Tests for the license check module."""
 
-from unittest.mock import MagicMock, call
+from unittest.mock import call, create_autospec
+
+from requests import Response
 
 from policy_methods_library.checks.license import check_license
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -23,7 +26,7 @@ class TestCheckLicense:
 
     def test_error_when_repository_name_is_none(self):
         """A missing repository name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_license(client=client, repository_name=None)
 
@@ -35,10 +38,10 @@ class TestCheckLicense:
 
     def test_passes_when_repository_is_private(self):
         """Private repositories should be treated as exempt from this requirement."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        repo_response = MagicMock()
+        repo_response = create_autospec(Response, instance=True)
         repo_response.json.return_value = {"private": True}
         client.make_request.return_value = repo_response
 
@@ -58,13 +61,13 @@ class TestCheckLicense:
 
     def test_passes_when_license_is_present(self):
         """A public repository containing LICENSE should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        repo_response = MagicMock()
+        repo_response = create_autospec(Response, instance=True)
         repo_response.json.return_value = {"private": False}
 
-        contents_response = MagicMock()
+        contents_response = create_autospec(Response, instance=True)
         contents_response.json.return_value = [
             {"name": "LICENSE"},
             {"name": "src"},
@@ -93,13 +96,13 @@ class TestCheckLicense:
 
     def test_passes_when_license_md_is_present(self):
         """A public repository containing LICENSE.md should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        repo_response = MagicMock()
+        repo_response = create_autospec(Response, instance=True)
         repo_response.json.return_value = {"private": False}
 
-        contents_response = MagicMock()
+        contents_response = create_autospec(Response, instance=True)
         contents_response.json.return_value = [
             {"name": "LICENSE.md"},
         ]
@@ -112,13 +115,13 @@ class TestCheckLicense:
 
     def test_passes_when_license_txt_is_present(self):
         """A public repository containing LICENSE.txt should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        repo_response = MagicMock()
+        repo_response = create_autospec(Response, instance=True)
         repo_response.json.return_value = {"private": False}
 
-        contents_response = MagicMock()
+        contents_response = create_autospec(Response, instance=True)
         contents_response.json.return_value = [
             {"name": "license.txt"},
         ]
@@ -131,13 +134,13 @@ class TestCheckLicense:
 
     def test_fails_when_license_is_absent(self):
         """A public repository without a recognized license filename should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        repo_response = MagicMock()
+        repo_response = create_autospec(Response, instance=True)
         repo_response.json.return_value = {"private": False}
 
-        contents_response = MagicMock()
+        contents_response = create_autospec(Response, instance=True)
         contents_response.json.return_value = [
             {"name": "README.md"},
             {"name": "src"},
@@ -159,7 +162,7 @@ class TestCheckLicense:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 

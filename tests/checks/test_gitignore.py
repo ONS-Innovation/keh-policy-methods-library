@@ -1,8 +1,11 @@
 """Tests for the gitignore check module."""
 
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec
+
+from requests import Response
 
 from policy_methods_library.checks.gitignore import check_gitignore
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -23,7 +26,7 @@ class TestCheckGitignore:
 
     def test_error_when_repository_name_is_none(self):
         """A missing repository name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_gitignore(client=client, repository_name=None)
 
@@ -35,10 +38,10 @@ class TestCheckGitignore:
 
     def test_passes_when_gitignore_is_present(self):
         """A repository containing .gitignore should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {"name": ".gitignore"},
             {"name": "src"},
@@ -63,10 +66,10 @@ class TestCheckGitignore:
 
     def test_fails_when_gitignore_is_absent(self):
         """A repository without .gitignore should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {"name": "src"},
             {"name": "docs"},
@@ -87,10 +90,10 @@ class TestCheckGitignore:
 
     def test_passes_when_gitignore_name_has_different_case(self):
         """.gitignore matching should be case-insensitive."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {"name": ".GitIgnore"},
         ]
@@ -102,7 +105,7 @@ class TestCheckGitignore:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 

@@ -1,12 +1,15 @@
 """Tests for the dependabot_slo get module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, call
+from unittest.mock import call, create_autospec
+
+from requests import Response
 
 from policy_methods_library.checks import dependabot_slo as dependabot_slo_check
 from policy_methods_library.checks.dependabot_slo import (
     get_dependabot_slo,
 )
+from policy_methods_library.github.clients import GitHubRestClient
 
 # Fixed "now" used by all SLO-boundary tests so results are deterministic.
 _FIXED_NOW = datetime(2026, 6, 18, 12, 0, 0, tzinfo=timezone.utc)
@@ -48,7 +51,7 @@ class TestGetDependabotSLO:
 
     def test_error_when_verifying_organisation_raises_exception(self):
         """An exception during organisation verification should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -62,10 +65,10 @@ class TestGetDependabotSLO:
 
     def test_error_when_client_is_not_an_organisation(self):
         """A non-organisation /orgs response should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "User", "login": "my-org"}
         client.make_request.return_value = org_response
 
@@ -79,10 +82,10 @@ class TestGetDependabotSLO:
 
     def test_error_when_organisation_response_is_not_a_dict(self):
         """A non-dictionary organisation response should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = ["unexpected", "response"]
         client.make_request.return_value = org_response
 
@@ -96,10 +99,10 @@ class TestGetDependabotSLO:
 
     def test_error_when_fetching_dependabot_alerts_raises_exception(self):
         """An exception during dependabot alerts retrieval should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         def make_request_side_effect(method: str, endpoint: str):
@@ -124,13 +127,13 @@ class TestGetDependabotSLO:
 
     def test_error_when_pull_request_response_is_not_a_list(self):
         """A non-list response payload should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"message": "unexpected"}
 
         def make_request_side_effect(method: str, endpoint: str):
@@ -155,13 +158,13 @@ class TestGetDependabotSLO:
 
     def test_passes_when_no_open_dependabot_alerts_exist(self):
         """No open dependabot alerts should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = []
         response.links = {}
 
@@ -187,10 +190,10 @@ class TestGetDependabotSLO:
 
     def test_fails_when_open_dependabot_alerts_exist(self):
         """Open dependabot alerts should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         fake_open_alert = {
@@ -200,7 +203,7 @@ class TestGetDependabotSLO:
             "repository": _TEST_REPOSITORY,
         }
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             fake_open_alert,
         ]
@@ -234,10 +237,10 @@ class TestGetDependabotSLO:
 
     def test_sorts_dependabot_alerts_correctly(self):
         """No open dependabot alerts should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         fake_open_critical_alert = {
@@ -254,11 +257,11 @@ class TestGetDependabotSLO:
             "repository": _TEST_REPOSITORY,
         }
 
-        critical_response = MagicMock()
+        critical_response = create_autospec(Response, instance=True)
         critical_response.json.return_value = [fake_open_critical_alert]
         critical_response.links = {}
 
-        low_response = MagicMock()
+        low_response = create_autospec(Response, instance=True)
         low_response.json.return_value = [fake_open_low_alert]
         low_response.links = {}
 
@@ -295,13 +298,13 @@ class TestGetDependabotSLO:
 
     def test_calls_expected_dependabot_alert_endpoint(self):
         """The check should call the dependabot alerts endpoint for the repository."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = []
         response.links = {}
 
@@ -331,10 +334,10 @@ class TestGetDependabotSLO:
 
     def test_handles_paginated_dependabot_alerts(self):
         """The check should handle paginated dependabot alerts across multiple pages."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         page1_alerts = [
@@ -355,7 +358,7 @@ class TestGetDependabotSLO:
         ]
 
         # First page response with a next link
-        page1_response = MagicMock()
+        page1_response = create_autospec(Response, instance=True)
         page1_response.json.return_value = page1_alerts
         page1_response.links = {
             "next": {
@@ -364,7 +367,7 @@ class TestGetDependabotSLO:
         }
 
         # Second page response without a next link
-        page2_response = MagicMock()
+        page2_response = create_autospec(Response, instance=True)
         page2_response.json.return_value = page2_alerts
         page2_response.links = {}
 
@@ -416,10 +419,10 @@ class TestGetDependabotSLO:
 
     def test_handles_dependabot_alert_with_no_links_attribute(self):
         """The check should handle responses where links is None."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         open_critical_alert = {
@@ -429,7 +432,7 @@ class TestGetDependabotSLO:
             "repository": _TEST_REPOSITORY,
         }
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [open_critical_alert]
         response.links = None
 
@@ -473,10 +476,10 @@ class TestGetDependabotSLO:
         )
 
     def _make_org_client(self):
-        """Return a MagicMock client pre-configured to pass the org check."""
-        client = MagicMock()
+        """Return an autospecced client pre-configured to pass the org check."""
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization", "login": "my-org"}
 
         def _side_effect(method, endpoint, **kwargs):
@@ -489,7 +492,7 @@ class TestGetDependabotSLO:
 
     def _setup_alert_response(self, client, level, alerts):
         """Attach a single-page alert response for one severity level."""
-        alert_response = MagicMock()
+        alert_response = create_autospec(Response, instance=True)
         alert_response.json.return_value = alerts
         alert_response.links = {}
         original = client.make_request.side_effect

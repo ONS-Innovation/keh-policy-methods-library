@@ -1,9 +1,12 @@
 """Tests for the secret_scanning_slo check module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec
+
+from requests import Response
 
 from policy_methods_library.checks.secret_scanning_slo import get_secret_scanning_slo
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -24,7 +27,7 @@ class TestGetSecretScanningSloWithClient:
 
     def test_error_when_client_raises_exception_during_org_verification(self):
         """An exception during organisation verification should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -35,10 +38,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_error_when_organisation_data_is_not_dict(self):
         """An API response without organisation data should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = "not-a-dict"
         client.make_request.return_value = response
 
@@ -49,10 +52,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_error_when_organisation_type_is_not_organization(self):
         """An API response with a non-Organisation type should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"type": "User"}
         client.make_request.return_value = response
 
@@ -63,11 +66,11 @@ class TestGetSecretScanningSloWithClient:
 
     def test_error_when_fetching_alerts_raises_exception(self):
         """An exception while fetching alerts should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
         # First call succeeds (org verification)
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         # Second call fails (alerts fetch)
@@ -85,13 +88,13 @@ class TestGetSecretScanningSloWithClient:
 
     def test_error_when_alert_response_is_not_list(self):
         """An API response that is not a list should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = {"alerts": "not-a-list"}
         alerts_response.links = None
 
@@ -109,10 +112,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_passes_when_no_alerts_exceed_slo(self):
         """No alerts exceeding SLO should result in a pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         now = datetime.now(timezone.utc)
@@ -122,7 +125,7 @@ class TestGetSecretScanningSloWithClient:
             "repository": {"name": "my-repo"},
         }
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = [recent_alert]
         alerts_response.links = None
 
@@ -143,10 +146,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_fails_when_alerts_exceed_slo(self):
         """Alerts exceeding SLO should result in a fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         now = datetime.now(timezone.utc)
@@ -161,7 +164,7 @@ class TestGetSecretScanningSloWithClient:
             "repository": {"name": "repo2"},
         }
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = [old_alert_1, old_alert_2]
         alerts_response.links = None
 
@@ -185,10 +188,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_alert_with_missing_created_at_exceeds_slo(self):
         """An alert with missing created_at should be considered as exceeding SLO."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         alert_no_created_at = {
@@ -196,7 +199,7 @@ class TestGetSecretScanningSloWithClient:
             "repository": {"name": "repo1"},
         }
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = [alert_no_created_at]
         alerts_response.links = None
 
@@ -217,10 +220,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_alert_with_invalid_created_at_format_exceeds_slo(self):
         """An alert with invalid created_at format should be considered as exceeding SLO."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         alert_invalid_date = {
@@ -229,7 +232,7 @@ class TestGetSecretScanningSloWithClient:
             "repository": {"name": "repo1"},
         }
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = [alert_invalid_date]
         alerts_response.links = None
 
@@ -247,10 +250,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_handles_pagination_of_alerts(self):
         """Multiple pages of alerts should be aggregated correctly."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         now = datetime.now(timezone.utc)
@@ -273,7 +276,7 @@ class TestGetSecretScanningSloWithClient:
             }
         ]
 
-        first_response = MagicMock()
+        first_response = create_autospec(Response, instance=True)
         first_response.json.return_value = first_page_alerts
         first_response.links = {
             "next": {
@@ -281,7 +284,7 @@ class TestGetSecretScanningSloWithClient:
             }
         }
 
-        second_response = MagicMock()
+        second_response = create_autospec(Response, instance=True)
         second_response.json.return_value = second_page_alerts
         second_response.links = None
 
@@ -296,10 +299,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_repository_tracking_aggregates_alerts_correctly(self):
         """Multiple alerts from the same repository should be aggregated."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         now = datetime.now(timezone.utc)
@@ -314,7 +317,7 @@ class TestGetSecretScanningSloWithClient:
             "repository": {"name": "same-repo"},
         }
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = [alert_1, alert_2]
         alerts_response.links = None
 
@@ -336,10 +339,10 @@ class TestGetSecretScanningSloWithClient:
 
     def test_handles_mixed_alerts_within_and_exceeding_slo(self):
         """A mix of alerts within and exceeding SLO should be handled correctly."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        org_response = MagicMock()
+        org_response = create_autospec(Response, instance=True)
         org_response.json.return_value = {"type": "Organization"}
 
         now = datetime.now(timezone.utc)
@@ -354,7 +357,7 @@ class TestGetSecretScanningSloWithClient:
             "repository": {"name": "repo2"},
         }
 
-        alerts_response = MagicMock()
+        alerts_response = create_autospec(Response, instance=True)
         alerts_response.json.return_value = [recent_alert, old_alert]
         alerts_response.links = None
 
