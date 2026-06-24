@@ -1,18 +1,14 @@
+"""This module contains a check to validate PIRR requirements."""
+
 from policy_methods_library.github.clients import GitHubRestClient
-
 from policy_methods_library.utils.get_contents import get_repo_contents
-
 from policy_methods_library.utils.get_details import get_repo_details
-
-"""------------------------------------------------------------
-This module contains the checks for PIRR
-the details for which are under each funtion
-------------------------------------------------------------"""
 
 
 def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
-    """
-    This function checks the visibility and private for a repository.
+    """Check PIRR requirements based on repository visibility.
+    Passes if the repository is public or if it is private/internal and contains a file named 'PIRR.md'.
+    Fails if the repository is private/internal and does not contain a file named 'PIRR.md'.
 
     Args:
         client (GitHubRestClient): The GitHub REST client.
@@ -39,9 +35,12 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
 
     try:
         repo_details = get_repo_details(client, repository_name)
+        repository_details = repo_details["details"]["repository_details"]
 
-        if (not repo_details["details"]["repository_details"]["private"] and
-            repo_details["details"]["repository_details"]["visibility"].lower() == "public"):
+        is_private = repository_details["private"]
+        visibility = repository_details["visibility"].lower()
+
+        if not is_private and visibility == "public":
             return {
                 "result": "pass",
                 "message": (
@@ -50,62 +49,60 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 ),
                 "details": {
                     "repository_name": repository_name,
-                    "repository_details": (
-                        repo_details["details"]["repository_details"]
-                    ),
+                    "repository_details": repository_details,
                 },
             }
-        elif (repo_details["details"]["repository_details"]["private"] 
-              and repo_details[ "details"]["repository_details"]["visibility"].lower() in ["private", "internal"]):
+
+        if is_private and visibility in ["private", "internal"]:
             try:
                 repo_contents = get_repo_contents(client, repository_name)
+                repository_contents = repo_contents["details"]["repository_contents"]
 
                 if any(
                     content.get("name", "").lower() == "pirr.md"
-                    for content in repo_contents["details"]["repository_contents"]
+                    for content in repository_contents
                 ):
                     return {
                         "result": "pass",
                         "message": "Repository contains PIRR documentation.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repo_details["details"][
-                                "repository_details"
-                            ],
-                            "repository_contents": repo_contents['details']['repository_contents'],
+                            "repository_details": repository_details,
+                            "repository_contents": repository_contents,
                         },
                     }
-                else:
-                    return {
-                        "result": "fail",
-                        "message": "Repository missing PIRR documentation.",
-                        "details": {
-                            "repository_name": repository_name,
-                            "repository_details": repo_details['details']['repository_details'],
-                            "repository_contents": repo_contents['details']['repository_contents'],
-                        },
-                    }
+
+                return {
+                    "result": "fail",
+                    "message": "Repository missing PIRR documentation.",
+                    "details": {
+                        "repository_name": repository_name,
+                        "repository_details": repository_details,
+                        "repository_contents": repository_contents,
+                    },
+                }
             except Exception as e:
                 return {
                     "result": "error",
                     "message": (f"Error fetching repository content: {str(e)}."),
                     "details": {
                         "repository_name": repository_name,
-                        "repository_details": repo_details["details"][
-                            "repository_details"
-                        ],
+                        "repository_details": repository_details,
                         "repository_contents": {},
                     },
                 }
-        else:
-            return {
-                "result": "error",
-                "message": f"Repository visibility or privacy settings are unexpected for {repository_name}.",
-                "details": {
-                    "repository_name": repository_name,
-                    "repository_details": repo_details["details"]["repository_details"],
-                },
-            }
+
+        return {
+            "result": "error",
+            "message": (
+                "Repository visibility or privacy settings are unexpected for "
+                f"{repository_name}."
+            ),
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repository_details,
+            },
+        }
 
     except Exception as e:
         return {

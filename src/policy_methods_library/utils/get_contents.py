@@ -20,7 +20,7 @@ def get_repo_contents(github_client: GitHubRestClient, repository_name: str) -> 
             The details will include :-
                 repository name
 
-                conents: A list of dictionaries containing the details of each file
+                contents: A list of dictionaries containing the details of each file
                 or directory in the repository.
     """
 

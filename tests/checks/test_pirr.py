@@ -1,3 +1,5 @@
+"""Tests for the PIRR check module."""
+
 from unittest.mock import create_autospec, patch
 
 from policy_methods_library.github.clients import GitHubRestClient
@@ -11,10 +13,7 @@ from policy_methods_library.checks import pirr
 
 
 class TestCheckPIRR:
-    """Tests for check_pirr function.
-    These tests cover various scenarios for checking repository visibility and
-    the presence of PIRR documentation, including error handling for invalid
-    inputs and API call failures."""
+    """Tests for check_pirr function."""
 
     def test_repository_name_error_when_empty(self):
         """Test that the check fails when the repository name is empty."""
@@ -27,8 +26,7 @@ class TestCheckPIRR:
         assert result["details"] == {}
 
     def test_client_error_when_not_required_format(self):
-        """Test that the check fails when the client is not a GitHubRestClient
-        instance."""
+        """Test that the check fails when the client is not a GitHubRestClient instance."""
 
         client = "not_a_githubrestclient"
         result = pirr.check_pirr(client, "TestRepo")
@@ -38,7 +36,6 @@ class TestCheckPIRR:
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-
     def test_success_for_public_repository(self, mock_get_contents, mock_get_details):
         """Test that the check passes when the repository is public."""
 
@@ -79,11 +76,10 @@ class TestCheckPIRR:
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-
     def test_error_for_public_repository_get_details(
         self, mock_get_contents, mock_get_details
     ):
-        """ """
+        """Test that API errors retrieving repository details return error."""
 
         client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
@@ -105,7 +101,6 @@ class TestCheckPIRR:
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-    
     def test_error_for_unexpected_repository_details(
         self, mock_get_contents, mock_get_details
     ):
@@ -115,7 +110,10 @@ class TestCheckPIRR:
         client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         repository_name = "TestRepo"
-        expected_message = f"Repository visibility or privacy settings are unexpected for {repository_name}."
+        expected_message = (
+            "Repository visibility or privacy settings are unexpected for "
+            f"{repository_name}."
+        )
 
         repository_details = {
             "private": True,
@@ -148,7 +146,6 @@ class TestCheckPIRR:
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-
     def test_error_for_private_repository_details(
         self, mock_get_contents, mock_get_details
     ):
@@ -182,7 +179,7 @@ class TestCheckPIRR:
             "result": "error",
             "message": expected_contents_message,
             "details": {
-                "repository_name": mock_get_details["details"]["repoitory"],
+                "repository_name": repository_name,
                 "repository_details": repository_details,
                 "repository_contents": {},
             },
@@ -205,7 +202,6 @@ class TestCheckPIRR:
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-
     def test_fail_for_private_repository_details(
         self, mock_get_contents, mock_get_details
     ):
@@ -237,8 +233,7 @@ class TestCheckPIRR:
             "details": {
                 "repository_name": repository_name,
                 "repository_details": repository_details,
-                "repository_contents": repository_contents
-
+                "repository_contents": repository_contents,
             },
         }
 
@@ -246,7 +241,7 @@ class TestCheckPIRR:
             "result": "fail",
             "message": expected_contents_message,
             "details": {
-                "repository_name": mock_get_details["details"]["repoitory"],
+                "repository_name": repository_name,
                 "repository_details": repository_details,
                 "repository_contents": repository_contents,
             },
@@ -265,68 +260,58 @@ class TestCheckPIRR:
         assert result["details"]["repository_details"] == repository_details
         assert result["details"]["repository_contents"] == repository_contents
 
-
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-
     def test_success_for_private_repository_details(
-            self, mock_get_contents, mock_get_details
-        ):
-            """
-            Test that the check pass when a repository does have a pirr.md file in contents.
-            """
-            client = create_autospec(GitHubRestClient, instance=True)
-            client.owner = "my-org"
-            repository_name = "TestRepo"
-            expected_contents_message = "Repository contains PIRR documentation."
-            expected_details_message = (
-                f"Successfully retrieved the details for repository {repository_name}"
-            )
+        self, mock_get_contents, mock_get_details
+    ):
+        """Test that the check passes when PIRR documentation exists."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        repository_name = "TestRepo"
+        expected_contents_message = "Repository contains PIRR documentation."
+        expected_details_message = (
+            f"Successfully retrieved the details for repository {repository_name}"
+        )
 
-            repository_details = {
-                "private": True,
-                "visibility": "private",
-            }
+        repository_details = {
+            "private": True,
+            "visibility": "private",
+        }
 
-            repository_contents = [
-                {"name": "README.md", "type": "file"},
-                {"name": "PIRR.md", "type": "file"},
-                {"name": "main.py", "type": "file"},
-            ]
+        repository_contents = [
+            {"name": "README.md", "type": "file"},
+            {"name": "PIRR.md", "type": "file"},
+            {"name": "main.py", "type": "file"},
+        ]
 
-            # Mock the return value for get_repo_details
-            mock_get_details.return_value = {
-                "result": "pass",
-                "message": expected_details_message,
-                "details": {
-                    "repository_name": repository_name,
-                    "repository_details": repository_details,
-                    "repository_contents": repository_contents
+        mock_get_details.return_value = {
+            "result": "pass",
+            "message": expected_details_message,
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repository_details,
+                "repository_contents": repository_contents,
+            },
+        }
 
-                },
-            }
+        mock_get_contents.return_value = {
+            "result": "pass",
+            "message": expected_contents_message,
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repository_details,
+                "repository_contents": repository_contents,
+            },
+        }
 
-            mock_get_contents.return_value = {
-                "result": "pass",
-                "message": expected_contents_message,
-                "details": {
-                    "repository_name": mock_get_details["details"]["repoitory"],
-                    "repository_details": repository_details,
-                    "repository_contents": repository_contents,
-                },
-            }
+        result = pirr.check_pirr(client, repository_name)
 
-            result = pirr.check_pirr(client, repository_name)
+        mock_get_details.assert_called_once_with(client, repository_name)
+        mock_get_contents.assert_called_once_with(client, repository_name)
 
-            mock_get_details.assert_called_once_with(client, repository_name)
-
-            mock_get_contents.assert_called_once_with(client, repository_name)
-
-            assert result["result"] == "pass"
-
-            print(result["details"]["repository_contents"])
-
-            assert result["message"] == expected_contents_message
-            assert result["details"]["repository_name"] == repository_name
-            assert result["details"]["repository_details"] == repository_details
-            assert result["details"]["repository_contents"] == repository_contents
+        assert result["result"] == "pass"
+        assert result["message"] == expected_contents_message
+        assert result["details"]["repository_name"] == repository_name
+        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_contents"] == repository_contents
