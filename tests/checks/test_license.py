@@ -170,6 +170,6 @@ class TestCheckLicense:
 
         assert result == {
             "result": "error",
-            "message": "Error fetching repository data: connection timeout",
+            "message": "An error occurred while fetching repository details: connection timeout",
             "details": {},
         }

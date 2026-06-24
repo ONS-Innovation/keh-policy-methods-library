@@ -113,6 +113,6 @@ class TestCheckReadme:
 
         assert result == {
             "result": "error",
-            "message": "Error fetching repository data: connection timeout",
+            "message": "An error occurred while fetching repository contents: connection timeout",
             "details": {},
         }

@@ -3,6 +3,7 @@
 from policy_methods_library.github.clients import GitHubRestClient
 from typing import Optional
 from datetime import datetime, timedelta, timezone
+from policy_methods_library.utils.get_details import get_repo_details
 
 
 def check_inactivity(
@@ -45,25 +46,21 @@ def check_inactivity(
                 "details": {},
             }
 
-        try:
-            response = client.make_request(
-                "GET", f"/repos/{client.owner}/{repository_name}"
-            )
-
-            repository_info = response.json()
-            last_updated = repository_info.get("updated_at")
-
-            if last_updated is None:
-                return {
-                    "result": "error",
-                    "message": "API response does not contain 'updated_at' field.",
-                    "details": {"response": repository_info},
-                }
-        except Exception as e:
+        repository_info = get_repo_details(client, repository_name)
+        if isinstance(repository_info, dict) and "error" in repository_info:
             return {
                 "result": "error",
-                "message": f"Error fetching repository data: {str(e)}",
+                "message": repository_info["error"],
                 "details": {},
+            }
+
+        last_updated = repository_info.get("updated_at")
+
+        if last_updated is None:
+            return {
+                "result": "error",
+                "message": "API response does not contain 'updated_at' field.",
+                "details": {"response": repository_info},
             }
 
     if not isinstance(last_updated, str):

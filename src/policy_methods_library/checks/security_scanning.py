@@ -2,6 +2,7 @@
 
 from policy_methods_library.github.clients import GitHubRestClient
 from typing import Optional
+from policy_methods_library.utils.get_details import get_repo_details
 
 
 def check_security_scanning(
@@ -53,33 +54,29 @@ def check_security_scanning(
                 "details": {},
             }
 
-        try:
-            response = client.make_request(
-                "GET", f"/repos/{client.owner}/{repository_name}"
-            )
-
-            repository_info = response.json()
-            security_analysis = repository_info.get("security_and_analysis")
-            visibility = repository_info.get("visibility")
-
-            if security_analysis is None:
-                return {
-                    "result": "error",
-                    "message": "API response does not contain 'security_and_analysis' field.",
-                    "details": {"response": repository_info},
-                }
-
-            if visibility is None:
-                return {
-                    "result": "error",
-                    "message": "API response does not contain 'visibility' field.",
-                    "details": {"response": repository_info},
-                }
-        except Exception as e:
+        repository_info = get_repo_details(client, repository_name)
+        if isinstance(repository_info, dict) and "error" in repository_info:
             return {
                 "result": "error",
-                "message": f"Error fetching repository data: {str(e)}",
+                "message": repository_info["error"],
                 "details": {},
+            }
+
+        security_analysis = repository_info.get("security_and_analysis")
+        visibility = repository_info.get("visibility")
+
+        if security_analysis is None:
+            return {
+                "result": "error",
+                "message": "API response does not contain 'security_and_analysis' field.",
+                "details": {"response": repository_info},
+            }
+
+        if visibility is None:
+            return {
+                "result": "error",
+                "message": "API response does not contain 'visibility' field.",
+                "details": {"response": repository_info},
             }
 
     if visibility in ["private", "internal"]:
