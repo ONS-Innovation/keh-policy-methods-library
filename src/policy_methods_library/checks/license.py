@@ -42,6 +42,13 @@ def check_license(
                 "details": {},
             }
 
+        if not isinstance(repository_details, dict):
+            return {
+                "result": "error",
+                "message": "Unexpected repository details format.",
+                "details": {"response": repository_details},
+            }
+
         is_repo_private = repository_details.get("private")
         if is_repo_private:
             return {
@@ -60,6 +67,13 @@ def check_license(
                 "result": "error",
                 "message": contents["error"],
                 "details": {},
+            }
+
+        if not isinstance(contents, list):
+            return {
+                "result": "error",
+                "message": "Unexpected repository contents format.",
+                "details": {"response": contents},
             }
 
         license_file = next(

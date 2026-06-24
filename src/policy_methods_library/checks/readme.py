@@ -41,6 +41,13 @@ def check_readme(
                 "details": {},
             }
 
+        if not isinstance(contents, list):
+            return {
+                "result": "error",
+                "message": "Unexpected repository contents format.",
+                "details": {"response": contents},
+            }
+
         readme = next(
             (item for item in contents if item.get("name", "").lower() == "readme.md"),
             None,

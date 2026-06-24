@@ -100,10 +100,24 @@ def check_external_pull_request(
             "details": {},
         }
 
+    if not isinstance(pull_requests, list):
+        return {
+            "result": "error",
+            "message": "Unexpected pull requests format.",
+            "details": {"response": pull_requests},
+        }
+
     external_pull_requests = []
 
     try:
         for pull_request in pull_requests:
+            if not isinstance(pull_request, dict):
+                return {
+                    "result": "error",
+                    "message": "Pull request payload contains an unexpected item format.",
+                    "details": {"pull_request": pull_request},
+                }
+
             user = pull_request.get("user")
             username = user.get("login") if isinstance(user, dict) else None
 

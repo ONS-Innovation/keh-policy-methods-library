@@ -131,14 +131,29 @@ def get_dependabot_slo(
                 "details": {},
             }
 
+        if not isinstance(alerts_for_level, list):
+            return {
+                "result": "error",
+                "message": f"Unexpected Dependabot {level} alerts format.",
+                "details": {"response": alerts_for_level},
+            }
+
         dependabot_alerts[level].extend(alerts_for_level)
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     repositories: dict[str, dict[str, int]] = {}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
+            if not isinstance(alert, dict):
+                return {
+                    "result": "error",
+                    "message": "Dependabot alert payload contains an unexpected item format.",
+                    "details": {"alert": alert},
+                }
+
             # Getting the Repository URL
-            repo = alert.get("repository").get("name")
+            repository = alert.get("repository")
+            repo = repository.get("name") if isinstance(repository, dict) else None
             org = client.owner
             repo_name = f"{org}/{repo}"
 

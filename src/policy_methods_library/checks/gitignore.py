@@ -41,6 +41,13 @@ def check_gitignore(
                 "details": {},
             }
 
+        if not isinstance(contents, list):
+            return {
+                "result": "error",
+                "message": "Unexpected repository contents format.",
+                "details": {"response": contents},
+            }
+
         gitignore = next(
             (item for item in contents if item.get("name", "").lower() == ".gitignore"),
             None,

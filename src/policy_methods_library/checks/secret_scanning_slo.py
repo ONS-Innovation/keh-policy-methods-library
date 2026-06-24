@@ -107,11 +107,26 @@ def get_secret_scanning_slo(
             "details": {},
         }
 
+    if not isinstance(secret_scanning_alerts, list):
+        return {
+            "result": "error",
+            "message": "Unexpected Secret Scanning alerts format.",
+            "details": {"response": secret_scanning_alerts},
+        }
+
     exceeded_alerts: list = []
     repositories: dict[str, int] = {}
     for alert in secret_scanning_alerts:
+        if not isinstance(alert, dict):
+            return {
+                "result": "error",
+                "message": "Secret Scanning alert payload contains an unexpected item format.",
+                "details": {"alert": alert},
+            }
+
         # Getting the Repository URL
-        repo = alert.get("repository").get("name")
+        repository = alert.get("repository")
+        repo = repository.get("name") if isinstance(repository, dict) else None
         org = client.owner
         repo_name = f"{org}/{repo}"
 
