@@ -9,3 +9,5 @@ Current utilities include:
 
 - `get_details.py`: Contains methods for retrieving repository details from GitHub.
 - `get_contents.py`: Contains methods for retrieving the contents of a repository from GitHub. This is commonly used in the checks to verify the presence of specific files or directories (i.e. `pirr.md`).
+- `pagination.py`: Contains logic for handling GitHub API pagination. Abstracts the complexity of following pagination links to fetch all results across multiple pages.
+- `organisation.py`: Contains methods for verifying that the authenticated client is an organisation (not an individual user). Used by checks that require organisation-level access to GitHub APIs.
