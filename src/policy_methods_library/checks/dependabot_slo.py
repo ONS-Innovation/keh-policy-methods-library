@@ -186,9 +186,6 @@ def get_dependabot_slo(
             if not _exceeds_slo(alert, level):
                 continue
 
-            if not repo_name:
-                continue
-
             exceeded_alerts[level].append(alert)
 
             # Add Repository and add 1 to the SLO level

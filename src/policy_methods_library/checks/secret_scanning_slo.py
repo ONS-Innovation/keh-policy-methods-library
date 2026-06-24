@@ -163,9 +163,6 @@ def get_secret_scanning_slo(
         if not _exceeds_slo(alert):
             continue
 
-        if not repo_name:
-            continue
-
         exceeded_alerts.append(alert)
 
         if repo_name not in repositories:
