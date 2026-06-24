@@ -15,7 +15,7 @@ def get_repo_details(
         repository_name: Name of the repository.
 
     Returns:
-        On success: Repository details as returned by GitHub.
+        On success: Raw repository details as returned by GitHub.
         On error: {"error": "<message>"}
     """
 

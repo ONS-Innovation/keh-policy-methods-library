@@ -69,6 +69,20 @@ In this file, provide comprehensive documentation for the check, including:
 
 > **Note:** The above list is a minimum standard. You should feel free to include any additional information that you think would be helpful.
 
+### Helper Utilities (Internal)
+
+When using shared helper utilities in `policy_methods_library/utils`, treat them as internal implementation details rather than part of the public API.
+
+- Checks remain the public API and must return the standard check response object (`result`, `message`, `details`).
+- Utility helpers should return either:
+    - Raw data required by the check when successful.
+    - A simple error object in the shape `{"error": "<message>"}` on failure.
+- Callers should always validate utility output before using it, and convert utility errors into a standard check error response.
+
+This keeps check outputs stable for users while allowing internal helper utilities to be most flexible, efficient and maintainable.
+
+Documentation about the helper utilities is available in the [Helper Utilities (Internal)](helper_utilities.md) guide.
+
 ## Step 6: Update General Documentation
 
 In addition to the check documentation, you should also update any general documentation that references checks, such as overview pages or indexes, to include the new check.

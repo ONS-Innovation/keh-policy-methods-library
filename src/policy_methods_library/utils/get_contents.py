@@ -15,7 +15,7 @@ def get_repo_contents(
         repository_name: Name of the repository.
 
     Returns:
-        On success: Repository contents as returned by GitHub.
+        On success: Raw repository contents as returned by GitHub.
         On error: {"error": "<message>"}
     """
 
