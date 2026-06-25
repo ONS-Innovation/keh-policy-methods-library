@@ -37,7 +37,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": False,
             "visibility": "public",
         }
 
@@ -87,7 +86,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": True,
             "visibility": "public",
         }
 
@@ -99,7 +97,7 @@ class TestCheckPIRR:
         mock_get_contents.assert_not_called()
         assert result["result"] == "error"
         assert result["message"] == (
-            "Repository visibility or privacy settings are unexpected for "
+            "Repository visibility is unexpected for "
             f"{repository_name}."
         )
         assert result["details"]["repository_name"] == repository_name
@@ -114,7 +112,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": True,
             "visibility": "private",
         }
 
@@ -145,7 +142,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": True,
             "visibility": "private",
         }
         repository_contents = [
@@ -175,7 +171,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": True,
             "visibility": "private",
         }
         repository_contents = [
@@ -206,7 +201,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": True,
             "visibility": "internal",
         }
         repository_contents = [
@@ -236,7 +230,6 @@ class TestCheckPIRR:
         client.owner = "my-org"
         repository_name = "TestRepo"
         repository_details = {
-            "private": False,
             "visibility": "private",
         }
 
@@ -248,7 +241,7 @@ class TestCheckPIRR:
         mock_get_contents.assert_not_called()
         assert result["result"] == "error"
         assert result["message"] == (
-            "Repository visibility or privacy settings are unexpected for "
+            "Repository visibility is unexpected for "
             f"{repository_name}."
         )
         assert result["details"]["repository_name"] == repository_name
@@ -263,7 +256,7 @@ class TestCheckPIRR:
         client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         repository_name = "TestRepo"
-        repository_details = {"private": True, "visibility": "private"}
+        repository_details = {"visibility": "private"}
 
         mock_get_details.return_value = repository_details
         mock_get_contents.return_value = {"unexpected": "payload"}
@@ -287,7 +280,7 @@ class TestCheckPIRR:
         client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         repository_name = "TestRepo"
-        repository_details = {"private": True, "visibility": "private"}
+        repository_details = {"visibility": "private"}
 
         mock_get_details.return_value = repository_details
         mock_get_contents.side_effect = Exception("connection reset")

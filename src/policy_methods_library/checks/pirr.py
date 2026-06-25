@@ -43,10 +43,9 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 "details": {},
             }
 
-        is_private = repo_details["private"]
         visibility = repo_details["visibility"].lower()
 
-        if not is_private and visibility == "public":
+        if visibility == "public":
             return {
                 "result": "pass",
                 "message": "Repository is public. PIRR documentation is not required.",
@@ -56,7 +55,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 },
             }
 
-        if is_private and visibility in ["private", "internal"]:
+        if visibility in ["private", "internal"]:
             try:
                 repo_contents = get_repo_contents(client, repository_name)
 
@@ -119,7 +118,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
         return {
             "result": "error",
             "message": (
-                "Repository visibility or privacy settings are unexpected for "
+                "Repository visibility is unexpected for "
                 f"{repository_name}."
             ),
             "details": {
