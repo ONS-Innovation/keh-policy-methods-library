@@ -41,7 +41,6 @@ docs/
 ├── checks_matrix.md            # At-a-glance matrix for all checks and requirements.
 ├── faq.md                      # User-focused FAQs and troubleshooting guidance.
 ├── documentation.md            # A guide on how the project documentation is structured (what to document in the README vs in the documentation, and why).
-├── implementation_examples.md  # Some examples of how to implement the methods defined in the library, including example code snippets and explanations.
 ├── github-app-permissions.md   # A list of the permissions required for the GitHub App, including a description of each permission and why it is needed.
 │
 ├── github/
