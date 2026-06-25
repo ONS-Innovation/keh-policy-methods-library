@@ -91,6 +91,17 @@ In addition to the check documentation, you should also update any general docum
 
 An important page to highlight is the `github-app-permissions.md` page, which lists all the checks in the library and the GitHub App permissions they require. This **must** be updated to include the new check and its required permissions (if any).
 
+When adding or changing a check, use this minimum documentation checklist:
+
+- Add or update the check page in `docs/checks/<check_name>.md`.
+- Update `docs/checks/overview.md` to include the check.
+- Update `docs/checks_matrix.md` with the check's scope, required inputs, pass/fail summary, and permissions.
+- Update `docs/github-app-permissions.md` with the check's required permissions.
+- Update navigation in `mkdocs.yml` so the check page appears in the docs site.
+- Update the documentation structure list in `docs/index.md` if a new top-level page has been added.
+
+Documentation should use British English.
+
 ## Step 7: Integrate the Check into the Library
 
 Finally, you will need to integrate the new check into the library so that it can be easily imported and used.

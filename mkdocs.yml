@@ -5,10 +5,12 @@ repo_url: https://github.com/ONS-Innovation/keh-policy-methods-library
 repo_name: KEH Policy Methods Library
 nav:
   - Home: index.md
+  - Quickstart: quickstart.md
+  - Checks Matrix: checks_matrix.md
   - GitHub App Permissions: github-app-permissions.md
-  - Helper Utilities: helper_utilities.md
-  - Implementation Examples: implementation_examples.md
+  - FAQ and User Guide: faq.md
   - Documentation: documentation.md
+  - Helper Utilities: helper_utilities.md
   - GitHub Modules:
       - Overview: github/overview.md
       - Auth: github/auth.md
@@ -21,12 +23,12 @@ nav:
       - PIRR: checks/pirr_checks.md
       - External Pull Request: checks/external_pull_request.md
       - Security Scanning: checks/security_scanning.md
-      - Readme: checks/readme_check.md
+      - README: checks/readme_check.md
       - Dependabot: checks/dependabot.md
       - Dependabot SLO: checks/dependabot_slo.md
-      - Secret Scanning: checks/secret_scanning_slo.md
-      - Gitignore: checks/gitignore.md
-      - License: checks/license_check.md
+      - Secret Scanning SLO: checks/secret_scanning_slo.md
+      - .gitignore: checks/gitignore.md
+      - LICENSE: checks/license_check.md
       - Team Maintainer: checks/team_maintainer.md
       - CODEOWNERS: checks/codeowners.md
   - Dev Guides:
