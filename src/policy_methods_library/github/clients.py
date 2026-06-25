@@ -4,7 +4,7 @@ It structures the API calls, handles authentication using the `get_access_token`
 """
 
 import requests
-from typing import Optional
+from typing import Any, Optional
 from .auth import get_access_token
 
 
@@ -43,13 +43,15 @@ class GitHubRestClient:
                 "You must provide either an access_token and the owner or an app_id, private_key, and the owner."
             )
 
-    def make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
+    def make_request(
+        self, method: str, endpoint: str, **kwargs: Any
+    ) -> requests.Response:
         """Makes an authenticated request to the GitHub API.
 
         Args:
             method (str): The HTTP method (e.g., 'GET', 'POST').
             endpoint (str): The API endpoint (e.g., '/repos/{owner}/{repo}').
-            **kwargs: Additional arguments to pass to the `requests` method (e.g., json=data).
+            **kwargs (Any): Additional arguments to pass to the `requests` method (e.g., json=data).
 
         Returns:
             requests.Response: The response from the GitHub API.
