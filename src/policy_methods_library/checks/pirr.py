@@ -43,10 +43,8 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 "details": {},
             }
 
-        repository_details = repo_details
-
-        is_private = repository_details["private"]
-        visibility = repository_details["visibility"].lower()
+        is_private = repo_details["private"]
+        visibility = repo_details["visibility"].lower()
 
         if not is_private and visibility == "public":
             return {
@@ -54,7 +52,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 "message": "Repository is public. PIRR documentation is not required.",
                 "details": {
                     "repository_name": repository_name,
-                    "repository_details": repository_details,
+                    "repository_details": repo_details,
                 },
             }
 
@@ -68,7 +66,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                         "message": repo_contents["error"],
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repository_details,
+                            "repository_details": repo_details,
                             "repository_contents": {},
                         },
                     }
@@ -79,24 +77,22 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                         "message": "Unexpected repository contents format.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repository_details,
+                            "repository_details": repo_details,
                             "repository_contents": {},
                         },
                     }
 
-                repository_contents = repo_contents
-
                 if any(
                     content.get("name", "").lower() == "pirr.md"
-                    for content in repository_contents
+                    for content in repo_contents
                 ):
                     return {
                         "result": "pass",
                         "message": "Repository contains PIRR documentation.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repository_details,
-                            "repository_contents": repository_contents,
+                            "repository_details": repo_details,
+                            "repository_contents": repo_contents,
                         },
                     }
 
@@ -105,8 +101,8 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                     "message": "Repository missing PIRR documentation.",
                     "details": {
                         "repository_name": repository_name,
-                        "repository_details": repository_details,
-                        "repository_contents": repository_contents,
+                        "repository_details": repo_details,
+                        "repository_contents": repo_contents,
                     },
                 }
             except Exception as e:
@@ -115,7 +111,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                     "message": (f"Error fetching repository content: {str(e)}."),
                     "details": {
                         "repository_name": repository_name,
-                        "repository_details": repository_details,
+                        "repository_details": repo_details,
                         "repository_contents": {},
                     },
                 }
@@ -128,7 +124,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
             ),
             "details": {
                 "repository_name": repository_name,
-                "repository_details": repository_details,
+                "repository_details": repo_details,
             },
         }
 
