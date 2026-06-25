@@ -193,6 +193,7 @@ class TestCheckPIRR:
         assert result["message"] == "Repository missing PIRR documentation."
         assert result["details"]["repository_name"] == repository_name
         assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_contents"] == repository_contents
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
@@ -266,9 +267,7 @@ class TestCheckPIRR:
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
-    def test_error_for_unknown_visibility(
-        self, mock_get_contents, mock_get_details
-    ):
+    def test_error_for_unknown_visibility(self, mock_get_contents, mock_get_details):
         """When visibility is not public, private, or internal, should return error."""
         client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
@@ -287,3 +286,4 @@ class TestCheckPIRR:
         )
         assert result["details"]["repository_name"] == repository_name
         assert result["details"]["repository_details"] == repository_details
+        assert result["details"].get("repository_contents") is None
