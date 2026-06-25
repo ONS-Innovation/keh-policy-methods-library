@@ -73,10 +73,12 @@ In this file, provide comprehensive documentation for the check, including:
 
 When using shared helper utilities in `policy_methods_library/utils`, treat them as internal implementation details rather than part of the public API.
 
-- Checks remain the public API and must return the standard check response object (`result`, `message`, `details`).
 - Utility helpers should return either:
   - Raw data required by the check when successful.
   - A simple error object in the shape `{"error": "<message>"}` on failure.
+
+  This strays away from the standard return format of checks, which is intentional to allow for more flexibility within utility functions.
+  
 - Callers should always validate utility output before using it, and convert utility errors into a standard check error response.
 
 This keeps check outputs stable for users while allowing internal helper utilities to be most flexible, efficient and maintainable.

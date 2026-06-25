@@ -15,10 +15,11 @@ Inspired by the GitHub Usage Policy, clause 5.3.3, in summary:
 ## Check Criteria
 
 - The check retrieves repository details to determine visibility and privacy settings.
-- If visibility is `public` and `private` is `False`, the check passes and PIRR documentation is not required.
-- If visibility is `private` or `internal` and `private` is `True`, the check retrieves repository contents and looks for `pirr.md`.
-- If `pirr.md` is found, the check passes.
-- If `pirr.md` is not found, the check fails.
+- If visibility is `public`, the check passes without further action. This is because public repositories do not require a `pirr.md` file.
+- If visibility is `private` or `internal`: 
+  - Repository contents are retrieved to check for the presence of `pirr.md` at the top level.
+  - If `pirr.md` is found, the check passes.
+  - If `pirr.md` is not found, the check fails.
 - If repository details or contents cannot be retrieved, or visibility/privacy values are inconsistent, the check returns an error status.
 
 ## Reference
