@@ -6,13 +6,16 @@ When using this library, the functionality and quality of the data you can acces
 | --------- | ---------------------- |
 | CODEOWNERS Check | `contents: read` |
 | Dependabot Check | `administration: read` |
+| Dependabot SLO Check | `dependabot_alerts: read` |
 | External Pull Request Check | `pull_requests: read`, `members: read` |
 | .gitignore Check | `contents: read` |
 | Inactivity Check | `metadata: read` |
 | LICENSE Check | `contents: read` |
 | Naming Convention Check | None (no API access required) |
+| PIRR Check | `metadata: read`, `contents: read` |
 | README Check | `contents: read` |
 | Repository Access Check | `metadata: read` |
+| Secret Scanning SLO Check | `secret_scanning_alerts: read` |
 | Security Scanning Check | `administration: read` |
 | Team Maintainer Check | `members: read` |
 
@@ -20,8 +23,10 @@ In summary, to unlock the full potential of this library, it is recommended to g
 
 - `contents: read`
 - `administration: read`
+- `dependabot_alerts: read`
 - `pull_requests: read`
 - `members: read`
 - `metadata: read`
+- `secret_scanning_alerts: read`
 
 At the moment, this library does not need **any** write permissions to perform its checks.
