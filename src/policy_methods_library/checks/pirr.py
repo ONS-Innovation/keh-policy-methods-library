@@ -51,7 +51,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 "message": "Repository is public. PIRR documentation is not required.",
                 "details": {
                     "repository_name": repository_name,
-                    "repository_details": repo_details,
+                    "repository_visibility": visibility,
                 },
             }
 
@@ -65,7 +65,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                         "message": repo_contents["error"],
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repo_details,
+                            "repository_visibility": visibility,
                             "repository_contents": {},
                         },
                     }
@@ -76,10 +76,19 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                         "message": "Unexpected repository contents format.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repo_details,
+                            "repository_visibility": visibility,
                             "repository_contents": {},
                         },
                     }
+
+                slim_contents = [
+                    {
+                        "name": c.get("name"),
+                        "path": c.get("path"),
+                        "type": c.get("type"),
+                    }
+                    for c in repo_contents
+                ]
 
                 if any(
                     content.get("name", "").lower() == "pirr.md"
@@ -90,8 +99,8 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                         "message": "Repository contains PIRR documentation.",
                         "details": {
                             "repository_name": repository_name,
-                            "repository_details": repo_details,
-                            "repository_contents": repo_contents,
+                            "repository_visibility": visibility,
+                            "repository_contents": slim_contents,
                         },
                     }
 
@@ -100,8 +109,8 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                     "message": "Repository missing PIRR documentation.",
                     "details": {
                         "repository_name": repository_name,
-                        "repository_details": repo_details,
-                        "repository_contents": repo_contents,
+                        "repository_visibility": visibility,
+                        "repository_contents": slim_contents,
                     },
                 }
             except Exception as e:
@@ -110,7 +119,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                     "message": (f"Error fetching repository content: {str(e)}."),
                     "details": {
                         "repository_name": repository_name,
-                        "repository_details": repo_details,
+                        "repository_visibility": visibility,
                         "repository_contents": {},
                     },
                 }
@@ -120,7 +129,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
             "message": (f"Repository visibility is unexpected for {repository_name}."),
             "details": {
                 "repository_name": repository_name,
-                "repository_details": repo_details,
+                "repository_visibility": visibility,
             },
         }
 

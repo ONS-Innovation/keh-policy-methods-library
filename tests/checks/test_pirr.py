@@ -52,7 +52,7 @@ class TestCheckPIRR:
             == "Repository is public. PIRR documentation is not required."
         )
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "public"
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
     @patch("policy_methods_library.checks.pirr.get_repo_contents")
@@ -104,7 +104,7 @@ class TestCheckPIRR:
             == "An error occurred while fetching repository contents: Invalid Json"
         )
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "private"
         assert result["details"]["repository_contents"] == {}
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
@@ -119,8 +119,8 @@ class TestCheckPIRR:
             "visibility": "private",
         }
         repository_contents = [
-            {"name": "README.md", "type": "file"},
-            {"name": "main.py", "type": "file"},
+            {"name": "README.md", "path": "README.md", "type": "file"},
+            {"name": "main.py", "path": "main.py", "type": "file"},
         ]
 
         mock_get_details.return_value = repository_details
@@ -133,7 +133,7 @@ class TestCheckPIRR:
         assert result["result"] == "fail"
         assert result["message"] == "Repository missing PIRR documentation."
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "private"
         assert result["details"]["repository_contents"] == repository_contents
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
@@ -148,9 +148,9 @@ class TestCheckPIRR:
             "visibility": "private",
         }
         repository_contents = [
-            {"name": "README.md", "type": "file"},
-            {"name": "PIRR.md", "type": "file"},
-            {"name": "main.py", "type": "file"},
+            {"name": "README.md", "path": "README.md", "type": "file"},
+            {"name": "PIRR.md", "path": "PIRR.md", "type": "file"},
+            {"name": "main.py", "path": "main.py", "type": "file"},
         ]
 
         mock_get_details.return_value = repository_details
@@ -163,7 +163,7 @@ class TestCheckPIRR:
         assert result["result"] == "pass"
         assert result["message"] == "Repository contains PIRR documentation."
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "private"
         assert result["details"]["repository_contents"] == repository_contents
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
@@ -178,8 +178,8 @@ class TestCheckPIRR:
             "visibility": "internal",
         }
         repository_contents = [
-            {"name": "README.md", "type": "file"},
-            {"name": "main.py", "type": "file"},
+            {"name": "README.md", "path": "README.md", "type": "file"},
+            {"name": "main.py", "path": "main.py", "type": "file"},
         ]
 
         mock_get_details.return_value = repository_details
@@ -192,7 +192,7 @@ class TestCheckPIRR:
         assert result["result"] == "fail"
         assert result["message"] == "Repository missing PIRR documentation."
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "internal"
         assert result["details"]["repository_contents"] == repository_contents
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
@@ -216,7 +216,7 @@ class TestCheckPIRR:
         assert result["result"] == "error"
         assert result["message"] == "Unexpected repository contents format."
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "private"
         assert result["details"]["repository_contents"] == {}
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
@@ -242,7 +242,7 @@ class TestCheckPIRR:
             result["message"] == "Error fetching repository content: connection reset."
         )
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "private"
         assert result["details"]["repository_contents"] == {}
 
     @patch("policy_methods_library.checks.pirr.get_repo_details")
@@ -285,5 +285,5 @@ class TestCheckPIRR:
             f"Repository visibility is unexpected for {repository_name}."
         )
         assert result["details"]["repository_name"] == repository_name
-        assert result["details"]["repository_details"] == repository_details
+        assert result["details"]["repository_visibility"] == "unknown"
         assert result["details"].get("repository_contents") is None

@@ -20,7 +20,7 @@ Inspired by the GitHub Usage Policy, clause 5.3.3, in summary:
   - Repository contents are retrieved to check for the presence of `pirr.md` at the top level.
   - If `pirr.md` is found, the check passes.
   - If `pirr.md` is not found, the check fails.
-- If repository details or contents cannot be retrieved, or visibility/privacy values are inconsistent, the check returns an error status.
+- If repository details or contents cannot be retrieved, or the visibility value is unrecognised, the check returns an error status.
 
 ## Reference
 
@@ -89,5 +89,5 @@ This check requires the following GitHub App permissions:
 The `details` object returned by this check can contain the following fields:
 
 - `repository_name`: The name of the repository that was checked.
-- `repository_details`: Repository metadata returned from the repository details endpoint, including fields such as `visibility` and `private`.
-- `repository_contents`: The top-level repository contents returned by the contents endpoint. This field is included when content lookup is attempted for private/internal repositories.
+- `repository_visibility`: The visibility of the repository (`public`, `private`, or `internal`).
+- `repository_contents`: The top-level repository contents, slimmed to `name`, `path`, and `type` per item. This field is included when content lookup is attempted for private/internal repositories.
