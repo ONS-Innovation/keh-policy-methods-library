@@ -86,6 +86,7 @@ Repository-level checks:
 - Security Scanning enabled
 - Repository Access
 - External Pull Requests
+- PIRR
 
 Organisation-level checks:
 
