@@ -117,10 +117,7 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
 
         return {
             "result": "error",
-            "message": (
-                "Repository visibility is unexpected for "
-                f"{repository_name}."
-            ),
+            "message": (f"Repository visibility is unexpected for {repository_name}."),
             "details": {
                 "repository_name": repository_name,
                 "repository_details": repo_details,
