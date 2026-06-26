@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta, timezone
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.organisation import verify_client_organisation
+from policy_methods_library.utils.pagination import get_paginated_list
 
 _SLO: int = 5
 
@@ -58,42 +60,6 @@ def _exceeds_slo(alert: dict) -> bool:
     return now > slo_deadline
 
 
-def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
-    """Validate that the client owner resolves to an organisation account.
-
-    Args:
-        client: An instance of the GitHubRestClient to validate.
-
-    Returns:
-        A standard error result dictionary when validation fails, otherwise None.
-    """
-    try:
-        response = client.make_request("GET", f"/orgs/{client.owner}")
-        organisation_data = response.json()
-    except Exception as e:
-        return {
-            "result": "error",
-            "message": f"An error occurred while verifying organisation authentication: {str(e)}",
-            "details": {},
-        }
-
-    if not isinstance(organisation_data, dict):
-        return {
-            "result": "error",
-            "message": "API response does not contain organisation data.",
-            "details": {"response": organisation_data},
-        }
-
-    if organisation_data.get("type") != "Organization":
-        return {
-            "result": "error",
-            "message": "Client is not authenticated as an organisation.",
-            "details": {"organisation": organisation_data},
-        }
-
-    return None
-
-
 def get_secret_scanning_slo(
     client: GitHubRestClient,
 ) -> dict:
@@ -114,56 +80,57 @@ def get_secret_scanning_slo(
             "details": {},
         }
 
-    organisation_check_result = _verify_client_organisation(client=client)
+    organisation_check_result = verify_client_organisation(client=client)
     if organisation_check_result is not None:
         return organisation_check_result
 
-    secret_scanning_alerts: list = []
+    initial_endpoint = (
+        f"/orgs/{client.owner}/secret-scanning/alerts?per_page=100&state=open"
+    )
+    secret_scanning_alerts = get_paginated_list(
+        client,
+        initial_endpoint=initial_endpoint,
+        list_name="Secret Scanning alerts",
+    )
 
-    try:
-        next_page_url = (
-            f"/orgs/{client.owner}/secret-scanning/alerts?per_page=100&state=open"
-        )
-        has_next_page = True
+    if isinstance(secret_scanning_alerts, dict) and "error" in secret_scanning_alerts:
+        if "response" in secret_scanning_alerts:
+            return {
+                "result": "error",
+                "message": secret_scanning_alerts["error"],
+                "details": {"response": secret_scanning_alerts["response"]},
+            }
 
-        while has_next_page:
-            response = client.make_request("GET", next_page_url)
-            response_secret_scanning_alerts = response.json()
-
-            if isinstance(response_secret_scanning_alerts, list):
-                secret_scanning_alerts.extend(response_secret_scanning_alerts)  # type: ignore[union-attr]
-            else:
-                return {
-                    "result": "error",
-                    "message": "API response does not contain a list of Secret Scanning alerts.",
-                    "details": {"response": response_secret_scanning_alerts},
-                }
-
-            if response.links and "next" in response.links:
-                next_page_url = response.links["next"]["url"].replace(
-                    "https://api.github.com", ""
-                )
-            else:
-                has_next_page = False
-    except Exception as e:
         return {
             "result": "error",
-            "message": f"Error fetching Secret Scanning alerts: {str(e)}.",
+            "message": f"Error fetching Secret Scanning alerts: {secret_scanning_alerts['error']}.",
             "details": {},
+        }
+
+    if not isinstance(secret_scanning_alerts, list):
+        return {
+            "result": "error",
+            "message": "Unexpected Secret Scanning alerts format.",
+            "details": {"response": secret_scanning_alerts},
         }
 
     exceeded_alerts: list = []
     repositories: dict[str, int] = {}
     for alert in secret_scanning_alerts:
+        if not isinstance(alert, dict):
+            return {
+                "result": "error",
+                "message": "Secret Scanning alert payload contains an unexpected item format.",
+                "details": {"alert": alert},
+            }
+
         # Getting the Repository URL
-        repo = alert.get("repository").get("name")
+        repository = alert.get("repository")
+        repo = repository.get("name") if isinstance(repository, dict) else None
         org = client.owner
         repo_name = f"{org}/{repo}"
 
         if not _exceeds_slo(alert):
-            continue
-
-        if not repo_name:
             continue
 
         exceeded_alerts.append(alert)

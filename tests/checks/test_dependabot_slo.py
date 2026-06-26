@@ -1,7 +1,7 @@
 """Tests for the dependabot_slo get module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import call, create_autospec
+from unittest.mock import call, create_autospec, patch
 
 from requests import Response
 
@@ -652,3 +652,91 @@ class TestGetDependabotSLO:
         assert counts["medium"] == 0  # 16d < 60d SLO
         assert counts["low"] == 0  # 16d < 90d SLO
         assert result["details"]["total_open_alerts"] == 4
+
+    def test_falls_back_to_all_levels_when_all_provided_levels_are_invalid(
+        self,
+    ):
+        """All-invalid levels list should fall back to all four default severity levels."""
+        client = self._make_org_client()
+        self._set_fixed_now()
+
+        for level in ["critical", "high", "medium", "low"]:
+            self._setup_alert_response(client, level, [])
+
+        result = get_dependabot_slo(client=client, levels=["not_a_valid_level"])
+
+        assert result == {
+            "result": "pass",
+            "message": "All alerts are within policy defined SLO.",
+            "details": {},
+        }
+
+    def test_duplicate_repo_alerts_count_repo_once_in_repositories(
+        self,
+    ):
+        """Two SLO-exceeding alerts from the same repo should count the repo once.
+
+        Patches _exceeds_slo so both alerts deterministically exceed the SLO,
+        exercising the else: continue branch for the second alert from the same repo.
+        """
+        client = self._make_org_client()
+
+        alert_one = _alert(1, created_at="2025-01-01T00:00:00Z")
+        alert_two = _alert(2, created_at="2025-01-01T00:00:00Z")
+        self._setup_alert_response(client, "critical", [alert_one, alert_two])
+
+        with patch(
+            "policy_methods_library.checks.dependabot_slo._exceeds_slo",
+            return_value=True,
+        ):
+            result = get_dependabot_slo(client=client, levels=["critical"])
+
+        assert result["result"] == "fail"
+        # Both alerts counted in failed_alerts via exceeded_alerts list.
+        assert result["details"]["failing_alerts"] == 2
+        assert result["details"]["number_exceeded_by_severity"] == {"critical": 2}
+        # But the repo itself is only recorded once in repositories.
+        assert result["details"]["total_repositories_affected"] == 1
+        assert result["details"]["repositories"] == {"my-org/my-repo": {"critical": 1}}
+
+    def test_error_when_pagination_utility_returns_non_list(self):
+        """Type narrowing guard should catch if pagination utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.dependabot_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.dependabot_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = "unexpected_string"
+
+            result = get_dependabot_slo(client=client, levels=["critical"])
+
+            assert result["result"] == "error"
+            assert "Unexpected Dependabot critical alerts format" in result["message"]
+
+    def test_error_when_alert_item_is_not_dict(self):
+        """Type narrowing guard should reject non-dict items in alert list."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with (
+            patch(
+                "policy_methods_library.checks.dependabot_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.dependabot_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = ["string_instead_of_dict"]
+
+            result = get_dependabot_slo(client=client, levels=["critical"])
+
+            assert result["result"] == "error"
+            assert "unexpected item format" in result["message"]

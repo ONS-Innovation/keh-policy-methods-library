@@ -1,6 +1,8 @@
 """This module contains a check to see if the repository has a license file."""
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.get_contents import get_repo_contents
+from policy_methods_library.utils.get_details import get_repo_details
 
 
 def check_license(
@@ -32,11 +34,22 @@ def check_license(
         }
 
     try:
-        is_repo_private = (
-            client.make_request("GET", f"/repos/{client.owner}/{repository_name}")
-            .json()
-            .get("private")
-        )
+        repository_details = get_repo_details(client, repository_name)
+        if isinstance(repository_details, dict) and "error" in repository_details:
+            return {
+                "result": "error",
+                "message": repository_details["error"],
+                "details": {},
+            }
+
+        if not isinstance(repository_details, dict):
+            return {
+                "result": "error",
+                "message": "Unexpected repository details format.",
+                "details": {"response": repository_details},
+            }
+
+        is_repo_private = repository_details.get("private")
         if is_repo_private:
             return {
                 "result": "pass",
@@ -48,10 +61,20 @@ def check_license(
                 },
             }
 
-        response = client.make_request(
-            "GET", f"/repos/{client.owner}/{repository_name}/contents/"
-        )
-        contents = response.json()
+        contents = get_repo_contents(client, repository_name)
+        if isinstance(contents, dict) and "error" in contents:
+            return {
+                "result": "error",
+                "message": contents["error"],
+                "details": {},
+            }
+
+        if not isinstance(contents, list):
+            return {
+                "result": "error",
+                "message": "Unexpected repository contents format.",
+                "details": {"response": contents},
+            }
 
         license_file = next(
             (

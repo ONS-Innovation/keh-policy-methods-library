@@ -1,6 +1,7 @@
 """This module contains a check to see if the repository has a .gitignore file."""
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.get_contents import get_repo_contents
 
 
 def check_gitignore(
@@ -32,10 +33,20 @@ def check_gitignore(
         }
 
     try:
-        response = client.make_request(
-            "GET", f"/repos/{client.owner}/{repository_name}/contents/"
-        )
-        contents = response.json()
+        contents = get_repo_contents(client, repository_name)
+        if isinstance(contents, dict) and "error" in contents:
+            return {
+                "result": "error",
+                "message": contents["error"],
+                "details": {},
+            }
+
+        if not isinstance(contents, list):
+            return {
+                "result": "error",
+                "message": "Unexpected repository contents format.",
+                "details": {"response": contents},
+            }
 
         gitignore = next(
             (item for item in contents if item.get("name", "").lower() == ".gitignore"),

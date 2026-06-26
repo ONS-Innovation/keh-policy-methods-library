@@ -18,6 +18,7 @@ Use this matrix to choose checks quickly, understand required inputs, and troubl
 | Dependabot Enabled | `check_dependabot` | Repository | `client` + `repository_name` | No | `enabled == true` from automated security fixes endpoint | `enabled == false` | `administration: read` | [Dependabot Check :link:](./checks/dependabot.md#usage-example) |
 | Dependabot SLO | `get_dependabot_slo` | Organisation | `client` | No | No open alerts exceed severity SLO thresholds | One or more open alerts exceed SLO | `dependabot alerts: read` | [Dependabot SLO Check :link:](./checks/dependabot_slo.md#usage-example) |
 | Secret Scanning SLO | `get_secret_scanning_slo` | Organisation | `client` | No | No open secret scanning alerts exceed 5 working days | One or more open alerts exceed 5 working days | `secret_scanning: read` | [Secret Scanning SLO Check :link:](./checks/secret_scanning_slo.md#usage-example) |
+| PIRR | `check_pirr` | Repository | `client` + `repository_name` | No | Public repo (not applicable pass), or private/internal repo has `pirr.md` (case insensitive) at top level | Private/internal repo missing `pirr.md` | `metadata: read`, `contents: read` | [PIRR Check :link:](./checks/pirr_checks.md#usage-example) |
 | Team Maintainer | `check_team_maintainer` | Organisation Team | `client` + `team_slug` | No | Team has at least one maintainer | Team has zero maintainers | `members: read` | [Team Maintainer Check :link:](./checks/team_maintainer.md#usage-example) |
 
 ## Shared behaviour across all checks
@@ -41,8 +42,7 @@ Use this matrix to choose checks quickly, understand required inputs, and troubl
 For further details on each check, see:
 
 - [Checks Overview](checks/overview.md)
-
-> This section will contain links to each check's individual documentation page, which will provide more detailed information on the check's purpose, implementation, and usage.
+- Individual check pages are linked in the **Usage Example** column of the matrix above.
 
 For required GitHub App permissions across checks, see:
 

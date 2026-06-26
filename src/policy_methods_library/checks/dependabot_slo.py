@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta, timezone
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.organisation import verify_client_organisation
+from policy_methods_library.utils.pagination import get_paginated_list
 
 _SLO_DAYS: dict[str, int] = {
     "critical": 5,
@@ -65,42 +67,6 @@ def _exceeds_slo(alert: dict, severity: str) -> bool:
     return NOW > slo_deadline
 
 
-def _verify_client_organisation(client: GitHubRestClient) -> dict | None:
-    """Validate that the client owner resolves to an organisation account.
-
-    Args:
-        client: An instance of the GitHubRestClient to validate.
-
-    Returns:
-        A standard error result dictionary when validation fails, otherwise None.
-    """
-    try:
-        response = client.make_request("GET", f"/orgs/{client.owner}")
-        organisation_data = response.json()
-    except Exception as e:
-        return {
-            "result": "error",
-            "message": f"An error occurred while verifying organisation authentication: {str(e)}",
-            "details": {},
-        }
-
-    if not isinstance(organisation_data, dict):
-        return {
-            "result": "error",
-            "message": "API response does not contain organisation data.",
-            "details": {"response": organisation_data},
-        }
-
-    if organisation_data.get("type") != "Organization":
-        return {
-            "result": "error",
-            "message": "Client is not authenticated as an organisation.",
-            "details": {"organisation": organisation_data},
-        }
-
-    return None
-
-
 def get_dependabot_slo(
     client: GitHubRestClient,
     levels: list[str] | None = None,
@@ -133,60 +99,65 @@ def get_dependabot_slo(
         if not levels:
             levels = valid_levels
 
-    organisation_check_result = _verify_client_organisation(client=client)
+    organisation_check_result = verify_client_organisation(client=client)
     if organisation_check_result is not None:
         return organisation_check_result
 
     dependabot_alerts: dict[str, list] = {level: [] for level in levels}
 
-    try:
-        for level in levels:
-            next_page_url = (
-                f"/orgs/{client.owner}/dependabot/alerts"
-                f"?per_page=100&state=open&severity={level}"
-            )
-            has_next_page = True
+    for level in levels:
+        initial_endpoint = (
+            f"/orgs/{client.owner}/dependabot/alerts"
+            f"?per_page=100&state=open&severity={level}"
+        )
 
-            while has_next_page:
-                response = client.make_request("GET", next_page_url)
-                response_dependabot_alerts = response.json()
+        alerts_for_level = get_paginated_list(
+            client,
+            initial_endpoint=initial_endpoint,
+            list_name=f"Dependabot {level} alerts",
+        )
 
-                if isinstance(response_dependabot_alerts, list):
-                    dependabot_alerts[level].extend(response_dependabot_alerts)
-                else:
-                    return {
-                        "result": "error",
-                        "message": f"API response does not contain a list of Dependabot {level} alerts.",
-                        "details": {"response": response_dependabot_alerts},
-                    }
+        if isinstance(alerts_for_level, dict) and "error" in alerts_for_level:
+            if "response" in alerts_for_level:
+                return {
+                    "result": "error",
+                    "message": alerts_for_level["error"],
+                    "details": {"response": alerts_for_level["response"]},
+                }
 
-                if response.links and "next" in response.links:
-                    next_page_url = response.links["next"]["url"].replace(
-                        "https://api.github.com", ""
-                    )
-                else:
-                    has_next_page = False
+            return {
+                "result": "error",
+                "message": f"Error fetching Dependabot alerts: {alerts_for_level['error']}.",
+                "details": {},
+            }
 
-    except Exception as e:
-        return {
-            "result": "error",
-            "message": f"Error fetching Dependabot alerts: {str(e)}.",
-            "details": {},
-        }
+        if not isinstance(alerts_for_level, list):
+            return {
+                "result": "error",
+                "message": f"Unexpected Dependabot {level} alerts format.",
+                "details": {"response": alerts_for_level},
+            }
+
+        dependabot_alerts[level].extend(alerts_for_level)
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     repositories: dict[str, dict[str, int]] = {}
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
+            if not isinstance(alert, dict):
+                return {
+                    "result": "error",
+                    "message": "Dependabot alert payload contains an unexpected item format.",
+                    "details": {"alert": alert},
+                }
+
             # Getting the Repository URL
-            repo = alert.get("repository").get("name")
+            repository = alert.get("repository")
+            repo = repository.get("name") if isinstance(repository, dict) else None
             org = client.owner
             repo_name = f"{org}/{repo}"
 
             if not _exceeds_slo(alert, level):
-                continue
-
-            if not repo_name:
                 continue
 
             exceeded_alerts[level].append(alert)
