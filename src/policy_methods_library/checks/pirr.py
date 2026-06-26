@@ -43,7 +43,8 @@ def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
                 "details": {},
             }
 
-        visibility = repo_details["visibility"].lower()
+        visibility = repo_details.get("visibility")
+        visibility = visibility.lower() if isinstance(visibility, str) else None
 
         if visibility == "public":
             return {
