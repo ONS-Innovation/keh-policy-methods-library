@@ -28,61 +28,53 @@ if found will return a success else return a fail
 
 ## Reference
 
-::: src.policy_methods_library.checks.pirrcheck_repo_visibility
+::: src.policy_methods_library.checks.pirr.py
 
 ## Usage Examples
 
 ```python
-from policy_methods_library.github.clients import GitHubRestClient
-from policy_methods_library.utils.get_contents import get_repo_contents
-from policy_methods_library.utils.get_details import get_repo_details
+    from policy_methods_library.github.clients import GitHubRestClient
+    from policy_methods_library.utils.get_contents import get_repo_contents
+    from policy_methods_library.utils.get_details import get_repo_details
 
-# Setup GitHub Client
-# Note: These credentials are placeholders. In a real implementation,
-# you would securely retrieve these from your environment or a secrets manager.
-app_id = "your_app_id"
-private_key = "your_private_key"
-github_organisation = "your_github_organisation"
+    # example calls 
+    
+    repo_details = get_repo_details(client, repository_name)
+    repo_contents = get_repo_contents(client, repository_name)
 
-client = GitHubRestClient(
-    owner=github_organisation,
-    app_id=app_id,
-    private_key=private_key,
-)
+    # example queries from response 
 
-# Run check with data retrieval
-repository_details = get_repo_details(
-    client=client,
-    repository_name="your_repository_name",
-)
-repository_contents = get_repo_contents(
-    client=client,
-    repository_name="your_repository_name",
-)
+    # finds any file with required name
+    any(
+                    content.get("name", "").lower() == "pirr.md"
+                    for content in repo_contents["details"]["repository_contents"]
+                )
+    # eliminates public repositories
+    (not repo_details["details"]["repository_details"]["private"] and
+            repo_details["details"]["repository_details"]["visibility"].lower() == "public")
 
-# Process response
-the_check_response = repository_details  # replace with actual check response object
-result = the_check_response.get("result")
-message = the_check_response.get("message")
-
-t("individual_collaborators", [])
-        print(f"Individual collaborators found: {individual_collaborators}")
-    case "error":
-        print(f"Check Error: {message}")
-    case _:
-        print("Unexpected result returned.")
+    example return
+    return {
+            "result": "pass",
+            "message": "Repository contains PIRR documentation.",
+            "details": {
+                "repository_name": repository_name,
+                "repository_details": repo_details["details"]       ["repository_details"],
+                "repository_contents": repo_contents['details']['repository_contents'],
+                        },
+                    }
 ```
 
 ## GitHub Integration Used
 
 The check uses the fillowing :-
 
-- 'GET /repos/{owner}/{repo}/'
+- `GET /repos/{owner}/{repo}/`
 see utils get_details
   - Input the githubRestAPI Client and the repository name
   - Returns the repository details as json/dictionary
 
-- 'GET /repos/{owner}/{repo}/contents/'
+- `GET /repos/{owner}/{repo}/contents/`
 see utils/get_contents
   - Input the githubRestAPI Client and the repository name
   - Return a list of files for the repository
@@ -92,5 +84,3 @@ see utils/get_contents
 [GitHub Usage Policy:](https://github.com/ONSdigital/software-engineer-community/blob/master/Software%20Engineering%20Principles_Policies_Guidelines_Templates_Plans%20and%20more/Software%20Engineering%20Policies/GitHub%20Usage%20Policy.pdf)
 
 [GitHub Documentation for repository details:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)
-
-[GitHub Documentation for repository conents:](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10)

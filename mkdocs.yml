@@ -28,6 +28,9 @@ nav:
   - Dev Guides:
       - Adding Checks: dev_guides/adding_checks.md
       - Testing New Functionality: dev_guides/testing_new_functionality.md
+      - Utilities Get Repository Details : utils/get_repo_details.md
+      - Utilities Get Repository Contents : utils/get_repo_contents.md
+
 theme:
   name: material
   language: en
