@@ -136,14 +136,14 @@ This workflow is triggered on pushes to tags matching the pattern "v\*". The tag
 
 A production release will be created when a tag is pushed that follows the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.). A pre-release will be created when a tag is pushed that follows the format "v0.0.0-rc" (e.g. "v0.1.0-rc", "v1.0.0-rc", etc.). This allows for both stable releases and pre-releases to be created and published to GitHub Releases.
 
-To create a new release, you can use the following command to create a new tag and push it to the repository:
+Package versioning is derived dynamically from the git tag during the release workflow. To create a new release, create and push a version tag:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-This will tag the current commit with the version "v0.1.0" and push the tag to the remote repository, which will trigger the GitHub Actions workflow to build and publish the package to GitHub Releases.
+This triggers the GitHub Actions workflow to build and publish the package to GitHub Releases using version `0.1.0` derived from tag `v0.1.0`.
 
 **Note:** Is is important that GitHub Releases are _only_ created via the GitHub Actions workflow, and not manually via the GitHub UI. This is because the workflow ensures that the package is built and published correctly.
 
