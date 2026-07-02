@@ -40,7 +40,7 @@ types-requests = "^2.33.0.20260503"
 pythonpath = ["src"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning[plugin]>=1.9.1,<2.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning[plugin]==1.9.1"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
