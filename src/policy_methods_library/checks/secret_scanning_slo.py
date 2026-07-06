@@ -63,7 +63,7 @@ def _exceeds_slo(alert: dict) -> bool:
 def get_secret_scanning_slo(
     client: GitHubRestClient,
 ) -> dict:
-    """Get all open Secret Scanning alerts
+    """Get all open Secret Scanning alerts that breach SLO.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.
