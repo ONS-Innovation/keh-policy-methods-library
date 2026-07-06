@@ -71,7 +71,7 @@ def get_dependabot_slo(
     client: GitHubRestClient,
     levels: list[str] | None = None,
 ) -> dict:
-    """Get open Dependabot security alerts grouped by severity.
+    """Get open Dependabot security alerts, that breach the SLO, grouped by severity.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.

@@ -47,7 +47,7 @@ def check_external_pull_request(
     client: GitHubRestClient,
     repository_name: str,
 ) -> dict:
-    """Check that all open pull requests are authored by organisation members.
+    """Check that all open pull requests are authored by organisation members, for a given repository.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls.

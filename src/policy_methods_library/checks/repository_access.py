@@ -10,6 +10,7 @@ def check_repository_access(
     repository_name: str,
 ) -> dict:
     """Check if a repository has any individual users with access instead of a team.
+    Fails if any individual users have access, passes if only teams have access, and errors if the API call fails.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls.
