@@ -98,3 +98,17 @@ match result:
 If the data is not passed directly, the check will use the `GET /repos/{owner}/{repo}` endpoint to retrieve the `updated_at` timestamp of the repository.
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/repos/repos?apiVersion=2026-03-10#get-a-repository)
+
+### Required Permissions
+
+This check requires the following GitHub App permissions when retrieving data from the API:
+
+- `metadata: read` – Required to access basic repository metadata
+
+If the data is passed directly (as shown in the first usage example), no API permissions are required.
+
+## Details Object
+
+The `details` object returned by this check contains the following fields:
+
+- `last_updated`: The ISO 8601 timestamp of the last update to the repository, used to determine whether the repository is inactive.

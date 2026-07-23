@@ -1,9 +1,10 @@
 """Tests for the clients module."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import create_autospec, patch
 
 import pytest
 import requests
+from requests import Response
 
 from policy_methods_library.github.clients import GitHubRestClient
 
@@ -33,11 +34,11 @@ class TestGitHubRestClientInit:
 
     def test_initialises_with_app_credentials(self, rsa_private_key):
         """Providing app_id, private_key, and organisation should fetch and store an access token."""
-        installations_response = MagicMock()
+        installations_response = create_autospec(Response, instance=True)
         installations_response.json.return_value = {"id": 1}
         installations_response.raise_for_status.return_value = None
 
-        token_response = MagicMock()
+        token_response = create_autospec(Response, instance=True)
         token_response.json.return_value = {"token": "ghs_from_app"}
         token_response.raise_for_status.return_value = None
 
@@ -45,10 +46,12 @@ class TestGitHubRestClientInit:
             patch(
                 "policy_methods_library.github.auth.requests.get",
                 return_value=installations_response,
+                autospec=True,
             ),
             patch(
                 "policy_methods_library.github.auth.requests.post",
                 return_value=token_response,
+                autospec=True,
             ),
         ):
             client = GitHubRestClient(
@@ -102,12 +105,13 @@ class TestGitHubRestClientInit:
 class TestMakeRequest:
     def test_uses_correct_base_url(self, client):
         """The request URL should be the GitHub API base URL concatenated with the given endpoint."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ) as mock_req:
             client.make_request("GET", "/repos/my-org/my-repo")
 
@@ -116,12 +120,13 @@ class TestMakeRequest:
 
     def test_sends_bearer_token_header(self, client):
         """Every request should include an Authorization header with the client's Bearer token."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ) as mock_req:
             client.make_request("GET", "/user")
 
@@ -130,12 +135,13 @@ class TestMakeRequest:
 
     def test_sends_accept_header(self, client):
         """Every request should include the standard GitHub v3 JSON Accept header."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ) as mock_req:
             client.make_request("GET", "/user")
 
@@ -144,12 +150,13 @@ class TestMakeRequest:
 
     def test_passes_http_method(self, client):
         """The HTTP method supplied by the caller should be forwarded to the underlying request."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ) as mock_req:
             client.make_request("POST", "/repos/my-org/my-repo/issues")
 
@@ -158,13 +165,14 @@ class TestMakeRequest:
 
     def test_passes_extra_kwargs(self, client):
         """Additional keyword arguments (e.g. json=) should be forwarded to the underlying request."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
         payload = {"title": "Bug report"}
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ) as mock_req:
             client.make_request("POST", "/repos/my-org/my-repo/issues", json=payload)
 
@@ -173,12 +181,13 @@ class TestMakeRequest:
 
     def test_merges_custom_headers(self, client):
         """Caller-provided headers should be merged with default auth and accept headers."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ) as mock_req:
             client.make_request(
                 "GET",
@@ -193,12 +202,13 @@ class TestMakeRequest:
 
     def test_returns_response(self, client):
         """make_request should return the response object from the underlying HTTP call."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ):
             result = client.make_request("GET", "/user")
 
@@ -206,12 +216,13 @@ class TestMakeRequest:
 
     def test_raises_on_http_error(self, client):
         """An HTTP error response should propagate as a requests.HTTPError."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
 
         with patch(
             "policy_methods_library.github.clients.requests.request",
             return_value=mock_response,
+            autospec=True,
         ):
             with pytest.raises(requests.HTTPError):
                 client.make_request("GET", "/nonexistent")

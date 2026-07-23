@@ -1,16 +1,18 @@
 """Tests for the codeowners check module."""
 
 import base64
-from unittest.mock import MagicMock, call
+from unittest.mock import call, create_autospec, patch
 
 import requests
+from requests import Response
 
 from policy_methods_library.checks.codeowners import check_codeowners
+from policy_methods_library.github.clients import GitHubRestClient
 
 
-def _make_file_response(text: str) -> MagicMock:
+def _make_file_response(text: str) -> Response:
     """Build a mock API response containing base64-encoded file content."""
-    response = MagicMock()
+    response = create_autospec(Response, instance=True)
     encoded = base64.b64encode(text.encode()).decode()
     response.json.return_value = {"content": encoded}
     return response
@@ -34,7 +36,7 @@ class TestCheckCodeowners:
 
     def test_error_when_repository_name_is_none(self):
         """A missing repository name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_codeowners(client=client, repository_name=None)
 
@@ -46,7 +48,7 @@ class TestCheckCodeowners:
 
     def test_passes_when_codeowners_in_root(self):
         """A repository with a non-empty CODEOWNERS in the root should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.return_value = _make_file_response("* @my-org/owners\n")
 
@@ -67,10 +69,12 @@ class TestCheckCodeowners:
 
     def test_passes_when_codeowners_in_github_directory(self):
         """A repository with a non-empty CODEOWNERS in .github/ should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        not_found = requests.HTTPError(response=MagicMock(status_code=404))
+        not_found = requests.HTTPError(
+            response=create_autospec(Response, instance=True, status_code=404)
+        )
         client.make_request.side_effect = [
             not_found,
             _make_file_response("* @my-org/owners\n"),
@@ -94,10 +98,12 @@ class TestCheckCodeowners:
 
     def test_passes_when_codeowners_in_docs_directory(self):
         """A repository with a non-empty CODEOWNERS in docs/ should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        not_found = requests.HTTPError(response=MagicMock(status_code=404))
+        not_found = requests.HTTPError(
+            response=create_autospec(Response, instance=True, status_code=404)
+        )
         client.make_request.side_effect = [
             not_found,
             not_found,
@@ -122,10 +128,12 @@ class TestCheckCodeowners:
 
     def test_fails_when_codeowners_absent_in_all_locations(self):
         """A repository with no CODEOWNERS file in any location should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        not_found = requests.HTTPError(response=MagicMock(status_code=404))
+        not_found = requests.HTTPError(
+            response=create_autospec(Response, instance=True, status_code=404)
+        )
         client.make_request.side_effect = [not_found, not_found, not_found]
 
         result = check_codeowners(client=client, repository_name="my-repo")
@@ -147,7 +155,7 @@ class TestCheckCodeowners:
 
     def test_fails_when_codeowners_is_whitespace_only(self):
         """A CODEOWNERS file containing only whitespace should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.return_value = _make_file_response("   \n  \n")
 
@@ -164,7 +172,7 @@ class TestCheckCodeowners:
 
     def test_fails_when_codeowners_has_no_content(self):
         """A completely empty CODEOWNERS file should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.return_value = _make_file_response("")
 
@@ -175,10 +183,12 @@ class TestCheckCodeowners:
 
     def test_checks_all_paths_in_order(self):
         """The check should probe root, .github/, and docs/ in that order."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        not_found = requests.HTTPError(response=MagicMock(status_code=404))
+        not_found = requests.HTTPError(
+            response=create_autospec(Response, instance=True, status_code=404)
+        )
         client.make_request.side_effect = [not_found, not_found, not_found]
 
         check_codeowners(client=client, repository_name="my-repo")
@@ -193,20 +203,24 @@ class TestCheckCodeowners:
 
     def test_error_when_client_raises_non_404_http_error(self):
         """A non-404 HTTP error during the API call should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        server_error = requests.HTTPError(response=MagicMock(status_code=500))
+        server_error = requests.HTTPError(
+            response=create_autospec(Response, instance=True, status_code=500)
+        )
         client.make_request.side_effect = server_error
 
         result = check_codeowners(client=client, repository_name="my-repo")
 
         assert result["result"] == "error"
-        assert "Error fetching repository data" in result["message"]
+        assert (
+            "An error occurred while fetching repository contents" in result["message"]
+        )
 
     def test_error_when_client_raises_exception(self):
         """An unexpected exception during the API call should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -214,6 +228,37 @@ class TestCheckCodeowners:
 
         assert result == {
             "result": "error",
-            "message": "Error fetching repository data: connection timeout",
+            "message": "An error occurred while fetching repository contents: connection timeout",
             "details": {},
         }
+
+    def test_error_when_contents_utility_returns_non_dict(self):
+        """Type narrowing guard should catch if contents utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.codeowners.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.return_value = ["unexpected", "list"]
+
+            result = check_codeowners(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Unexpected CODEOWNERS API response format" in result["message"]
+
+    def test_error_when_utility_exception_propagates(self):
+        """Outer exception handler should catch any unexpected errors."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.codeowners.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.side_effect = RuntimeError("unexpected error")
+
+            result = check_codeowners(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Error fetching repository data" in result["message"]
+            assert "unexpected error" in result["message"]

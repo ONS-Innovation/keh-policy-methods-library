@@ -1,8 +1,9 @@
 """Tests for the auth module."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import create_autospec, patch
 
 import pytest
+from requests import Response
 
 from policy_methods_library.github.auth import (
     _generate_jwt,
@@ -69,13 +70,14 @@ class TestGetInstallationId:
 
     def test_raises_when_no_installations_found(self):
         """An empty installations list in the API response should raise a ValueError."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.json.return_value = {}
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.auth.requests.get",
             return_value=mock_response,
+            autospec=True,
         ):
             with pytest.raises(
                 ValueError, match="No installations found for organisation 'my-org'"
@@ -84,13 +86,14 @@ class TestGetInstallationId:
 
     def test_returns_installation_id(self):
         """When an installation is returned, its ID should be returned."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.json.return_value = {"id": 42}
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.auth.requests.get",
             return_value=mock_response,
+            autospec=True,
         ):
             result = _get_installation_id("my-org", "some-jwt")
 
@@ -98,13 +101,14 @@ class TestGetInstallationId:
 
     def test_sends_correct_headers(self):
         """The request to retrieve installations should include a Bearer token Authorization header."""
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.json.return_value = {"id": 1}
         mock_response.raise_for_status.return_value = None
 
         with patch(
             "policy_methods_library.github.auth.requests.get",
             return_value=mock_response,
+            autospec=True,
         ) as mock_get:
             _get_installation_id("my-org", "test-jwt")
 
@@ -115,12 +119,13 @@ class TestGetInstallationId:
         """An HTTP error from the GitHub API should propagate as a requests.HTTPError."""
         import requests
 
-        mock_response = MagicMock()
+        mock_response = create_autospec(Response, instance=True)
         mock_response.raise_for_status.side_effect = requests.HTTPError("403 Forbidden")
 
         with patch(
             "policy_methods_library.github.auth.requests.get",
             return_value=mock_response,
+            autospec=True,
         ):
             with pytest.raises(requests.HTTPError):
                 _get_installation_id("my-org", "some-jwt")
@@ -150,11 +155,11 @@ class TestGetAccessToken:
     def test_returns_access_token(self, rsa_private_key):
         """Valid credentials should return the token string from the GitHub API response."""
         """Valid credentials should return the token string from the GitHub API response."""
-        installations_response = MagicMock()
+        installations_response = create_autospec(Response, instance=True)
         installations_response.json.return_value = {"id": 7}
         installations_response.raise_for_status.return_value = None
 
-        token_response = MagicMock()
+        token_response = create_autospec(Response, instance=True)
         token_response.json.return_value = {"token": "ghs_test_token"}
         token_response.raise_for_status.return_value = None
 
@@ -162,10 +167,12 @@ class TestGetAccessToken:
             patch(
                 "policy_methods_library.github.auth.requests.get",
                 return_value=installations_response,
+                autospec=True,
             ),
             patch(
                 "policy_methods_library.github.auth.requests.post",
                 return_value=token_response,
+                autospec=True,
             ),
         ):
             result = get_access_token("my-app-id", rsa_private_key, "my-org")
@@ -174,11 +181,11 @@ class TestGetAccessToken:
 
     def test_calls_correct_token_endpoint(self, rsa_private_key):
         """The access token POST request should target the installation-specific endpoint."""
-        installations_response = MagicMock()
+        installations_response = create_autospec(Response, instance=True)
         installations_response.json.return_value = {"id": 55}
         installations_response.raise_for_status.return_value = None
 
-        token_response = MagicMock()
+        token_response = create_autospec(Response, instance=True)
         token_response.json.return_value = {"token": "ghs_abc"}
         token_response.raise_for_status.return_value = None
 
@@ -186,10 +193,12 @@ class TestGetAccessToken:
             patch(
                 "policy_methods_library.github.auth.requests.get",
                 return_value=installations_response,
+                autospec=True,
             ),
             patch(
                 "policy_methods_library.github.auth.requests.post",
                 return_value=token_response,
+                autospec=True,
             ) as mock_post,
         ):
             get_access_token("my-app-id", rsa_private_key, "my-org")
@@ -201,11 +210,11 @@ class TestGetAccessToken:
         """An HTTP error from the access token endpoint should propagate as a requests.HTTPError."""
         import requests
 
-        installations_response = MagicMock()
+        installations_response = create_autospec(Response, instance=True)
         installations_response.json.return_value = {"id": 7}
         installations_response.raise_for_status.return_value = None
 
-        token_response = MagicMock()
+        token_response = create_autospec(Response, instance=True)
         token_response.raise_for_status.side_effect = requests.HTTPError(
             "401 Unauthorised"
         )
@@ -214,10 +223,12 @@ class TestGetAccessToken:
             patch(
                 "policy_methods_library.github.auth.requests.get",
                 return_value=installations_response,
+                autospec=True,
             ),
             patch(
                 "policy_methods_library.github.auth.requests.post",
                 return_value=token_response,
+                autospec=True,
             ),
         ):
             with pytest.raises(requests.HTTPError):

@@ -1,7 +1,11 @@
 """Tests for the dependabot check module."""
 
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec
+
+from requests import Response
+
 from policy_methods_library.checks.dependabot import check_dependabot
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -22,7 +26,7 @@ class TestCheckDependabot:
 
     def test_error_when_repository_name_is_none(self):
         """A client without a repository_name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_dependabot(client=client, repository_name=None)
 
@@ -34,7 +38,7 @@ class TestCheckDependabot:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result with the error message."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -48,10 +52,10 @@ class TestCheckDependabot:
 
     def test_error_when_response_missing_enabled(self):
         """An API response without 'enabled' should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"enable_auto_merge": False}
         client.make_request.return_value = response
 
@@ -65,10 +69,10 @@ class TestCheckDependabot:
 
     def test_error_when_response_enabled_is_not_a_boolean(self):
         """A non-boolean 'enabled' in the API response should return a type error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"enabled": "true"}
         client.make_request.return_value = response
 
@@ -82,10 +86,10 @@ class TestCheckDependabot:
 
     def test_passes_when_dependabot_enabled(self):
         """A valid API response with enabled=true should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"enabled": True, "enable_auto_merge": False}
         client.make_request.return_value = response
 
@@ -99,10 +103,10 @@ class TestCheckDependabot:
 
     def test_fails_when_dependabot_disabled(self):
         """A valid API response with enabled=false should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"enabled": False}
         client.make_request.return_value = response
 
@@ -116,10 +120,10 @@ class TestCheckDependabot:
 
     def test_calls_correct_api_endpoint(self):
         """The check should call the correct API endpoint."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {"enabled": True}
         client.make_request.return_value = response
 
@@ -131,10 +135,10 @@ class TestCheckDependabot:
 
     def test_passes_with_additional_response_fields(self):
         """Additional fields in the API response should not affect the check result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = {
             "enabled": True,
             "enable_auto_merge": False,

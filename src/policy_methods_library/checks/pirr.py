@@ -1,0 +1,142 @@
+"""This module contains a check to validate PIRR requirements."""
+
+from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.get_contents import get_repo_contents
+from policy_methods_library.utils.get_details import get_repo_details
+
+
+def check_pirr(client: GitHubRestClient, repository_name: str) -> dict:
+    """Check PIRR requirements based on repository visibility.
+    Passes if the repository is public or if it is private/internal and contains a `pirr.md` file.
+    Fails if the repository is private/internal and does not contain a `pirr.md` file.
+
+    Args:
+        client (GitHubRestClient): The GitHub REST client.
+        repository_name (str): The name of the repository to check.
+
+    Returns:
+        dict: A dictionary containing the result of the check (pass/fail/error),
+              a message, and any relevant details.
+    """
+
+    if not isinstance(repository_name, str) or repository_name.strip() == "":
+        return {
+            "result": "error",
+            "message": "Repository name is required.",
+            "details": {},
+        }
+
+    if not isinstance(client, GitHubRestClient):
+        return {
+            "result": "error",
+            "message": "GitHubRestClient instance is required.",
+            "details": {},
+        }
+
+    try:
+        repo_details = get_repo_details(client, repository_name)
+
+        if isinstance(repo_details, dict) and "error" in repo_details:
+            return {
+                "result": "error",
+                "message": repo_details["error"],
+                "details": {},
+            }
+
+        visibility = repo_details.get("visibility")
+        visibility = visibility.lower() if isinstance(visibility, str) else None
+
+        if visibility == "public":
+            return {
+                "result": "pass",
+                "message": "Repository is public. PIRR documentation is not required.",
+                "details": {
+                    "repository_name": repository_name,
+                    "repository_visibility": visibility,
+                },
+            }
+
+        if visibility in ["private", "internal"]:
+            try:
+                repo_contents = get_repo_contents(client, repository_name)
+
+                if isinstance(repo_contents, dict) and "error" in repo_contents:
+                    return {
+                        "result": "error",
+                        "message": repo_contents["error"],
+                        "details": {
+                            "repository_name": repository_name,
+                            "repository_visibility": visibility,
+                            "repository_contents": {},
+                        },
+                    }
+
+                if not isinstance(repo_contents, list):
+                    return {
+                        "result": "error",
+                        "message": "Unexpected repository contents format.",
+                        "details": {
+                            "repository_name": repository_name,
+                            "repository_visibility": visibility,
+                            "repository_contents": {},
+                        },
+                    }
+
+                slim_contents = [
+                    {
+                        "name": c.get("name"),
+                        "path": c.get("path"),
+                        "type": c.get("type"),
+                    }
+                    for c in repo_contents
+                ]
+
+                if any(
+                    content.get("name", "").lower() == "pirr.md"
+                    for content in repo_contents
+                ):
+                    return {
+                        "result": "pass",
+                        "message": "Repository contains PIRR documentation.",
+                        "details": {
+                            "repository_name": repository_name,
+                            "repository_visibility": visibility,
+                            "repository_contents": slim_contents,
+                        },
+                    }
+
+                return {
+                    "result": "fail",
+                    "message": "Repository missing PIRR documentation.",
+                    "details": {
+                        "repository_name": repository_name,
+                        "repository_visibility": visibility,
+                        "repository_contents": slim_contents,
+                    },
+                }
+            except Exception as e:
+                return {
+                    "result": "error",
+                    "message": (f"Error fetching repository content: {str(e)}."),
+                    "details": {
+                        "repository_name": repository_name,
+                        "repository_visibility": visibility,
+                        "repository_contents": {},
+                    },
+                }
+
+        return {
+            "result": "error",
+            "message": (f"Repository visibility is unexpected for {repository_name}."),
+            "details": {
+                "repository_name": repository_name,
+                "repository_visibility": visibility,
+            },
+        }
+
+    except Exception as e:
+        return {
+            "result": "error",
+            "message": f"Error evaluating PIRR check: {str(e)}",
+            "details": {},
+        }

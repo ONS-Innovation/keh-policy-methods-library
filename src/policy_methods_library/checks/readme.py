@@ -1,6 +1,7 @@
 """This module contains a check to see if the repository has a readme file."""
 
 from policy_methods_library.github.clients import GitHubRestClient
+from policy_methods_library.utils.get_contents import get_repo_contents
 
 
 def check_readme(
@@ -32,10 +33,20 @@ def check_readme(
         }
 
     try:
-        response = client.make_request(
-            "GET", f"/repos/{client.owner}/{repository_name}/contents/"
-        )
-        contents = response.json()
+        contents = get_repo_contents(client, repository_name)
+        if isinstance(contents, dict) and "error" in contents:
+            return {
+                "result": "error",
+                "message": contents["error"],
+                "details": {},
+            }
+
+        if not isinstance(contents, list):
+            return {
+                "result": "error",
+                "message": "Unexpected repository contents format.",
+                "details": {"response": contents},
+            }
 
         readme = next(
             (item for item in contents if item.get("name", "").lower() == "readme.md"),

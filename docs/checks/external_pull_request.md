@@ -85,6 +85,13 @@ The check uses these GitHub API endpoints:
 
     [GitHub Documentation :link:](https://docs.github.com/en/rest/orgs/members?apiVersion=2026-03-10#check-organization-membership-for-a-user)
 
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `pull_requests: read` – Required to list pull requests in the repository
+- `members: read` – Required to verify organisation membership
+
 ## Details Object
 
 The `details` object returned by this check contains:
