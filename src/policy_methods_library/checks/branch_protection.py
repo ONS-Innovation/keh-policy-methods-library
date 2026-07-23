@@ -145,7 +145,7 @@ def check_branch_protection(
         }
 
 
-def message(criterion: str, **kwargs: dict) -> dict:
+def message(criterion: str, **kwargs) -> dict:
     """Return appropriate error message when for the appropriate criterion"""
 
     if criterion == "review_before_merge":
