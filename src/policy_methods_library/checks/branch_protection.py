@@ -68,7 +68,7 @@ def check_branch_protection(
                 "Branch": branch_name,
             }
         }
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         response = client.make_request(
             "GET",
             f"/repos/{client.owner}/{repository_name}/branches/{branch_name}"
@@ -124,7 +124,7 @@ def check_branch_protection(
 
 def message(criterion: str, **kwargs: dict) -> dict:
     """Return appropriate error message when for the appropriate criterion"""
-    
+
     if criterion == "review_before_merge":
         return {
             "result": "fail",
