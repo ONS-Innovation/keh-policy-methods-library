@@ -1,4 +1,5 @@
 """Unit tests for check_branch_protection."""
+
 import requests
 from unittest.mock import create_autospec, MagicMock
 from policy_methods_library.github.clients import GitHubRestClient
