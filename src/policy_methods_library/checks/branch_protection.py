@@ -20,7 +20,14 @@ def check_branch_protection(
     if repository_name is None:
         return {
             "result": "error",
-            "message": "Repository name is required if data is not provided.",
+            "message": "Repository name is required.",
+            "details": {},
+        }
+    
+    if branch_name is None:
+        return {
+            "result": "error",
+            "message": "Branch name is required.",
             "details": {},
         }
 
