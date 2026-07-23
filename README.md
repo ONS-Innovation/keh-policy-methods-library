@@ -9,6 +9,7 @@ The Policy Methods Library is a collection of functions to encapsulate the busin
   - [Prerequisites](#prerequisites)
   - [Makefile](#makefile)
   - [Using the Package](#using-the-package)
+    - [GitHub App Setup](#github-app-setup)
     - [End User Instructions](#end-user-instructions)
     - [Developer Instructions](#developer-instructions)
   - [Package Structure](#package-structure)
@@ -39,6 +40,28 @@ make help
 ```
 
 ## Using the Package
+
+### GitHub App Setup
+
+Due to the nature of the checks in this package, it is necessary to set up a GitHub App in order to use the package. The App is used to authenticate with the GitHub API and perform the checks on behalf of the user.
+
+> **Alternatively**, you can use a personal access token (PAT) to authenticate with the GitHub API, but this is not recommended as it is less secure and does not provide the same level of granularity in terms of permissions.
+>
+> Details on this are available in the [GitHub Clients](./docs/github/clients.md) documentation in the `docs` directory.
+
+The GitHub App needs to be created and installed in the relevant GitHub organisation. GitHub have instructions on how to do this:
+
+[Creating a GitHub App :link:](https://docs.github.com/en/developers/apps/building-github-apps/creating-a-github-app)
+
+This library will require the following GitHub App secrets:
+
+- `GITHUB_APP_ID`: The ID of the GitHub App.
+- `GITHUB_APP_PRIVATE_KEY`: The private key of the GitHub App, in PEM format.
+- `GITHUB_ORGANISATION`: The GitHub organisation that the App is installed in.
+
+More information on this process is available in the [GitHub Auth](./docs/github/auth.md) documentation in the `docs` directory.
+
+A list of permissions required for the GitHub App can be found in the [GitHub App Permissions](./docs/github-app-permissions.md) documentation in the `docs` directory. Additionally, each check in the `policy_methods_library` has a list of the permissions required for that check, which can be found in the documentation for that check.
 
 ### End User Instructions
 
@@ -96,6 +119,10 @@ src/
    │   ├── auth.py            # Functions to handle authentication with the GitHub API.
    │   └── clients.py         # Client for making REST API calls to GitHub.
    │
+   ├── utils/                 # Internal helper utilities used by checks.
+   │   ├── __init__.py
+   │   └── ...                # files for each specific utility
+   │
    └── __init__.py            # Init file for the package.
 ```
 
@@ -109,14 +136,14 @@ This workflow is triggered on pushes to tags matching the pattern "v\*". The tag
 
 A production release will be created when a tag is pushed that follows the format "v0.0.0" (e.g. "v0.1.0", "v1.0.0", etc.). A pre-release will be created when a tag is pushed that follows the format "v0.0.0-rc" (e.g. "v0.1.0-rc", "v1.0.0-rc", etc.). This allows for both stable releases and pre-releases to be created and published to GitHub Releases.
 
-To create a new release, you can use the following command to create a new tag and push it to the repository:
+Package versioning is derived dynamically from the git tag during the release workflow. To create a new release, create and push a version tag:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-This will tag the current commit with the version "v0.1.0" and push the tag to the remote repository, which will trigger the GitHub Actions workflow to build and publish the package to GitHub Releases.
+This triggers the GitHub Actions workflow to build and publish the package to GitHub Releases using version `0.1.0` derived from tag `v0.1.0`.
 
 **Note:** Is is important that GitHub Releases are _only_ created via the GitHub Actions workflow, and not manually via the GitHub UI. This is because the workflow ensures that the package is built and published correctly.
 

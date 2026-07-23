@@ -64,10 +64,45 @@ In this file, provide comprehensive documentation for the check, including:
 - A reference to the check function in the codebase (use MkDocStrings for this).
 - Usage examples demonstrating how to use the check with both direct data input and data retrieval from an API.
 - An explanation of the GitHub Integration / API endpoints used in the check, if applicable.
+- A "Required Permissions" section documenting what GitHub App permissions are needed (if any). Include a note if permissions are only required when retrieving data via API vs. when data is passed directly.
+- A detailed description of the contents of the `details` object returned by the check, if applicable.
 
 > **Note:** The above list is a minimum standard. You should feel free to include any additional information that you think would be helpful.
 
-## Step 6: Integrate the Check into the Library
+### Helper Utilities (Internal)
+
+When using shared helper utilities in `policy_methods_library/utils`, treat them as internal implementation details rather than part of the public API.
+
+- Utility helpers should return either:
+  - Raw data required by the check when successful.
+  - A simple error object in the shape `{"error": "<message>"}` on failure.
+
+  This strays away from the standard return format of checks, which is intentional to allow for more flexibility within utility functions.
+  
+- Callers should always validate utility output before using it, and convert utility errors into a standard check error response.
+
+This keeps check outputs stable for users while allowing internal helper utilities to be most flexible, efficient and maintainable.
+
+Documentation about the helper utilities is available in the [Helper Utilities (Internal)](../helper_utilities.md) guide.
+
+## Step 6: Update General Documentation
+
+In addition to the check documentation, you should also update any general documentation that references checks, such as overview pages or indexes, to include the new check.
+
+An important page to highlight is the `github-app-permissions.md` page, which lists all the checks in the library and the GitHub App permissions they require. This **must** be updated to include the new check and its required permissions (if any).
+
+When adding or changing a check, use this minimum documentation checklist:
+
+- Add or update the check page in `docs/checks/<check_name>.md`.
+- Update `docs/checks/overview.md` to include the check.
+- Update `docs/checks_matrix.md` with the check's scope, required inputs, pass/fail summary, and permissions.
+- Update `docs/github-app-permissions.md` with the check's required permissions.
+- Update navigation in `mkdocs.yml` so the check page appears in the docs site.
+- Update the documentation structure list in `docs/index.md` if a new top-level page has been added.
+
+Documentation should use British English.
+
+## Step 7: Integrate the Check into the Library
 
 Finally, you will need to integrate the new check into the library so that it can be easily imported and used.
 

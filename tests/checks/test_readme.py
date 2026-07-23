@@ -1,8 +1,11 @@
 """Tests for the readme check module."""
 
-from unittest.mock import MagicMock
+from unittest.mock import create_autospec, patch
+
+from requests import Response
 
 from policy_methods_library.checks.readme import check_readme
+from policy_methods_library.github.clients import GitHubRestClient
 
 
 # ---------------------------------------------------------------------------
@@ -23,7 +26,7 @@ class TestCheckReadme:
 
     def test_error_when_repository_name_is_none(self):
         """A missing repository name should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
 
         result = check_readme(client=client, repository_name=None)
 
@@ -35,10 +38,10 @@ class TestCheckReadme:
 
     def test_passes_when_readme_md_is_present(self):
         """A repository containing readme.md should pass."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {"name": "README.md"},
             {"name": "src"},
@@ -49,7 +52,7 @@ class TestCheckReadme:
         result = check_readme(client=client, repository_name="my-repo")
 
         client.make_request.assert_called_once_with(
-            "GET", "/repos/my-org/my-repo/contents/"
+            "GET", "/repos/my-org/my-repo/contents"
         )
 
         assert result == {
@@ -63,10 +66,10 @@ class TestCheckReadme:
 
     def test_fails_when_readme_md_is_absent(self):
         """A repository without readme.md should fail."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {"name": "src"},
             {"name": "docs"},
@@ -87,10 +90,10 @@ class TestCheckReadme:
 
     def test_passes_when_readme_name_has_different_case(self):
         """README matching should be case-insensitive."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
 
-        response = MagicMock()
+        response = create_autospec(Response, instance=True)
         response.json.return_value = [
             {"name": "ReadMe.MD"},
         ]
@@ -102,7 +105,7 @@ class TestCheckReadme:
 
     def test_error_when_client_raises_exception(self):
         """An exception during the API call should return an error result."""
-        client = MagicMock()
+        client = create_autospec(GitHubRestClient, instance=True)
         client.owner = "my-org"
         client.make_request.side_effect = RuntimeError("connection timeout")
 
@@ -110,6 +113,37 @@ class TestCheckReadme:
 
         assert result == {
             "result": "error",
-            "message": "Error fetching repository data: connection timeout",
+            "message": "An error occurred while fetching repository contents: connection timeout",
             "details": {},
         }
+
+    def test_error_when_contents_utility_returns_string(self):
+        """Type narrowing guard should catch if contents utility returns wrong shape."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.readme.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.return_value = "unexpected_string"
+
+            result = check_readme(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Unexpected repository contents format" in result["message"]
+
+    def test_error_when_utility_exception_propagates(self):
+        """Outer exception handler should catch any unexpected errors."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        with patch(
+            "policy_methods_library.checks.readme.get_repo_contents"
+        ) as mock_contents:
+            mock_contents.side_effect = RuntimeError("unexpected error")
+
+            result = check_readme(client=client, repository_name="my-repo")
+
+            assert result["result"] == "error"
+            assert "Error fetching repository data" in result["message"]
+            assert "unexpected error" in result["message"]

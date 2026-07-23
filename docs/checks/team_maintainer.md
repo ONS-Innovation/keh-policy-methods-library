@@ -69,6 +69,12 @@ The check uses the `GET /orgs/{org}/teams/{team_slug}/members` endpoint with the
 
 [GitHub Documentation :link:](https://docs.github.com/en/rest/teams/members?apiVersion=2026-03-10#list-team-members)
 
+### Required Permissions
+
+This check requires the following GitHub App permissions:
+
+- `members: read` – Required to access team membership and maintainer information
+
 ## Details Object
 
 The `details` object returned by this check contains the following fields:

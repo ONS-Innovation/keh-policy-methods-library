@@ -14,6 +14,26 @@ pip install .
 
 Whenever you make changes to the package, you will need to reinstall it for the changes to be reflected in the `manual_testing.py` file.
 
+## Documentation Verification
+
+If your change affects behaviour, inputs, outputs, or required permissions, update and verify the documentation alongside the code change.
+
+Run the documentation checks locally:
+
+```bash
+make docs-lint
+make docs-build
+```
+
+When changing checks, confirm examples and signatures are still consistent across:
+
+- `docs/quickstart.md`
+- `docs/checks_matrix.md`
+- `docs/checks/<check_name>.md`
+- `docs/github-app-permissions.md`
+
+Documentation should use British English.
+
 ## Example: Naming Convention Check
 
 As an example, if you were developing a new check for repository naming conventions, you could implement the check in the `policy_methods_library/checks/naming_convention.py` file and then test it using the `manual_testing.py` file.
