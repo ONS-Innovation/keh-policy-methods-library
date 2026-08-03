@@ -1,0 +1,167 @@
+{
+    "result": "fail",
+    "message": "Found 351 open Dependabot security alerts exceeding the policy-defined SLO.",
+    "details": {
+        "total_open_alerts": 552,
+        "failing_alerts": 351,
+        "number_exceeded_by_severity": {
+            "critical": 12,
+            "high": 201,
+            "medium": 133,
+            "low": 5
+        },
+        "total_repositories_affected": 25,
+        "repositories": {
+            "ONS-Innovation/airflow-rap-template": {
+                "critical": 2,
+                "high": 27,
+                "medium": 26,
+                "low": 1
+            },
+            "ONS-Innovation/rdi-airflow-rap-template-test-4": {
+                "critical": 2,
+                "high": 27,
+                "medium": 22,
+                "low": 1
+            },
+            "ONS-Innovation/rdi-airflow-rap-template-test-3": {
+                "critical": 2,
+                "high": 27,
+                "medium": 22,
+                "low": 1
+            },
+            "ONS-Innovation/jp-airflow-test": {
+                "critical": 2,
+                "high": 27,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/rdi-airflow-rap-template-test-5": {
+                "critical": 2,
+                "high": 27,
+                "medium": 22,
+                "low": 1
+            },
+            "ONS-Innovation/rdi-airflow-rap-template-test-2": {
+                "critical": 2,
+                "high": 27,
+                "medium": 22,
+                "low": 1
+            },
+            "ONS-Innovation/eray-test": {
+                "critical": 0,
+                "high": 10,
+                "medium": 2,
+                "low": 0
+            },
+            "ONS-Innovation/etl-template-static-test-2": {
+                "critical": 0,
+                "high": 5,
+                "medium": 6,
+                "low": 0
+            },
+            "ONS-Innovation/etl-template-static-test-1": {
+                "critical": 0,
+                "high": 5,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/innovation-ai-assist": {
+                "critical": 0,
+                "high": 9,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/survey-genie": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/backstage-trial": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/rap-template-backstage-trial-jo": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/python-etl-github-pages-template": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/ons-python-template": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/rap-template-backstage-trial": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/ons-python-template-simple-backstage": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/python-etl-static-web-template": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/ons-python-template-simple": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/ons-python-template-etl-pipeline": {
+                "critical": 0,
+                "high": 1,
+                "medium": 0,
+                "low": 0
+            },
+            "ONS-Innovation/url_extractor": {
+                "critical": 0,
+                "high": 0,
+                "medium": 1,
+                "low": 0
+            },
+            "ONS-Innovation/example_RAP_project_bt": {
+                "critical": 0,
+                "high": 0,
+                "medium": 4,
+                "low": 0
+            },
+            "ONS-Innovation/hod_RAP_test_bt": {
+                "critical": 0,
+                "high": 0,
+                "medium": 4,
+                "low": 0
+            },
+            "ONS-Innovation/business_data_processing_sbt": {
+                "critical": 0,
+                "high": 0,
+                "medium": 1,
+                "low": 0
+            },
+            "ONS-Innovation/etl-template-static-test-16": {
+                "critical": 0,
+                "high": 0,
+                "medium": 1,
+                "low": 0
+            }
+        }
+    }
+}
