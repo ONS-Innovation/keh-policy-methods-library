@@ -116,7 +116,7 @@ def get_secret_scanning_slo(
 
     exceeded_alerts: list = []
     repositories: dict[str, int] = {}
-    
+
     for alert in secret_scanning_alerts:
         if not isinstance(alert, dict):
             return {

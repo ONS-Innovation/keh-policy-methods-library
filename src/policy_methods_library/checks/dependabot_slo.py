@@ -142,7 +142,7 @@ def get_dependabot_slo(
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     repositories: dict[str, dict[str, int]] = {}
-    
+
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
             if not isinstance(alert, dict):
