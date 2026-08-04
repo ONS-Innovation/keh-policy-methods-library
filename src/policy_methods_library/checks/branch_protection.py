@@ -176,7 +176,7 @@ def message(criterion: str, **kwargs) -> dict:
     if criterion == "review_before_merge":
         return {
             "result": "fail",
-            "message": f"Branch {kwargs["branch_name"]} is not protected",
+            "message": "Branch is not protected",
             "details": {
                 "Repository": kwargs["repository_name"],
                 "Branch": kwargs["branch_name"],
@@ -187,7 +187,7 @@ def message(criterion: str, **kwargs) -> dict:
     if criterion == "restrict_deletions":
         return {
             "result": "fail",
-            "message": f"Branch {kwargs["branch_name"]} is not protected",
+            "message": "Branch is not protected",
             "details": {
                 "Repository": kwargs["repository_name"],
                 "Branch": kwargs["branch_name"],
@@ -197,7 +197,7 @@ def message(criterion: str, **kwargs) -> dict:
 
     return {
         "result": "fail",
-        "message": f"Branch {kwargs["branch_name"]} is not protected",
+        "message": "Branch is not protected",
         "details": {
             "Repository": kwargs["repository_name"],
             "Branch": kwargs["branch_name"],
