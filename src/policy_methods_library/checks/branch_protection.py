@@ -20,7 +20,7 @@ def check_branch_protection(
         client: An instance of the GitHubRestClient to use for API calls.
         repository_name: The name of the repository to check.
         branch_name: The name of the branch to check.
-    
+
     Returns:
         A dictionary with the result of the check, including 'result' (pass/fail/error), 'message', and 'details'.
     """
@@ -53,11 +53,15 @@ def check_branch_protection(
 
     try:
         # First check legacy branch protection if that is enabled for the repository
-        return check_legacy_branch_protection(client, repository_name, branch_name, criteria)
+        return check_legacy_branch_protection(
+            client, repository_name, branch_name, criteria
+        )
     except requests.exceptions.HTTPError:
         # If legacy branch protection does not exist for the repository, then check the
         # rulesets protection.
-        return check_rulesets_branch_protection(client, repository_name, branch_name, criteria)
+        return check_rulesets_branch_protection(
+            client, repository_name, branch_name, criteria
+        )
     except Exception as e:
         return {
             "result": "error",
@@ -65,11 +69,12 @@ def check_branch_protection(
             "details": {},
         }
 
+
 def check_legacy_branch_protection(client, repository_name, branch_name, criteria):
     response = client.make_request(
-            "GET",
-            f"/repos/{client.owner}/{repository_name}/branches/{branch_name}/protection",
-        )
+        "GET",
+        f"/repos/{client.owner}/{repository_name}/branches/{branch_name}/protection",
+    )
     data = response.json()
 
     restrict_deletions = not data["allow_deletions"]["enabled"]
@@ -109,16 +114,17 @@ def check_legacy_branch_protection(client, repository_name, branch_name, criteri
         },
     }
 
+
 def check_rulesets_branch_protection(client, repository_name, branch_name, criteria):
     response = client.make_request(
-            "GET", f"/repos/{client.owner}/{repository_name}/branches/{branch_name}"
-        ).json()
+        "GET", f"/repos/{client.owner}/{repository_name}/branches/{branch_name}"
+    ).json()
 
     if not response["protected"]:
         return {
             "result": "fail",
             "message": f"Branch protection is not enabled for branch {branch_name}",
-            "details": {}
+            "details": {},
         }
 
     response = client.make_request(
@@ -138,10 +144,7 @@ def check_rulesets_branch_protection(client, repository_name, branch_name, crite
                     "required_approving_review_count"
                 ]
 
-                if (
-                    require_code_owner_review
-                    and required_approving_review_count >= 2
-                ):
+                if require_code_owner_review and required_approving_review_count >= 2:
                     criteria["review_before_merge"] = True
             case _:
                 pass
@@ -180,7 +183,7 @@ def message(criterion: str, **kwargs) -> dict:
             "details": {
                 "Repository": kwargs["repository_name"],
                 "Branch": kwargs["branch_name"],
-                "Details": "Review before merge must be enabled"
+                "Details": "Review before merge must be enabled",
             },
         }
 
@@ -191,7 +194,7 @@ def message(criterion: str, **kwargs) -> dict:
             "details": {
                 "Repository": kwargs["repository_name"],
                 "Branch": kwargs["branch_name"],
-                "Details": "Branch deletions must be restricted"
+                "Details": "Branch deletions must be restricted",
             },
         }
 
@@ -201,6 +204,6 @@ def message(criterion: str, **kwargs) -> dict:
         "details": {
             "Repository": kwargs["repository_name"],
             "Branch": kwargs["branch_name"],
-            "Details": "Failed on unknown criterion"
-        }
+            "Details": "Failed on unknown criterion",
+        },
     }

@@ -77,7 +77,11 @@ class TestClassicProtectionApi:
         assert result == {
             "result": "fail",
             "message": "Branch is not protected",
-            "details": {"Repository": "my-repo", "Branch": "main", "Details": "Branch deletions must be restricted"},
+            "details": {
+                "Repository": "my-repo",
+                "Branch": "main",
+                "Details": "Branch deletions must be restricted",
+            },
         }
 
     def test_fail_when_code_owner_reviews_not_required(self):
@@ -99,7 +103,11 @@ class TestClassicProtectionApi:
         assert result == {
             "result": "fail",
             "message": "Branch is not protected",
-            "details": {"Repository": "my-repo", "Branch": "main", "Details": "Review before merge must be enabled"},
+            "details": {
+                "Repository": "my-repo",
+                "Branch": "main",
+                "Details": "Review before merge must be enabled",
+            },
         }
 
     def test_fail_when_approving_review_count_below_two(self):
@@ -121,7 +129,11 @@ class TestClassicProtectionApi:
         assert result == {
             "result": "fail",
             "message": "Branch is not protected",
-            "details": {"Repository": "my-repo", "Branch": "main", "Details": "Review before merge must be enabled"},
+            "details": {
+                "Repository": "my-repo",
+                "Branch": "main",
+                "Details": "Review before merge must be enabled",
+            },
         }
 
     def test_restrict_deletions_checked_before_review_before_merge(self):
@@ -169,7 +181,7 @@ class TestRulesetsFallback:
         assert result == {
             "result": "fail",
             "message": "Branch protection is not enabled for branch main",
-            "details": {}
+            "details": {},
         }
 
     def test_pass_when_rules_satisfy_both_criteria(self):
@@ -236,7 +248,11 @@ class TestRulesetsFallback:
         assert result == {
             "result": "fail",
             "message": "Branch is not protected",
-            "details": {"Repository": "my-repo", "Branch": "main", "Details": "Branch deletions must be restricted"},
+            "details": {
+                "Repository": "my-repo",
+                "Branch": "main",
+                "Details": "Branch deletions must be restricted",
+            },
         }
 
     def test_fail_when_pull_request_rule_insufficient(self):
@@ -270,7 +286,11 @@ class TestRulesetsFallback:
         assert result == {
             "result": "fail",
             "message": "Branch is not protected",
-            "details": {"Repository": "my-repo", "Branch": "main", "Details": "Review before merge must be enabled"},
+            "details": {
+                "Repository": "my-repo",
+                "Branch": "main",
+                "Details": "Review before merge must be enabled",
+            },
         }
 
     def test_ignores_unknown_rule_types(self):
