@@ -20,6 +20,7 @@ Documentation on each component within the checks module can be found in the rel
 - `team_maintainer.py`: Contains method for checking that a GitHub team has at least one maintainer.
 - `codeowners.py`: Contains method for checking whether a repository includes a `CODEOWNERS` file.
 - `pirr.py`: Contains methods for checking that private and internal repositories include `pirr.md`
+- `branch_protection.py`: Contains method for checking that a branch is protected.
 
 ## Importing the Checks Module
 
