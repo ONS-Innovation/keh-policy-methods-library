@@ -100,8 +100,7 @@ def check_legacy_branch_protection(client, repository_name, branch_name, criteri
                 "branch": branch_name,
                 "criteria": {
                     "restrict_deletions": criteria["restrict_deletions"],
-                    "review_before_merge": criteria["review_before_merge"]
-
+                    "review_before_merge": criteria["review_before_merge"],
                 },
             },
         }
@@ -114,8 +113,8 @@ def check_legacy_branch_protection(client, repository_name, branch_name, criteri
             "branch": branch_name,
             "criteria": {
                 "restrict_deletions": criteria["restrict_deletions"],
-                "review_before_merge": criteria["review_before_merge"]
-            }
+                "review_before_merge": criteria["review_before_merge"],
+            },
         },
     }
 
@@ -163,7 +162,7 @@ def check_rulesets_branch_protection(client, repository_name, branch_name, crite
                 "branch": branch_name,
                 "criteria": {
                     "restrict_deletions": criteria["restrict_deletions"],
-                    "review_before_merge": criteria["review_before_merge"]
+                    "review_before_merge": criteria["review_before_merge"],
                 },
             },
         }
@@ -176,7 +175,7 @@ def check_rulesets_branch_protection(client, repository_name, branch_name, crite
             "branch": branch_name,
             "criteria": {
                 "restrict_deletions": criteria["restrict_deletions"],
-                "review_before_merge": criteria["review_before_merge"]
-            }
+                "review_before_merge": criteria["review_before_merge"],
+            },
         },
     }
