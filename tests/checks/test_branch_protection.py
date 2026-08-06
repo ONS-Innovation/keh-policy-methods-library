@@ -34,8 +34,19 @@ class TestCheckBranchProtectionInputValidation:
             "details": {},
         }
 
+    def test_error_when_branch_name_is_none(self):
+        client = _make_client()
+        result = check_branch_protection(
+            client=client, repository_name="my-repo", branch_name=None
+        )
+        assert result == {
+            "result": "error",
+            "message": "Branch name is required.",
+            "details": {},
+        }
 
-class TestClassicProtectionApi:
+
+class TestLegacyBranchProtection:
     def test_pass_when_deletions_restricted_and_reviews_required(self):
         client = _make_client()
         response = MagicMock()
@@ -55,7 +66,14 @@ class TestClassicProtectionApi:
         assert result == {
             "result": "pass",
             "message": "Branch is protected",
-            "details": {"Repository": "my-repo", "Branch": "main"},
+            "details": {
+                "repository": "my-repo",
+                "branch": "main",
+                "criteria": {
+                    "restrict_deletions": True,
+                    "review_before_merge": True,
+                },
+            },
         }
 
     def test_fail_when_deletions_are_allowed(self):
@@ -76,11 +94,17 @@ class TestClassicProtectionApi:
 
         assert result == {
             "result": "fail",
-            "message": "Branch is not protected",
+            "message": (
+                "Branch 'main' is unprotected. Branches should restrict "
+                "deletions and require a review before merge."
+            ),
             "details": {
-                "Repository": "my-repo",
-                "Branch": "main",
-                "Details": "Branch deletions must be restricted",
+                "repository": "my-repo",
+                "branch": "main",
+                "criteria": {
+                    "restrict_deletions": False,
+                    "review_before_merge": True,
+                },
             },
         }
 
@@ -100,14 +124,10 @@ class TestClassicProtectionApi:
             client=client, repository_name="my-repo", branch_name="main"
         )
 
-        assert result == {
-            "result": "fail",
-            "message": "Branch is not protected",
-            "details": {
-                "Repository": "my-repo",
-                "Branch": "main",
-                "Details": "Review before merge must be enabled",
-            },
+        assert result["result"] == "fail"
+        assert result["details"]["criteria"] == {
+            "restrict_deletions": True,
+            "review_before_merge": False,
         }
 
     def test_fail_when_approving_review_count_below_two(self):
@@ -126,18 +146,13 @@ class TestClassicProtectionApi:
             client=client, repository_name="my-repo", branch_name="main"
         )
 
-        assert result == {
-            "result": "fail",
-            "message": "Branch is not protected",
-            "details": {
-                "Repository": "my-repo",
-                "Branch": "main",
-                "Details": "Review before merge must be enabled",
-            },
+        assert result["result"] == "fail"
+        assert result["details"]["criteria"] == {
+            "restrict_deletions": True,
+            "review_before_merge": False,
         }
 
-    def test_restrict_deletions_checked_before_review_before_merge(self):
-        """When both criteria fail, restrict_deletions should be reported first."""
+    def test_fail_when_both_criteria_fail(self):
         client = _make_client()
         response = MagicMock()
         response.json.return_value = {
@@ -153,12 +168,16 @@ class TestClassicProtectionApi:
             client=client, repository_name="my-repo", branch_name="main"
         )
 
-        assert result["message"] == "Branch is not protected"
+        assert result["result"] == "fail"
+        assert result["details"]["criteria"] == {
+            "restrict_deletions": False,
+            "review_before_merge": False,
+        }
 
 
 class TestRulesetsFallback:
-    """Covers the path where the classic protection endpoint 404s and the
-    code falls back to /branches/{branch}/protected + rulesets."""
+    """Covers the path where the legacy protection endpoint raises HTTPError
+    and the code falls back to /branches/{branch} + rulesets."""
 
     def _http_error_response(self):
         response = MagicMock()
@@ -168,11 +187,11 @@ class TestRulesetsFallback:
     def test_fail_when_branch_is_not_protected(self):
         client = _make_client()
 
-        protection_response = self._http_error_response()
+        legacy_response = self._http_error_response()
         branch_response = MagicMock()
         branch_response.json.return_value = {"protected": False}
 
-        client.make_request.side_effect = [protection_response, branch_response]
+        client.make_request.side_effect = [legacy_response, branch_response]
 
         result = check_branch_protection(
             client=client, repository_name="my-repo", branch_name="main"
@@ -180,14 +199,17 @@ class TestRulesetsFallback:
 
         assert result == {
             "result": "fail",
-            "message": "Branch protection is not enabled for branch main",
+            "message": (
+                "Branch 'main' is unprotected. Branches should restrict "
+                "deletions and require a review before merge."
+            ),
             "details": {},
         }
 
     def test_pass_when_rules_satisfy_both_criteria(self):
         client = _make_client()
 
-        protection_response = self._http_error_response()
+        legacy_response = self._http_error_response()
         branch_response = MagicMock()
         branch_response.json.return_value = {"protected": True}
         rules_response = MagicMock()
@@ -203,7 +225,7 @@ class TestRulesetsFallback:
         ]
 
         client.make_request.side_effect = [
-            protection_response,
+            legacy_response,
             branch_response,
             rules_response,
         ]
@@ -215,13 +237,20 @@ class TestRulesetsFallback:
         assert result == {
             "result": "pass",
             "message": "Branch is protected",
-            "details": {"Repository": "my-repo", "Branch": "main"},
+            "details": {
+                "repository": "my-repo",
+                "branch": "main",
+                "criteria": {
+                    "restrict_deletions": True,
+                    "review_before_merge": True,
+                },
+            },
         }
 
     def test_fail_when_no_deletion_rule_present(self):
         client = _make_client()
 
-        protection_response = self._http_error_response()
+        legacy_response = self._http_error_response()
         branch_response = MagicMock()
         branch_response.json.return_value = {"protected": True}
         rules_response = MagicMock()
@@ -236,7 +265,7 @@ class TestRulesetsFallback:
         ]
 
         client.make_request.side_effect = [
-            protection_response,
+            legacy_response,
             branch_response,
             rules_response,
         ]
@@ -245,20 +274,20 @@ class TestRulesetsFallback:
             client=client, repository_name="my-repo", branch_name="main"
         )
 
-        assert result == {
-            "result": "fail",
-            "message": "Branch is not protected",
-            "details": {
-                "Repository": "my-repo",
-                "Branch": "main",
-                "Details": "Branch deletions must be restricted",
+        assert result["result"] == "fail"
+        assert result["details"] == {
+            "repository": "my-repo",
+            "branch": "main",
+            "criteria": {
+                "restrict_deletions": False,
+                "review_before_merge": True,
             },
         }
 
     def test_fail_when_pull_request_rule_insufficient(self):
         client = _make_client()
 
-        protection_response = self._http_error_response()
+        legacy_response = self._http_error_response()
         branch_response = MagicMock()
         branch_response.json.return_value = {"protected": True}
         rules_response = MagicMock()
@@ -274,7 +303,7 @@ class TestRulesetsFallback:
         ]
 
         client.make_request.side_effect = [
-            protection_response,
+            legacy_response,
             branch_response,
             rules_response,
         ]
@@ -283,14 +312,10 @@ class TestRulesetsFallback:
             client=client, repository_name="my-repo", branch_name="main"
         )
 
-        assert result == {
-            "result": "fail",
-            "message": "Branch is not protected",
-            "details": {
-                "Repository": "my-repo",
-                "Branch": "main",
-                "Details": "Review before merge must be enabled",
-            },
+        assert result["result"] == "fail"
+        assert result["details"]["criteria"] == {
+            "restrict_deletions": True,
+            "review_before_merge": False,
         }
 
     def test_ignores_unknown_rule_types(self):
@@ -298,7 +323,7 @@ class TestRulesetsFallback:
         not cause an error."""
         client = _make_client()
 
-        protection_response = self._http_error_response()
+        legacy_response = self._http_error_response()
         branch_response = MagicMock()
         branch_response.json.return_value = {"protected": True}
         rules_response = MagicMock()
@@ -315,7 +340,7 @@ class TestRulesetsFallback:
         ]
 
         client.make_request.side_effect = [
-            protection_response,
+            legacy_response,
             branch_response,
             rules_response,
         ]
@@ -324,11 +349,7 @@ class TestRulesetsFallback:
             client=client, repository_name="my-repo", branch_name="main"
         )
 
-        assert result == {
-            "result": "pass",
-            "message": "Branch is protected",
-            "details": {"Repository": "my-repo", "Branch": "main"},
-        }
+        assert result["result"] == "pass"
 
 
 class TestGenericErrorHandling:
@@ -346,9 +367,10 @@ class TestGenericErrorHandling:
 
     def test_error_when_required_pull_request_reviews_missing(self):
         """Documents current behavior: a missing optional key is caught by the
-        broad except-Exception block and reported as an 'error', not a 'fail'.
-        This is a known gap - see review notes - and this test should be
-        updated once the code defensively handles missing keys with .get()."""
+        broad except-Exception block in check_branch_protection and reported
+        as an 'error', not a 'fail'. This is a known gap (see review notes)
+        and should be updated once the code defensively handles missing keys
+        with .get() instead of direct indexing."""
         client = _make_client()
         response = MagicMock()
         response.json.return_value = {

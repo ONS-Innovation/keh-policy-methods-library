@@ -91,26 +91,31 @@ def check_legacy_branch_protection(client, repository_name, branch_name, criteri
     if restrict_deletions:
         criteria["restrict_deletions"] = True
 
-    if not criteria["restrict_deletions"]:
-        return message(
-            "restrict_deletions",
-            repository_name=repository_name,
-            branch_name=branch_name,
-        )
+    if not criteria["restrict_deletions"] or not criteria["review_before_merge"]:
+        return {
+            "result": "fail",
+            "message": f"Branch '{branch_name}' is unprotected. Branches should restrict deletions and require a review before merge.",
+            "details": {
+                "repository": repository_name,
+                "branch": branch_name,
+                "criteria": {
+                    "restrict_deletions": criteria["restrict_deletions"],
+                    "review_before_merge": criteria["review_before_merge"]
 
-    if not criteria["review_before_merge"]:
-        return message(
-            "review_before_merge",
-            repository_name=repository_name,
-            branch_name=branch_name,
-        )
+                },
+            },
+        }
 
     return {
         "result": "pass",
         "message": "Branch is protected",
         "details": {
-            "Repository": repository_name,
-            "Branch": branch_name,
+            "repository": repository_name,
+            "branch": branch_name,
+            "criteria": {
+                "restrict_deletions": criteria["restrict_deletions"],
+                "review_before_merge": criteria["review_before_merge"]
+            }
         },
     }
 
@@ -123,7 +128,7 @@ def check_rulesets_branch_protection(client, repository_name, branch_name, crite
     if not response["protected"]:
         return {
             "result": "fail",
-            "message": f"Branch protection is not enabled for branch {branch_name}",
+            "message": f"Branch '{branch_name}' is unprotected. Branches should restrict deletions and require a review before merge.",
             "details": {},
         }
 
@@ -149,61 +154,29 @@ def check_rulesets_branch_protection(client, repository_name, branch_name, crite
             case _:
                 pass
 
-    if not criteria["restrict_deletions"]:
-        return message(
-            "restrict_deletions",
-            repository_name=repository_name,
-            branch_name=branch_name,
-        )
-
-    if not criteria["review_before_merge"]:
-        return message(
-            "review_before_merge",
-            repository_name=repository_name,
-            branch_name=branch_name,
-        )
+    if not criteria["restrict_deletions"] or not criteria["review_before_merge"]:
+        return {
+            "result": "fail",
+            "message": f"Branch '{branch_name}' is unprotected. Branches should restrict deletions and require a review before merge.",
+            "details": {
+                "repository": repository_name,
+                "branch": branch_name,
+                "criteria": {
+                    "restrict_deletions": criteria["restrict_deletions"],
+                    "review_before_merge": criteria["review_before_merge"]
+                },
+            },
+        }
 
     return {
         "result": "pass",
         "message": "Branch is protected",
         "details": {
-            "Repository": repository_name,
-            "Branch": branch_name,
-        },
-    }
-
-
-def message(criterion: str, **kwargs) -> dict:
-    """Return error message for the appropriate criterion"""
-
-    if criterion == "review_before_merge":
-        return {
-            "result": "fail",
-            "message": "Branch is not protected",
-            "details": {
-                "Repository": kwargs["repository_name"],
-                "Branch": kwargs["branch_name"],
-                "Details": "Review before merge must be enabled",
-            },
-        }
-
-    if criterion == "restrict_deletions":
-        return {
-            "result": "fail",
-            "message": "Branch is not protected",
-            "details": {
-                "Repository": kwargs["repository_name"],
-                "Branch": kwargs["branch_name"],
-                "Details": "Branch deletions must be restricted",
-            },
-        }
-
-    return {
-        "result": "fail",
-        "message": "Branch is not protected",
-        "details": {
-            "Repository": kwargs["repository_name"],
-            "Branch": kwargs["branch_name"],
-            "Details": "Failed on unknown criterion",
+            "repository": repository_name,
+            "branch": branch_name,
+            "criteria": {
+                "restrict_deletions": criteria["restrict_deletions"],
+                "review_before_merge": criteria["review_before_merge"]
+            }
         },
     }
