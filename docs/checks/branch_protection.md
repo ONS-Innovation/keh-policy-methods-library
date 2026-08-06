@@ -80,7 +80,7 @@ The check requires the following GitHub App permissions:
 
 The `details` object returned by this check contains the following fields:
 
-- `Repository`: The name of the repository that was checked.
-- `Branch`: The name of the branch that was checked.
-- `Details` *(fail only)*: The specific details explaining why the branch is not protected (e.g restricted deletions, less than two reviewers).
+- `repository`: The name of the repository that was checked.
+- `branch`: The name of the branch that was checked.
+- `criteria`: The specific details explaining why the branch is not protected (e.g restricted deletions, less than two reviewers).
 
