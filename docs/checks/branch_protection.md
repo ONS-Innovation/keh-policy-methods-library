@@ -66,8 +66,8 @@ match result
 ## GitHub Integration Used
 The check uses the `GET /repos/{owner}/{repo}/branches/{branch}/protection` endpoint for the legacy branch protection check. If that fails, the check uses `GET /repos/{owner}/{repo}/rules/branches/{branch}`.
 
-[GitHub Documentation: Protection API :link:](https://docs.github.com/en/rest/branches/branch-protection?apiVersion=2026-03-10)
-[GitHub Documentation: Rulesets API :link:](https://docs.github.com/en/rest/repos/rules?apiVersion=2026-03-10)
+[GitHub Documentation: Protection API :link:](https://docs.github.com/en/rest/branches/branch-protection?apiVersion=2026-03-10#get-branch-protection)
+[GitHub Documentation: Rulesets API :link:](https://docs.github.com/en/rest/repos/rules?apiVersion=2026-03-10#get-rules-for-a-branch)
 
 ## Required Permissions
 
