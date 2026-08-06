@@ -58,8 +58,8 @@ match result
     case "fail":
         print(f"Check failed: {message}")
         details = result.get("details")
-        details = details.get("Details")
-        print(details)
+        criteria = details.get("criteria")
+        print(criteria)
     case "error":
         print(f"Check Error: {message}")
     case _:

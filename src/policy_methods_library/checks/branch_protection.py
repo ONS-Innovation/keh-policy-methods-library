@@ -53,13 +53,13 @@ def check_branch_protection(
 
     try:
         # First check legacy branch protection if that is enabled for the repository
-        return check_legacy_branch_protection(
+        return _check_legacy_branch_protection(
             client, repository_name, branch_name, criteria
         )
     except requests.exceptions.HTTPError:
         # If legacy branch protection does not exist for the repository, then check the
         # rulesets protection.
-        return check_rulesets_branch_protection(
+        return _check_rulesets_branch_protection(
             client, repository_name, branch_name, criteria
         )
     except Exception as e:
@@ -70,7 +70,23 @@ def check_branch_protection(
         }
 
 
-def check_legacy_branch_protection(client, repository_name, branch_name, criteria):
+def _check_legacy_branch_protection(
+    client: GitHubRestClient, repository_name: str, branch_name: str, criteria: dict
+) -> dict:
+    """
+    Check branch protection using the legacy branch protection endpoint.
+
+    Args:
+        client: An instance of the GitHubRestClient to use for API calls.
+        repository_name: The name of the repository to check.
+        branch_name: The name of the branch to check.
+        criteria: A dict with 'restrict_deletions' and 'review_before_merge'
+            boolean keys, updated in place based on the branch's settings.
+
+    Returns:
+        A dictionary with the result of the check, including 'result'
+        (pass/fail), 'message', and 'details'.
+    """
     response = client.make_request(
         "GET",
         f"/repos/{client.owner}/{repository_name}/branches/{branch_name}/protection",
@@ -119,7 +135,24 @@ def check_legacy_branch_protection(client, repository_name, branch_name, criteri
     }
 
 
-def check_rulesets_branch_protection(client, repository_name, branch_name, criteria):
+def _check_rulesets_branch_protection(
+    client: GitHubRestClient, repository_name: str, branch_name: str, criteria: dict
+) -> dict:
+    """
+    Check branch protection using the newer rulesets endpoint
+
+    Args:
+        client: An instance of the GitHubRestClient to use for API calls.
+        repository_name: The name of the repository to check.
+        branch_name: The name of the branch to check.
+        criteria: A dict with 'restrict_deletions' and 'review_before_merge'
+            boolean keys, updated in place based on the branch's rules.
+
+    Returns:
+        A dictionary with the result of the check, including 'result'
+        (pass/fail), 'message', and 'details'.
+    """
+
     response = client.make_request(
         "GET", f"/repos/{client.owner}/{repository_name}/branches/{branch_name}"
     ).json()
