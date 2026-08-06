@@ -142,6 +142,7 @@ def get_dependabot_slo(
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     repositories: dict[str, dict[str, int]] = {}
+
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
             if not isinstance(alert, dict):
@@ -164,10 +165,8 @@ def get_dependabot_slo(
 
             # Add Repository and add 1 to the SLO level
             if repo_name not in repositories:
-                repositories[repo_name] = {lv: 0 for lv in levels}
-                repositories[repo_name][level] += 1
-            else:
-                continue
+                repositories[repo_name] = {lvl: 0 for lvl in levels}
+            repositories[repo_name][level] += 1
 
     total_repositories_affected = len(repositories)
     total_open_alerts = sum(len(alerts) for alerts in dependabot_alerts.values())

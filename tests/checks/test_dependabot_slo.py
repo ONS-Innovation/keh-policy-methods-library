@@ -292,7 +292,7 @@ class TestGetDependabotSLO:
                 "failing_alerts": 2,
                 "number_exceeded_by_severity": {"critical": 1, "low": 1},
                 "total_repositories_affected": 1,
-                "repositories": {"my-org/my-repo": {"critical": 1, "low": 0}},
+                "repositories": {"my-org/my-repo": {"critical": 1, "low": 1}},
             },
         }
 
@@ -398,7 +398,7 @@ class TestGetDependabotSLO:
                 "failing_alerts": 2,
                 "number_exceeded_by_severity": {"critical": 2},
                 "total_repositories_affected": 1,
-                "repositories": {"my-org/my-repo": {"critical": 1}},
+                "repositories": {"my-org/my-repo": {"critical": 2}},
             },
         }
 
@@ -671,14 +671,10 @@ class TestGetDependabotSLO:
             "details": {},
         }
 
-    def test_duplicate_repo_alerts_count_repo_once_in_repositories(
+    def test_duplicate_repo_alerts_counts_all_alerts_per_repo(
         self,
     ):
-        """Two SLO-exceeding alerts from the same repo should count the repo once.
-
-        Patches _exceeds_slo so both alerts deterministically exceed the SLO,
-        exercising the else: continue branch for the second alert from the same repo.
-        """
+        """Two SLO-exceeding alerts from the same repo should both be counted."""
         client = self._make_org_client()
 
         alert_one = _alert(1, created_at="2025-01-01T00:00:00Z")
@@ -692,12 +688,10 @@ class TestGetDependabotSLO:
             result = get_dependabot_slo(client=client, levels=["critical"])
 
         assert result["result"] == "fail"
-        # Both alerts counted in failed_alerts via exceeded_alerts list.
         assert result["details"]["failing_alerts"] == 2
         assert result["details"]["number_exceeded_by_severity"] == {"critical": 2}
-        # But the repo itself is only recorded once in repositories.
         assert result["details"]["total_repositories_affected"] == 1
-        assert result["details"]["repositories"] == {"my-org/my-repo": {"critical": 1}}
+        assert result["details"]["repositories"] == {"my-org/my-repo": {"critical": 2}}
 
     def test_error_when_pagination_utility_returns_non_list(self):
         """Type narrowing guard should catch if pagination utility returns wrong shape."""
