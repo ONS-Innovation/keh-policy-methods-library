@@ -15,7 +15,8 @@ Documentation on each component within the checks module can be found in the rel
 - `external_pull_request.py`: Contains methods for checking that open pull requests are authored by organisation members only.
 - `security_scanning.py`: Contains methods for checking that Push Protection and Secret Scanning are enabled for public repositories.
 - `dependabot.py`: Contains methods for checking that Dependabot automated security fixes are enabled for repositories.
-- `dependabot_slo.py`: Contains methods for retrieving all open dependabot alerts across the whole organisation.
+- `dependabot_slo.py`: Contains methods for retrieving all open dependabot alerts, that breach SLO, across the whole organisation.
+- `secret_scanning_slo.py`: Contains methods for retrieving all open secret scanning alerts, that breach SLO, across the whole organisation.
 - `license.py`: Contains method for checking whether a repository includes a `LICENSE` file.
 - `team_maintainer.py`: Contains method for checking that a GitHub team has at least one maintainer.
 - `codeowners.py`: Contains method for checking whether a repository includes a `CODEOWNERS` file.
@@ -38,12 +39,11 @@ from policy_methods_library.checks.naming_convention import check_naming_convent
 
 ## Check Structure
 
-All checks within the checks module follow a consistent structure. This includes:
+Checks within the checks module follow a consistent result structure. This includes:
 
-- A primary, public function that serves as the entry point for the check. This function will always be named `check_<check_name>`, where `<check_name>` is a descriptive name for the check being performed.
-- Each check will allow either:
-  - A GitHub Client instance to be passed in alongside any necessary parameters for the check. This allows the check to make API calls as needed to perform its function.
-  - Or, a data object containing all necessary information for the check to be performed without making any API calls. This allows tools using the package to save performance if the data needed for the check has already been retrieved via previous API calls.
+- A primary, public function that serves as the entry point for a policy check. Most repository-level checks are named `check_<check_name>`, while organisation-level SLO aggregations use `get_<check_name>_slo`.
+- Each check requires a GitHub Client instance and any necessary parameters for API-based operation.
+- Some repository checks also support a data object input, allowing the check to run without API calls when the required metadata has already been retrieved.
 - Checks will return a standardised result object containing the outcome of the check:
 
   ```json
