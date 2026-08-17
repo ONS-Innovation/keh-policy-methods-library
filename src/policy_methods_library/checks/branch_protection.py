@@ -94,14 +94,11 @@ def _check_legacy_branch_protection(
     data = response.json()
 
     restrict_deletions = not data["allow_deletions"]["enabled"]
-    require_code_owner_reviews = data["required_pull_request_reviews"][
-        "require_code_owner_reviews"
-    ]
     required_approving_review_count = data["required_pull_request_reviews"][
         "required_approving_review_count"
     ]
 
-    if require_code_owner_reviews and required_approving_review_count >= 2:
+    if required_approving_review_count >= 2:
         criteria["review_before_merge"] = True
 
     if restrict_deletions:
@@ -174,14 +171,11 @@ def _check_rulesets_branch_protection(
             case "deletion":
                 criteria["restrict_deletions"] = True
             case "pull_request":
-                require_code_owner_review = rule["parameters"][
-                    "require_code_owner_review"
-                ]
                 required_approving_review_count = rule["parameters"][
                     "required_approving_review_count"
                 ]
 
-                if require_code_owner_review and required_approving_review_count >= 2:
+                if required_approving_review_count >= 2:
                     criteria["review_before_merge"] = True
             case _:
                 pass

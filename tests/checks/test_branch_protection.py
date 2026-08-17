@@ -53,7 +53,6 @@ class TestLegacyBranchProtection:
         response.json.return_value = {
             "allow_deletions": {"enabled": False},
             "required_pull_request_reviews": {
-                "require_code_owner_reviews": True,
                 "required_approving_review_count": 2,
             },
         }
@@ -82,7 +81,6 @@ class TestLegacyBranchProtection:
         response.json.return_value = {
             "allow_deletions": {"enabled": True},
             "required_pull_request_reviews": {
-                "require_code_owner_reviews": True,
                 "required_approving_review_count": 2,
             },
         }
@@ -108,35 +106,12 @@ class TestLegacyBranchProtection:
             },
         }
 
-    def test_fail_when_code_owner_reviews_not_required(self):
-        client = _make_client()
-        response = MagicMock()
-        response.json.return_value = {
-            "allow_deletions": {"enabled": False},
-            "required_pull_request_reviews": {
-                "require_code_owner_reviews": False,
-                "required_approving_review_count": 2,
-            },
-        }
-        client.make_request.return_value = response
-
-        result = check_branch_protection(
-            client=client, repository_name="my-repo", branch_name="main"
-        )
-
-        assert result["result"] == "fail"
-        assert result["details"]["criteria"] == {
-            "restrict_deletions": True,
-            "review_before_merge": False,
-        }
-
     def test_fail_when_approving_review_count_below_two(self):
         client = _make_client()
         response = MagicMock()
         response.json.return_value = {
             "allow_deletions": {"enabled": False},
             "required_pull_request_reviews": {
-                "require_code_owner_reviews": True,
                 "required_approving_review_count": 1,
             },
         }
@@ -158,7 +133,6 @@ class TestLegacyBranchProtection:
         response.json.return_value = {
             "allow_deletions": {"enabled": True},
             "required_pull_request_reviews": {
-                "require_code_owner_reviews": False,
                 "required_approving_review_count": 0,
             },
         }
@@ -218,7 +192,6 @@ class TestRulesetsFallback:
             {
                 "type": "pull_request",
                 "parameters": {
-                    "require_code_owner_review": True,
                     "required_approving_review_count": 2,
                 },
             },
@@ -258,7 +231,6 @@ class TestRulesetsFallback:
             {
                 "type": "pull_request",
                 "parameters": {
-                    "require_code_owner_review": True,
                     "required_approving_review_count": 2,
                 },
             },
@@ -296,7 +268,6 @@ class TestRulesetsFallback:
             {
                 "type": "pull_request",
                 "parameters": {
-                    "require_code_owner_review": True,
                     "required_approving_review_count": 1,
                 },
             },
@@ -332,7 +303,6 @@ class TestRulesetsFallback:
             {
                 "type": "pull_request",
                 "parameters": {
-                    "require_code_owner_review": True,
                     "required_approving_review_count": 2,
                 },
             },
