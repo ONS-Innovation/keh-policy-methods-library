@@ -335,6 +335,37 @@ class TestGenericErrorHandling:
         assert "boom" in result["message"]
         assert result["details"] == {}
 
+    def test_error_when_rulesets_check_raises_unexpected_exception(self):
+        client = _make_client()
+        client.make_request.side_effect = [
+            requests.exceptions.HTTPError("404 Not Found"),
+            ValueError("rulesets boom"),
+        ]
+
+        result = check_branch_protection(
+            client=client, repository_name="my-repo", branch_name="main"
+        )
+
+        assert result["result"] == "error"
+        assert "rulesets boom" in result["message"]
+        assert result["details"] == {}
+
+    def test_fail_when_rulesets_branch_lookup_raises_http_error(self):
+        client = _make_client()
+        not_found = requests.exceptions.HTTPError("404 Not Found")
+        client.make_request.side_effect = [not_found, not_found]
+
+        result = check_branch_protection(
+            client=client, repository_name="my-repo", branch_name="main"
+        )
+
+        assert result["result"] == "fail"
+        assert result["message"] == (
+            "Branch 'main' is unprotected. Branches should restrict deletions "
+            "and require a review before merge."
+        )
+        assert result["details"] == {}
+
     def test_error_when_required_pull_request_reviews_missing(self):
         """Documents current behavior: a missing optional key is caught by the
         broad except-Exception block in check_branch_protection and reported

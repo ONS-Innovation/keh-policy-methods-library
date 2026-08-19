@@ -57,15 +57,28 @@ def check_branch_protection(
             client, repository_name, branch_name, criteria
         )
     except requests.exceptions.HTTPError:
-        # If legacy branch protection does not exist for the repository, then check the
-        # rulesets protection.
-        return _check_rulesets_branch_protection(
-            client, repository_name, branch_name, criteria
-        )
+        pass
     except Exception as e:
         return {
             "result": "error",
-            "message": f"An error occurred while checking repository access: {str(e)}",
+            "message": f"An error occurred while checking branch protection: {str(e)}",
+            "details": {},
+        }
+
+    try:
+        return _check_rulesets_branch_protection(
+            client, repository_name, branch_name, criteria
+        )
+    except requests.exceptions.HTTPError:
+        return {
+            "result": "fail",
+            "message": f"Branch '{branch_name}' is unprotected. Branches should restrict deletions and require a review before merge.",
+            "details": {},
+        }
+    except Exception as e:
+        return {
+            "result": "error",
+            "message": f"An error occurred while checking branch protection: {str(e)}",
             "details": {},
         }
 
