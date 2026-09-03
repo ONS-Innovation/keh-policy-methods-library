@@ -377,6 +377,53 @@ class TestGetSecretScanningSloWithClient:
         # Only exceeding alerts are tracked by repository.
         assert result["details"]["repositories"]["my-org/repo2"] == 1
 
+    def test_filters_alerts_by_repository_names(self):
+        """Only alerts from requested repositories should be included in the result."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+
+        org_response = create_autospec(Response, instance=True)
+        org_response.json.return_value = {"type": "Organization"}
+
+        now = datetime.now(timezone.utc)
+        included_alert = {
+            "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "html_url": "https://github.com/my-org/included-repo/security/secret-scanning/1",
+            "repository": {"name": "included-repo"},
+        }
+        excluded_alert = {
+            "created_at": (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "html_url": "https://github.com/my-org/excluded-repo/security/secret-scanning/2",
+            "repository": {"name": "excluded-repo"},
+        }
+
+        alerts_response = create_autospec(Response, instance=True)
+        alerts_response.json.return_value = [included_alert, excluded_alert]
+        alerts_response.links = None
+
+        def side_effect(*args, **kwargs):
+            if "secret-scanning" in args[1]:
+                return alerts_response
+            return org_response
+
+        client.make_request.side_effect = side_effect
+
+        result = get_secret_scanning_slo(
+            client=client,
+            repository_names=["included-repo"],
+        )
+
+        assert result == {
+            "result": "fail",
+            "message": "Found 1 open Secret Scanning security alerts exceeding the policy-defined SLO.",
+            "details": {
+                "total_open_alerts": 1,
+                "failing_alerts": 1,
+                "total_repositories_affected": 1,
+                "repositories": {"my-org/included-repo": 1},
+            },
+        }
+
     def test_error_when_pagination_utility_returns_non_list(self):
         """Type narrowing guard should catch if pagination utility returns wrong shape."""
         client = create_autospec(GitHubRestClient, instance=True)

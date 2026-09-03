@@ -70,12 +70,14 @@ def _exceeds_slo(alert: dict, severity: str) -> bool:
 def get_dependabot_slo(
     client: GitHubRestClient,
     levels: list[str] | None = None,
+    repository_names: list[str] | None = None,
 ) -> dict:
     """Get open Dependabot security alerts, that breach the SLO, grouped by severity.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.
         levels: A list of alert severities to include in the check.
+        repository_names: A list of repository names to include in the check.
 
     Returns:
         A dictionary with the result of the check, including 'result' (pass/fail/error),
@@ -142,6 +144,7 @@ def get_dependabot_slo(
 
     exceeded_alerts: dict[str, list] = {level: [] for level in levels}
     repositories: dict[str, dict[str, int]] = {}
+    total_open_alerts = 0
 
     for level, alerts in dependabot_alerts.items():
         for alert in alerts:
@@ -158,6 +161,18 @@ def get_dependabot_slo(
             org = client.owner
             repo_name = f"{org}/{repo}"
 
+            if not isinstance(repo, str) or not repo:
+                return {
+                    "result": "error",
+                    "message": "Dependabot alert payload is missing repository name.",
+                    "details": {"alert": alert},
+                }
+
+            if repository_names and repo not in repository_names:
+                continue
+
+            total_open_alerts += 1
+
             if not _exceeds_slo(alert, level):
                 continue
 
@@ -169,7 +184,6 @@ def get_dependabot_slo(
             repositories[repo_name][level] += 1
 
     total_repositories_affected = len(repositories)
-    total_open_alerts = sum(len(alerts) for alerts in dependabot_alerts.values())
 
     number_exceeded_by_severity = {
         level: len(alerts) for level, alerts in exceeded_alerts.items()
