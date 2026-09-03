@@ -62,11 +62,13 @@ def _exceeds_slo(alert: dict) -> bool:
 
 def get_secret_scanning_slo(
     client: GitHubRestClient,
+    repository_names: list[str] | None = None,
 ) -> dict:
     """Get all open Secret Scanning alerts that breach SLO.
 
     Args:
         client: An instance of the GitHubRestClient to use for API calls. Required.
+        repository_names: A list of repository names to include in the check.
 
     Returns:
         A dictionary with the result of the check, including 'result' (pass/fail/error),
@@ -116,6 +118,7 @@ def get_secret_scanning_slo(
 
     exceeded_alerts: list = []
     repositories: dict[str, int] = {}
+    total_open_alerts = 0
 
     for alert in secret_scanning_alerts:
         if not isinstance(alert, dict):
@@ -131,6 +134,11 @@ def get_secret_scanning_slo(
         org = client.owner
         repo_name = f"{org}/{repo}"
 
+        if repository_names and repo not in repository_names:
+            continue
+
+        total_open_alerts += 1
+
         if not _exceeds_slo(alert):
             continue
 
@@ -141,7 +149,6 @@ def get_secret_scanning_slo(
         repositories[repo_name] += 1
 
     total_repositories_affected = len(repositories)
-    total_open_alerts = len(secret_scanning_alerts)
 
     total_exceeding_alerts = len(exceeded_alerts)
 

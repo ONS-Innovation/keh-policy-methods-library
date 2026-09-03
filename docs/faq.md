@@ -147,6 +147,7 @@ Valid values:
 Invalid values are ignored. If no valid values remain, all severities are checked.
 
 You can also pass `repository_names=[...]` to limit the check to selected repository names. If omitted or empty, all repositories are checked.
+The same `repository_names=[...]` parameter is available on `get_secret_scanning_slo`.
 
 ## What are the most common setup/authentication issues?
 
