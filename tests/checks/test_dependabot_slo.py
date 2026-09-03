@@ -693,6 +693,42 @@ class TestGetDependabotSLO:
         assert result["details"]["total_repositories_affected"] == 1
         assert result["details"]["repositories"] == {"my-org/my-repo": {"critical": 2}}
 
+    def test_filters_alerts_by_repository_names(self):
+        """Only alerts from requested repositories should be included in the result."""
+        client = self._make_org_client()
+        included_alert = _alert(1, created_at="2025-01-01T00:00:00Z")
+        excluded_alert = {
+            **_alert(2, created_at="2025-01-01T00:00:00Z"),
+            "repository": {"name": "excluded-repo"},
+        }
+        self._setup_alert_response(
+            client,
+            "critical",
+            [included_alert, excluded_alert],
+        )
+
+        with patch(
+            "policy_methods_library.checks.dependabot_slo._exceeds_slo",
+            return_value=True,
+        ):
+            result = get_dependabot_slo(
+                client=client,
+                levels=["critical"],
+                repository_names=["my-repo"],
+            )
+
+        assert result == {
+            "result": "fail",
+            "message": "Found 1 open Dependabot security alerts exceeding the policy-defined SLO.",
+            "details": {
+                "total_open_alerts": 1,
+                "failing_alerts": 1,
+                "number_exceeded_by_severity": {"critical": 1},
+                "total_repositories_affected": 1,
+                "repositories": {"my-org/my-repo": {"critical": 1}},
+            },
+        }
+
     def test_error_when_pagination_utility_returns_non_list(self):
         """Type narrowing guard should catch if pagination utility returns wrong shape."""
         client = create_autospec(GitHubRestClient, instance=True)

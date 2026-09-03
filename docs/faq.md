@@ -146,6 +146,8 @@ Valid values:
 
 Invalid values are ignored. If no valid values remain, all severities are checked.
 
+You can also pass `repository_names=[...]` to limit the check to selected repository names. If omitted or empty, all repositories are checked.
+
 ## What are the most common setup/authentication issues?
 
 Typical causes of `error` results:

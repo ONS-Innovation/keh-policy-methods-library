@@ -144,6 +144,15 @@ dependabot_slo_result = get_dependabot_slo(
 )
 ```
 
+To limit the Dependabot SLO check to specific repositories, pass their names with `repository_names`:
+
+```python
+dependabot_slo_result = get_dependabot_slo(
+    client=client,
+    repository_names=["repository-one", "repository-two"],
+)
+```
+
 ## 6. Recommended result handling
 
 Use this pattern in scripts and CI:
