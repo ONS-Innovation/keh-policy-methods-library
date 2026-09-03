@@ -134,6 +134,13 @@ def get_secret_scanning_slo(
         org = client.owner
         repo_name = f"{org}/{repo}"
 
+        if not isinstance(repo, str) or not repo:
+            return {
+                "result": "error",
+                "message": "Secret Scanning alert payload is missing repository name.",
+                "details": {"alert": alert},
+            }
+
         if repository_names and repo not in repository_names:
             continue
 

@@ -161,6 +161,13 @@ def get_dependabot_slo(
             org = client.owner
             repo_name = f"{org}/{repo}"
 
+            if not isinstance(repo, str) or not repo:
+                return {
+                    "result": "error",
+                    "message": "Dependabot alert payload is missing repository name.",
+                    "details": {"alert": alert},
+                }
+
             if repository_names and repo not in repository_names:
                 continue
 
