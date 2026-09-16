@@ -5,9 +5,14 @@ metadata:
   description: Python library containing reusable business logic for checking adherence to the ONS GitHub Usage Policy.
   annotations:
     github.com/project-slug: ONS-Innovation/keh-policy-methods-library
+  tags:
+    - python
+    - github-api
   links:
     - url: https://ons-innovation.github.io/keh-policy-methods-library
       title: Policy Methods Library Documentation
+    - url: mailto:knowledge.exchange.hub@ons.gov.uk
+      title: Contact
 spec:
   type: library
   lifecycle: production
