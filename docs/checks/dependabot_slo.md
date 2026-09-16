@@ -24,6 +24,7 @@ Where open Dependabot alerts must be resolved within defined SLOs:
 - If one or more open Dependabot alerts exist that exceed their severity-level SLO, the check will fail.
 - Alerts with missing or invalid `created_at` timestamps are treated as failures (exceeding SLO).
 - Alerts created exactly at the SLO boundary are considered as exceeding the SLO.
+- The alerts and repository counts can be limited to a list of repository names with the optional `repository_names` parameter.
 - If the API requests fail or the response is malformed, the check will return an error status.
 
 > Note: This check retrieves alerts across all severity levels by default. The severity levels checked can be customised by providing a custom list of severity values.
@@ -96,6 +97,19 @@ response = get_dependabot_slo(
 )
 ```
 
+## Customising Repositories
+
+You can limit the check to selected repository names by passing a `repository_names` parameter:
+
+```python
+response = get_dependabot_slo(
+    client=client,
+    repository_names=["repository-one", "repository-two"],
+)
+```
+
+When omitted or empty, alerts from all repositories are included.
+
 ### Valid Levels
 
 The `levels` must be one of these:
@@ -127,7 +141,7 @@ This check requires the following GitHub App permissions:
 
 The `details` object (when a failure occurs) returned by this check contains:
 
-- `total_open_alerts`: The total number of open Dependabot security alerts across all severity levels.
+- `total_open_alerts`: The total number of included open Dependabot security alerts across all severity levels.
 - `failing_alerts`: The total number of alerts that exceeded SLO.
 - `number_exceeded_by_severity`: A dictionary showing the count of alerts exceeding SLO for each severity level (critical, high, medium, low).
 - `total_repositories_affected`: The number of repositories that have at least one alert exceeding SLO.

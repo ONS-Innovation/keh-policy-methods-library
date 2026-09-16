@@ -1,6 +1,6 @@
 # KEH Policy Methods Library
 
-The Policy Methods Library is a collection of functions to encapsulate the business logic when it comes checking policy adherence to the GitHub Usage Policy within ONS.
+The Policy Methods Library is a collection of functions to encapsulate the business logic for checking adherence to the GitHub Usage Policy within ONS.
 
 ## Table of Contents
 
@@ -145,7 +145,7 @@ git push origin v0.1.0
 
 This triggers the GitHub Actions workflow to build and publish the package to GitHub Releases using version `0.1.0` derived from tag `v0.1.0`.
 
-**Note:** Is is important that GitHub Releases are _only_ created via the GitHub Actions workflow, and not manually via the GitHub UI. This is because the workflow ensures that the package is built and published correctly.
+**Note:** It is important that GitHub Releases are _only_ created via the GitHub Actions workflow, and not manually via the GitHub UI. This is because the workflow ensures that the package is built and published correctly.
 
 ## Documentation
 
@@ -211,7 +211,7 @@ make fmt
 To run the tests locally, you can use:
 
 ```bash
-make test-unit
+make test
 ```
 
 #### MegaLinter

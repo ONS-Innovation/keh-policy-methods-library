@@ -20,6 +20,7 @@ Use this matrix to choose checks quickly, understand required inputs, and troubl
 | Secret Scanning SLO | `get_secret_scanning_slo` | Organisation | `client` | No | No open secret scanning alerts exceed 5 working days | One or more open alerts exceed 5 working days | `secret_scanning: read` | [Secret Scanning SLO Check :link:](./checks/secret_scanning_slo.md#usage-example) |
 | PIRR | `check_pirr` | Repository | `client` + `repository_name` | No | Public repo (not applicable pass), or private/internal repo has `pirr.md` (case insensitive) at top level | Private/internal repo missing `pirr.md` | `metadata: read`, `contents: read` | [PIRR Check :link:](./checks/pirr_checks.md#usage-example) |
 | Team Maintainer | `check_team_maintainer` | Organisation Team | `client` + `team_slug` | No | Team has at least one maintainer | Team has zero maintainers | `members: read` | [Team Maintainer Check :link:](./checks/team_maintainer.md#usage-example) |
+| Branch Protection | `check_branch_protection` | Repository | `repository_name` + `branch_name` | No | Branch has deletions restricted, branch has at least two reviewers before merging. | Branch restrictions are not enabled or branch does not have at least two reviewers before merging. | `"administration": read`, `"metadata": read` | [Branch Protection Check :link:](./checks/branch_protection.md#usage-example) |
 
 ## Shared behaviour across all checks
 

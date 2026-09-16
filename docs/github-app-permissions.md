@@ -18,6 +18,7 @@ When using this library, the functionality and quality of the data you can acces
 | Secret Scanning SLO Check | `secret_scanning_alerts: read` |
 | Security Scanning Check | `administration: read` |
 | Team Maintainer Check | `members: read` |
+| Branch Protection Check | `administration: read`, `metadata: read` |
 
 In summary, to unlock the full potential of this library, it is recommended to grant your GitHub App the following permissions:
 
