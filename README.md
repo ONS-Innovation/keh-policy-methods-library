@@ -103,7 +103,15 @@ pip install .
 
 Whenever you make changes to the package, you will need to reinstall it for the changes to be reflected in the `manual_testing.py` file.
 
-Further instructions for developers, including how to add new checks, can be found in the documentation under the "Dev Guides" section.
+To run unit tests, linting, and formatting checks locally, you will need to install the dev dependencies using poetry:
+
+```bash
+make install-dev
+```
+
+This `make` target will install the development dependencies and the poetry-dynamic-versioning plugin, ensuring that your environment is set up.
+
+> Further instructions for developers, including how to add new checks, can be found in the documentation under the "Dev Guides" section.
 
 ## Package Structure
 

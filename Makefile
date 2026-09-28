@@ -39,7 +39,8 @@ clean: 				## Clean the temporary files.
 ## 
 
 .PHONY: install-dev
-install-dev: 			## Install the development dependencies.
+install-dev: 			## Install the development dependencies and poetry-dynamic-versioning plugin.
+	pip install poetry-dynamic-versioning
 	poetry install --with dev
 
 ## 
