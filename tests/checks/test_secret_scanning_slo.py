@@ -465,3 +465,28 @@ class TestGetSecretScanningSloWithClient:
 
             assert result["result"] == "error"
             assert "unexpected item format" in result["message"]
+
+    def test_error_when_alert_repository_name_is_missing(self):
+        """An alert without a repository name should return an error result."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        alert = {"repository": {}}
+
+        with (
+            patch(
+                "policy_methods_library.checks.secret_scanning_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.secret_scanning_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = [alert]
+
+            result = get_secret_scanning_slo(client=client)
+
+        assert result == {
+            "result": "error",
+            "message": "Secret Scanning alert payload is missing repository name.",
+            "details": {"alert": alert},
+        }

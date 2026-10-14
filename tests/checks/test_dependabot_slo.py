@@ -770,3 +770,28 @@ class TestGetDependabotSLO:
 
             assert result["result"] == "error"
             assert "unexpected item format" in result["message"]
+
+    def test_error_when_alert_repository_name_is_missing(self):
+        """An alert without a repository name should return an error result."""
+        client = create_autospec(GitHubRestClient, instance=True)
+        client.owner = "my-org"
+        alert = {"number": 1, "repository": {}}
+
+        with (
+            patch(
+                "policy_methods_library.checks.dependabot_slo.verify_client_organisation"
+            ) as mock_verify,
+            patch(
+                "policy_methods_library.checks.dependabot_slo.get_paginated_list"
+            ) as mock_paginated,
+        ):
+            mock_verify.return_value = None
+            mock_paginated.return_value = [alert]
+
+            result = get_dependabot_slo(client=client, levels=["critical"])
+
+        assert result == {
+            "result": "error",
+            "message": "Dependabot alert payload is missing repository name.",
+            "details": {"alert": alert},
+        }
