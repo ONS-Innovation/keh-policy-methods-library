@@ -35,17 +35,15 @@ def _generate_jwt(app_id: str, private_key: str) -> str:
         "iss": app_id,
     }
 
-    # Create a signing key from the private key
+    # Create encoded JWT using the private key
     try:
-        signing_key = jwt.jwk_from_pem(private_key.encode())
-    except jwt.exceptions.UnsupportedKeyTypeError as e:
+        encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+    except jwt.exceptions.InvalidKeyError as e:
         raise ValueError(
             "Invalid private key format. Ensure the key is in PEM format."
         ) from e
 
-    # Generate and return the JWT (RS256 algorithm)
-    jwt_instance = jwt.JWT()
-    return jwt_instance.encode(payload, signing_key, alg="RS256")
+    return encoded_jwt
 
 
 def _get_installation_id(organisation: str, jwt: str) -> int:
