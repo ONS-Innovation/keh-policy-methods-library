@@ -45,8 +45,7 @@ class TestGenerateJwt:
 
         token = _generate_jwt("my-app-id", rsa_private_key)
         # Decode without verification to inspect claims
-        instance = jwt_lib.JWT()
-        message = instance.decode(token, do_verify=False)
+        message = jwt_lib.decode(token, options={"verify_signature": False})
         assert message["iss"] == "my-app-id"
         assert "iat" in message
         assert "exp" in message
